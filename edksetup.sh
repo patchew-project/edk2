@@ -33,12 +33,41 @@ function HelpMsg()
   return 1
 }
 
+function ClearCache()
+{
+  CONF_FILES="build_rule target tools_def"
+  if [ -z "$EDK_TOOLS_PATH" ]
+  then
+    TEMPLATE_PATH=./BaseTools/Conf/
+  else
+    TEMPLATE_PATH="$EDK_TOOLS_PATH/Conf/"
+  fi
+
+  DELETED_FILES=0
+  for File in $CONF_FILES
+  do
+    TEMPLATE_FILE="$TEMPLATE_PATH/$File.template"
+    CACHE_FILE="Conf/$File.txt"
+    if [ "$TEMPLATE_FILE" -nt "$CACHE_FILE" ]
+    then
+      echo "Removing outdated '$CACHE_FILE'."
+      rm "$CACHE_FILE"
+      DELETED_FILES=$(($DELETED_FILES + 1))
+    fi
+  done
+
+  unset TEMPLATE_PATH TEMPLATE_FILE CACHE_FILE
+  return $DELETED_FILES
+}
+
 function SetWorkspace()
 {
   #
-  # If WORKSPACE is already set, then we can return right now
+  # Check for updated BaseTools templates. If none, and
+  # WORKSPACE is already set, then we can return right now
   #
-  if [ -n "$WORKSPACE" ]
+  ClearCache
+  if [ $? -ne 0 -a -n "$WORKSPACE" ]
   then
     return 0
   fi
