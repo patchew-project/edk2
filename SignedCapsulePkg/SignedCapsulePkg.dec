@@ -1,0 +1,65 @@
+## @file
+# This package provides EDKII capsule related support.
+#
+# Copyright (c) 2016, Intel Corporation. All rights reserved.<BR>
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License that accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php.
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = SignedCapsulePkg
+  PACKAGE_GUID                   = 75AA5D82-7BC4-44A9-82FB-0820EBC79BED
+  PACKAGE_VERSION                = 0.1
+
+[Includes]
+  Include
+
+[LibraryClasses]
+  ## @libraryclass  Provides services for EDKII system FMP capsule.
+  #
+  EdkiiSystemCapsuleLib|Include/Library/EdkiiSystemCapsuleLib.h
+
+  ## @libraryclass  Provides services to parse the INI configuration file.
+  #
+  IniParsingLib|Include/Library/IniParsingLib.h
+
+  ## @libraryclass  Provides services to access flash device.
+  #
+  PlatformFlashAccessLib|Include/Library/PlatformFlashAccessLib.h
+
+[Guids]
+  gEfiSignedCapsulePkgTokenSpaceGuid      = { 0xe1eb612f, 0x1c6c, 0x485d, { 0x9d, 0x6, 0x65, 0x8, 0x44, 0x88, 0x15, 0x69 }}
+
+  ## Include/Guid/EdkiiSystemFmpCapsule.h
+  gEdkiiSystemFirmwareImageDescriptorFileGuid = {0x90b2b846, 0xca6d, 0x4d6e, {0xa8, 0xd3, 0xc1, 0x40, 0xa8, 0xe1, 0x10, 0xac}}
+  gEdkiiSystemFmpCapsuleConfigFileGuid        = {0x812136d3, 0x4d3a, 0x433a, {0x94, 0x18, 0x29, 0xbb, 0x9b, 0xf7, 0x8f, 0x6e}}
+  gEdkiiSystemFmpCapsuleDriverFvFileGuid      = {0xce57b167, 0xb0e4, 0x41e8, {0xa8, 0x97, 0x5f, 0x4f, 0xeb, 0x78, 0x1d, 0x40}}
+
+[PcdsDynamicEx]
+  ## This dynamic PCD hold the EDKII system firmware image descriptor.
+  #  This information can be used for version check in EDKII system FMP capsule.
+  #  Only if the new EdkiiSystemFrimwareImageDescriptor.Version is no less than
+  #  the current PcdEdkiiSystemFirmwareImageDescriptor.LowestSupportedVersion,
+  #  the EDKII system FmpCapsule will be processed.
+  #  It must be dynamicEx, because the EDKII system firmware update module may
+  #  consume the PCD produced in current system firmware.
+  # @Prompt EDKII system firwmare image descriptor.
+  gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiSystemFirmwareImageDescriptor|{0}|VOID*|0x00000037
+
+  ## This dynamic PCD hold the GUID of a firmware FFS which includes EDKII
+  #  system firmware image.
+  #  An EDKII system firmware udpate module need consume this PCD to extract
+  #  the EDKII system firmware from the capsule image.
+  #  It must be dynamicEx, because the EDKII system firmware update module may
+  #  consume the PCD produced in current system firmware.
+  # @Prompt EDKII system firmware image FFS GUID.
+  gEfiSignedCapsulePkgTokenSpaceGuid.PcdEdkiiSystemFirmwareFileGuid|{0xb2, 0x9e, 0x9c, 0xaf, 0xad, 0x12, 0x3e, 0x4d, 0xa4, 0xd4, 0x96, 0xf6, 0xc9, 0x96, 0x62, 0x15}|VOID*|0x00001010
+
