@@ -1,0 +1,48 @@
+#/* @file
+#  Copyright (c) 2011-2013, ARM Limited. All rights reserved.
+#  Copyright (c) 2017, Cadence Design Systems, Inc. All rights reserved.
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#*/
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = CadenceCspSecLib
+  FILE_GUID                      = 07a2577e-43fb-40d9-9833-415cb7feefab
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = ArmPlatformSecLib
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  ArmPkg/ArmPkg.dec
+  ArmPlatformPkg/ArmPlatformPkg.dec
+
+[LibraryClasses]
+  IoLib
+  ArmLib
+  SerialPortLib
+
+[Sources.common]
+  CspSec.c
+
+[Sources.ARM]
+  Arm/CspBoot.S       | GCC
+  Arm/GicV3.S          | GCC
+
+[Sources.AARCH64]
+  AArch64/CspBoot.S
+  AArch64/GicV3.S
+
+[FixedPcd]
+  gArmTokenSpaceGuid.PcdFvBaseAddress
+  gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase

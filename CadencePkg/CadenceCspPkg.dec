@@ -1,0 +1,100 @@
+#/** @file
+# Cadence CSP package.
+#
+#  Copyright (c) 2012-2015, ARM Limited. All rights reserved.
+#  Copyright (c) 2017, Cadence Design Systems, Inc. All rights reserved.
+#
+#  This program and the accompanying materials are licensed and made available
+#  under the terms and conditions of the BSD License which accompanies this
+#  distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = CadenceCspPkg
+  PACKAGE_GUID                   = 593f66c2-fb57-4aa7-8bd0-149d52443f21
+  PACKAGE_VERSION                = 0.1
+
+################################################################################
+#
+# Include Section - list of Include Paths that are provided by this package.
+#                   Comments are used for Keywords and Module Types.
+#
+# Supported Module Types:
+#  BASE SEC PEI_CORE PEIM DXE_CORE DXE_DRIVER DXE_RUNTIME_DRIVER DXE_SMM_DRIVER DXE_SAL_DRIVER UEFI_DRIVER UEFI_APPLICATION
+#
+################################################################################
+[Includes.common]
+  Include                        # Root include for the package
+
+[Guids.common]
+  gArmPlatformTokenSpaceGuid   = { 0x9c0aaed4, 0x74c5, 0x4043, { 0xb4, 0x17, 0xa3, 0x22, 0x38, 0x14, 0xce, 0x76 } }
+
+  gCadenceCspTokenSpaceGuid    =  { 0x593f66c2, 0xfb57, 0x4aa7, { 0x8b, 0xd0, 0x14, 0x9d, 0x52, 0x44, 0x3f, 0x21 } }
+
+[PcdsFeatureFlag.common]
+
+[PcdsFixedAtBuild.common]
+  # Install FDT from NOR Flash
+#  gCadenceCspTokenSpaceGuid.PcdCspFdtDevicePath|L"VenHw(70f87726-cb5d-41b0-b153-1486e467888b)/csp.dtb"|VOID*|0x00000006
+
+  # Stack for CPU Cores in Secure Mode
+  gArmPlatformTokenSpaceGuid.PcdCPUCoresSecStackBase|0|UINT32|0x00000005
+  gArmPlatformTokenSpaceGuid.PcdCPUCoreSecPrimaryStackSize|0x10000|UINT32|0x00000036
+  gArmPlatformTokenSpaceGuid.PcdCPUCoreSecSecondaryStackSize|0x1000|UINT32|0x00000006
+
+  # Stack for CPU Cores in Non Secure Mode
+  gArmPlatformTokenSpaceGuid.PcdCPUCoresStackBase|0|UINT64|0x00000009
+  gArmPlatformTokenSpaceGuid.PcdCPUCorePrimaryStackSize|0x10000|UINT32|0x00000037
+  gArmPlatformTokenSpaceGuid.PcdCPUCoreSecondaryStackSize|0x1000|UINT32|0x0000000A
+
+  #
+  # Cadence CSP
+  #
+
+  ## Cadence CSP System Registers
+  gCadenceCspTokenSpaceGuid.PcdCspSysRegBase|0|UINT64|0x000000C0
+  gCadenceCspTokenSpaceGuid.PcdCspSysRegSize|0|UINT32|0x000000D0
+
+  ## Cadence UART
+  gCadenceCspTokenSpaceGuid.PcdCspSerialBase|0|UINT64|0x000000C1
+  gCadenceCspTokenSpaceGuid.PcdCspSerialSize|0|UINT32|0x000000D1
+
+  # Cadence PCIe
+  gCadenceCspTokenSpaceGuid.PcdPcieRootPortBaseAddress|0xfb000000|UINT64|0x0000000C
+  gCadenceCspTokenSpaceGuid.PcdPcie1RootPortBaseAddress|0xfc000000|UINT64|0x000000CD
+  gCadenceCspTokenSpaceGuid.PcdPciConfigurationSpaceBaseAddress|0x40000000|UINT64|0x00000011
+  gCadenceCspTokenSpaceGuid.PcdPciConfigurationSpaceSize|0x02000000|UINT64|0x00000012
+  #
+  # BDS - Boot Manager
+  #
+  gArmPlatformTokenSpaceGuid.PcdFirmwareVendor|"ARM Platform"|VOID*|0x00000019
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDescription|L"Default Boot Device"|VOID*|0x0000000C
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootDevicePath|L""|VOID*|0x0000000D
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootInitrdPath|L""|VOID*|0x0000000E
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootArgument|L""|VOID*|0x000000F
+  # PcdDefaultBootType define the type of the binary pointed by PcdDefaultBootDevicePath:
+  #  - 0 = an EFI application
+  #  - 1 = a Linux kernel with ATAG support
+  #  - 2 = a Linux kernel with FDT support
+  gArmPlatformTokenSpaceGuid.PcdDefaultBootType|0|UINT32|0x00000010
+  gArmPlatformTokenSpaceGuid.PcdFdtDevicePath|L""|VOID*|0x00000011
+
+  ## Timeout value for displaying progressing bar in before boot OS.
+  #  According to UEFI 2.0 spec, the default TimeOut should be 0xffff.
+  gArmPlatformTokenSpaceGuid.PcdPlatformBootTimeOut|0xffff|UINT16|0x0000001A
+
+  gArmPlatformTokenSpaceGuid.PcdDefaultConInPaths|L""|VOID*|0x0000001B
+  gArmPlatformTokenSpaceGuid.PcdDefaultConOutPaths|L""|VOID*|0x0000001C
+
+[PcdsFixedAtBuild.AARCH64]
+  # The Secure World is only running in EL3. Only one set of stacks is needed for AArch64.
+  # The Secure stacks are described by PcdCPUCoresSecStackBase, PcdCPUCoreSecPrimaryStackSize
+  # and PcdCPUCoreSecSecondaryStackSize
+  gArmPlatformTokenSpaceGuid.PcdCPUCoresSecMonStackBase|0|UINT32|0x00000007
+  gArmPlatformTokenSpaceGuid.PcdCPUCoreSecMonStackSize|0x0|UINT32|0x00000008
