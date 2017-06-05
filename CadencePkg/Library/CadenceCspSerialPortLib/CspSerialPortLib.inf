@@ -1,0 +1,52 @@
+## @file
+#  Serial Port Library for Cadence IP6528 UART.
+#
+#  Based on:
+#
+#  Null instance of Serial Port Library with empty functions.
+#
+#  Copyright (c) 2006 - 2014, Intel Corporation. All rights reserved.<BR>
+#  Copyright (C) 2017 Cadence Design Systems. All rights reserved worldwide.
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php.
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+##
+
+[Defines]
+  INF_VERSION                    = 1.25
+  BASE_NAME                      = CspSerialPortLib
+  MODULE_UNI_FILE                = CspSerialPortLib.uni
+  FILE_GUID                      = C456789-8897-411a-91F8-7D7E45837146
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = SerialPortLib
+
+[Sources]
+  CspSerialPortLib.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  CadencePkg/CadenceCspPkg.dec
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  DebugLib
+  IoLib
+  BaseLib
+  PcdLib
+
+[FixedPcd]
+  gCadenceCspTokenSpaceGuid.PcdCspSerialBase
+  gCadenceCspTokenSpaceGuid.PcdCspSysRegBase
+  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultBaudRate
+  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultDataBits
+  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultParity
+  gEfiMdePkgTokenSpaceGuid.PcdUartDefaultStopBits
+
