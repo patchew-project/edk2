@@ -183,6 +183,13 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
   INF Silicon/Socionext/Synquacer/Drivers/Net/NetsecDxe/NetsecDxe.inf
 
+  #
+  # ACPI support
+  #
+  INF MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf
+  INF MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
+  INF RuleOverride = ACPITABLE Silicon/Socionext/Synquacer/AcpiTables/AcpiTables.inf
+
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 8
 ERASE_POLARITY     = 1
@@ -328,4 +335,10 @@ READ_LOCK_STATUS   = TRUE
     PE32      PE32                    |.efi
     UI        STRING="$(MODULE_NAME)" Optional
     VERSION   STRING="$(INF_VERSION)" Optional BUILD_NUM=$(BUILD_NUMBER)
+  }
+
+[Rule.Common.USER_DEFINED.ACPITABLE]
+  FILE FREEFORM = $(NAMED_GUID) {
+    RAW ACPI               |.acpi
+    RAW ASL                |.aml
   }
