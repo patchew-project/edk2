@@ -30,6 +30,7 @@
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
   Silicon/Socionext/Synquacer/Synquacer.dec
+  Silicon/Socionext/Synquacer/Drivers/Fip006Dxe/Fip006Dxe.dec
 
 [LibraryClasses]
   ArmLib
@@ -48,3 +49,4 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingSize
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareSize
+  gFip006DxeTokenSpaceGuid.PcdFip006DxeRegBaseAddress
