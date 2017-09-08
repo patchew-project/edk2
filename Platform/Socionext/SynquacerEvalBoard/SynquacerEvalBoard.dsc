@@ -489,3 +489,12 @@
   }
   MdeModulePkg/Universal/Acpi/AcpiPlatformDxe/AcpiPlatformDxe.inf
   Silicon/Socionext/Synquacer/AcpiTables/AcpiTables.inf
+
+  #
+  # DT support
+  #
+  Silicon/Socionext/Synquacer/DeviceTree/SynquacerEvalBoard.inf
+  EmbeddedPkg/Drivers/DtPlatformDxe/DtPlatformDxe.inf {
+    <LibraryClasses>
+      DtPlatformDtbLoaderLib|EmbeddedPkg/Library/DxeDtPlatformDtbLoaderLibDefault/DxeDtPlatformDtbLoaderLibDefault.inf
+  }
