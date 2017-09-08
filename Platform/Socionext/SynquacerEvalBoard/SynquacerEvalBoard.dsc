@@ -217,6 +217,20 @@
   gArmTokenSpaceGuid.PcdGenericWatchdogControlBase|0x2a440000
   gArmTokenSpaceGuid.PcdGenericWatchdogRefreshBase|0x2a450000
 
+  #
+  # NETSEC Info
+  #
+  gNetsecDxeTokenSpaceGuid.PcdNetsecDxeBaseAddress|0x522D0000
+  gNetsecDxeTokenSpaceGuid.PcdEepRomBase|0x10000000
+  gNetsecDxeTokenSpaceGuid.PcdEncTxDescNum|128
+  gNetsecDxeTokenSpaceGuid.PcdDecRxDescNum|128
+  gNetsecDxeTokenSpaceGuid.PcdJumboPacket|0
+  gNetsecDxeTokenSpaceGuid.PcdFlowCtrl|0
+  gNetsecDxeTokenSpaceGuid.PcdFlowCtrlStartThreshold|36
+  gNetsecDxeTokenSpaceGuid.PcdFlowCtrlStopThreshold|48
+  gNetsecDxeTokenSpaceGuid.PcdPauseTime|256
+  gNetsecDxeTokenSpaceGuid.PcdPhyDevAddr|1
+
   gEfiMdePkgTokenSpaceGuid.PcdMaximumUnicodeStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumAsciiStringLength|1000000
   gEfiMdePkgTokenSpaceGuid.PcdMaximumLinkedListLength|1000000
@@ -441,3 +455,23 @@
   # RNG
   #
   Silicon/Openmoko/ChaosKeyDxe/ChaosKeyDxe.inf
+
+  #
+  # Networking stack
+  #
+  MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
+  MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
+  MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
+  MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
+  MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+  MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
+  MdeModulePkg/Universal/Network/VlanConfigDxe/VlanConfigDxe.inf
+  MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
+  MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
+  MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
+  MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
+  MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
+  Silicon/Socionext/Synquacer/Drivers/Net/NetsecDxe/NetsecDxe.inf {
+    <LibraryClasses>
+      DmaLib|EmbeddedPkg/Library/NonCoherentDmaLib/NonCoherentDmaLib.inf
+  }

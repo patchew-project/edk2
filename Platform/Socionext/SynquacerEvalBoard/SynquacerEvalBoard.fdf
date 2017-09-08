@@ -166,6 +166,23 @@ READ_LOCK_STATUS   = TRUE
   #
   INF Silicon/Openmoko/ChaosKeyDxe/ChaosKeyDxe.inf
 
+  #
+  # Networking stack
+  #
+  INF MdeModulePkg/Universal/Network/DpcDxe/DpcDxe.inf
+  INF MdeModulePkg/Universal/Network/ArpDxe/ArpDxe.inf
+  INF MdeModulePkg/Universal/Network/Dhcp4Dxe/Dhcp4Dxe.inf
+  INF MdeModulePkg/Universal/Network/Ip4Dxe/Ip4Dxe.inf
+  INF MdeModulePkg/Universal/Network/MnpDxe/MnpDxe.inf
+  INF MdeModulePkg/Universal/Network/SnpDxe/SnpDxe.inf
+  INF MdeModulePkg/Universal/Network/VlanConfigDxe/VlanConfigDxe.inf
+  INF MdeModulePkg/Universal/Network/Mtftp4Dxe/Mtftp4Dxe.inf
+  INF MdeModulePkg/Universal/Network/Tcp4Dxe/Tcp4Dxe.inf
+  INF MdeModulePkg/Universal/Network/Udp4Dxe/Udp4Dxe.inf
+  INF MdeModulePkg/Universal/Network/UefiPxeBcDxe/UefiPxeBcDxe.inf
+  INF MdeModulePkg/Universal/Network/IScsiDxe/IScsiDxe.inf
+  INF Silicon/Socionext/Synquacer/Drivers/Net/NetsecDxe/NetsecDxe.inf
+
 [FV.FVMAIN_COMPACT]
 FvAlignment        = 8
 ERASE_POLARITY     = 1
