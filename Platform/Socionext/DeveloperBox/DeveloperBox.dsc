@@ -592,6 +592,14 @@
   }
 
   #
+  # Console preference selection
+  #
+  EmbeddedPkg/Drivers/ConsolePrefDxe/ConsolePrefDxe.inf {
+    <LibraryClasses>
+      FdtLib|EmbeddedPkg/Library/FdtLib/FdtLib.inf
+  }
+
+  #
   # ACPI support
   #
   MdeModulePkg/Universal/Acpi/AcpiTableDxe/AcpiTableDxe.inf {
