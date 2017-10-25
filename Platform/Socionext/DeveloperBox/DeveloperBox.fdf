@@ -25,14 +25,14 @@
 #
 ################################################################################
 
-[FD.BL33_AP_UEFI]
-BaseAddress   = 0x08200000|gArmTokenSpaceGuid.PcdFdBaseAddress  # The base address of the Firmware in NOR Flash.
-Size          = 0x001A0000|gArmTokenSpaceGuid.PcdFdSize         # The size in bytes of the FLASH Device
+[FD.SPI_NOR_IMAGE]
+BaseAddress   = 0x08180000|gArmTokenSpaceGuid.PcdFdBaseAddress  # The base address of the Firmware in NOR Flash.
+Size          = 0x00280000|gArmTokenSpaceGuid.PcdFdSize         # The size in bytes of the FLASH Device
 ErasePolarity = 1
 
 # This one is tricky, it must be: BlockSize * NumBlocks = Size
 BlockSize     = 0x00010000
-NumBlocks     = 0x1A
+NumBlocks     = 0x28
 
 ################################################################################
 #
@@ -50,7 +50,10 @@ NumBlocks     = 0x1A
 #
 ################################################################################
 
-0x00000000|0x001A0000
+0x00000000|0x00080000
+FILE = Platform/Socionext/DeveloperBox/fip_all_arm_tf.bin
+
+0x00080000|0x001A0000
 gArmTokenSpaceGuid.PcdFvBaseAddress|gArmTokenSpaceGuid.PcdFvSize
 FV = FVMAIN_COMPACT
 
@@ -168,6 +171,7 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
   INF MdeModulePkg/Universal/Disk/UnicodeCollation/EnglishDxe/EnglishDxe.inf
   INF FatPkg/EnhancedFatDxe/Fat.inf
+  INF MdeModulePkg/Universal/Disk/RamDiskDxe/RamDiskDxe.inf
 
   #
   # RNG
@@ -211,7 +215,7 @@ READ_LOCK_STATUS   = TRUE
   # DT support
   #
   INF EmbeddedPkg/Drivers/DtPlatformDxe/DtPlatformDxe.inf
-  INF RuleOverride = DTB Silicon/Socionext/SynQuacer/DeviceTree/SynQuacerEvalBoard.inf
+  INF RuleOverride = DTB Silicon/Socionext/SynQuacer/DeviceTree/DeveloperBox.inf
 
   #
   # Firmware update
@@ -250,7 +254,7 @@ READ_LOCK_STATUS   = TRUE
   INF MdeModulePkg/Universal/FaultTolerantWritePei/FaultTolerantWritePei.inf
   INF MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
   INF MdeModulePkg/Universal/CapsulePei/CapsulePei.inf
-  INF RuleOverride = FMP_IMAGE_DESC Platform/Socionext/SynQuacerEvalBoard/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
+  INF RuleOverride = FMP_IMAGE_DESC Platform/Socionext/DeveloperBox/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
   INF MdeModulePkg/Core/DxeIplPeim/DxeIpl.inf
 
   FILE FV_IMAGE = 9E21FD93-9C72-4c15-8C4B-E77F1DB2D792 {
@@ -277,7 +281,7 @@ READ_STATUS        = TRUE
 READ_LOCK_CAP      = TRUE
 READ_LOCK_STATUS   = TRUE
 
-INF  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf
+  INF  SignedCapsulePkg/Universal/SystemFirmwareUpdate/SystemFirmwareUpdateDxe.inf
 
 [FV.SystemFirmwareUpdateCargo]
 FvAlignment        = 16
@@ -298,7 +302,7 @@ READ_LOCK_CAP      = TRUE
 READ_LOCK_STATUS   = TRUE
 
   FILE RAW = e99b89f7-c120-4b25-4db1-8394edb0b4f5 { # PcdEdkiiSystemFirmwareFileGuid
-    FD = BL33_AP_UEFI
+    FD = SPI_NOR_IMAGE
   }
 
   FILE RAW = ce57b167-b0e4-41e8-a897-5f4feb781d40 { # gEdkiiSystemFmpCapsuleDriverFvFileGuid
@@ -306,8 +310,9 @@ READ_LOCK_STATUS   = TRUE
   }
 
   FILE RAW = 812136D3-4D3A-433A-9418-29BB9BF78F6E { # gEdkiiSystemFmpCapsuleConfigFileGuid
-    Platform/Socionext/SynQuacerEvalBoard/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini
+    Platform/Socionext/DeveloperBox/SystemFirmwareUpdateConfig/SystemFirmwareUpdateConfig.ini
   }
+  INF RuleOverride = FMP_IMAGE_DESC Platform/Socionext/DeveloperBox/SystemFirmwareDescriptor/SystemFirmwareDescriptor.inf
 
 [FmpPayload.FmpPayloadSystemFirmwarePkcs7]
 IMAGE_HEADER_INIT_VERSION = 0x02
@@ -317,14 +322,14 @@ HARDWARE_INSTANCE         = 0x0
 MONOTONIC_COUNT           = 0x1
 CERTIFICATE_GUID          = 4AAFD29D-68DF-49EE-8AA9-347D375665A7 # PKCS7
 
-FV = SystemFirmwareUpdateCargo
+  FV = SystemFirmwareUpdateCargo
 
 [Capsule.SynQuacerFirmwareUpdateCapsuleFmpPkcs7]
 CAPSULE_GUID                = 6dcbd5ed-e82d-4c44-bda1-7194199ad92a # gEfiFmpCapsuleGuid
 CAPSULE_HEADER_SIZE         = 0x20
 CAPSULE_HEADER_INIT_VERSION = 0x1
 
-FMP_PAYLOAD = FmpPayloadSystemFirmwarePkcs7
+  FMP_PAYLOAD = FmpPayloadSystemFirmwarePkcs7
 
 ################################################################################
 #
