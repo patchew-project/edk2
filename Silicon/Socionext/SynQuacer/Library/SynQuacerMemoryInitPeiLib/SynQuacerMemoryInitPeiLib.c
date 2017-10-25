@@ -17,11 +17,16 @@
 
 #include <Library/ArmLib.h>
 #include <Library/ArmMmuLib.h>
+#include <Library/CacheMaintenanceLib.h>
 #include <Library/DebugLib.h>
 #include <Library/HobLib.h>
+#include <Library/PeiServicesLib.h>
+#include <Library/PeiServicesTablePointerLib.h>
 
 #include <Platform/MemoryMap.h>
 #include <Platform/Pcie.h>
+
+#include <Ppi/Capsule.h>
 
 #define ARM_MEMORY_REGION(Base, Size) \
   { (Base), (Base), (Size), ARM_MEMORY_REGION_ATTRIBUTE_WRITE_BACK }
@@ -39,7 +44,8 @@ BuildMemoryTypeInformationHob (
 
 STATIC ARM_MEMORY_REGION_DESCRIPTOR mVirtualMemoryTable[] = {
   // Memory mapped SPI NOR flash
-  ARM_UNCACHED_REGION (SYNQUACER_SPI_NOR_BASE, SYNQUACER_SPI_NOR_BASE),
+  ARM_UNCACHED_REGION (FixedPcdGet64 (PcdFdBaseAddress),
+                       FixedPcdGet32 (PcdFdSize)),
 
   // DDR - 2 GB
   ARM_MEMORY_REGION (SYNQUACER_SYSTEM_MEMORY_1_BASE,
@@ -113,6 +119,12 @@ MemoryPeim (
 {
   EFI_RESOURCE_ATTRIBUTE_TYPE   ResourceAttributes;
   RETURN_STATUS                 Status;
+  EFI_PEI_SERVICES              **PeiServices;
+  PEI_CAPSULE_PPI               *Capsule;
+  VOID                          *CapsuleBuffer;
+  UINTN                         CapsuleBufferLength;
+  EFI_STATUS                    EfiStatus;
+  BOOLEAN                       HaveCapsule;
 
   ResourceAttributes =
       EFI_RESOURCE_ATTRIBUTE_PRESENT |
@@ -140,10 +152,55 @@ MemoryPeim (
 //    SYNQUACER_SYSTEM_MEMORY_3_BASE,
 //    SYNQUACER_SYSTEM_MEMORY_3_SZ);
 
+  PeiServices = (EFI_PEI_SERVICES **) GetPeiServicesTablePointer ();
+  ASSERT (PeiServices != NULL);
+
+  EfiStatus = PeiServicesLocatePpi (&gPeiCapsulePpiGuid, 0, NULL,
+                (VOID **)&Capsule);
+  ASSERT_EFI_ERROR (EfiStatus);
+
+  //
+  // Check for persistent capsules
+  //
+  HaveCapsule = FALSE;
+  EfiStatus = Capsule->CheckCapsuleUpdate (PeiServices);
+  if (!EFI_ERROR (EfiStatus)) {
+
+    //
+    // Coalesce the capsule into unused memory. CreateState() below will copy
+    // it to a properly allocated buffer.
+    //
+    CapsuleBuffer = (VOID *)FixedPcdGet64 (PcdSystemMemoryBase);
+    CapsuleBufferLength = UefiMemoryBase - FixedPcdGet64 (PcdSystemMemoryBase);
+
+    PeiServicesSetBootMode (BOOT_ON_FLASH_UPDATE);
+
+    EfiStatus = Capsule->Coalesce (PeiServices, &CapsuleBuffer,
+                           &CapsuleBufferLength);
+    if (!EFI_ERROR (EfiStatus)) {
+      DEBUG ((DEBUG_INFO, "%a: Coalesced capsule @ %p (0x%lx)\n",
+              __FUNCTION__, CapsuleBuffer, CapsuleBufferLength));
+      HaveCapsule = TRUE;
+    } else {
+      DEBUG ((DEBUG_WARN, "%a: failed to coalesce() capsule (Status == %r)\n",
+              __FUNCTION__, EfiStatus));
+    }
+  }
+
   Status = ArmConfigureMmu (mVirtualMemoryTable, NULL, NULL);
   ASSERT_EFI_ERROR (Status);
   if (EFI_ERROR (Status)) {
     return Status;
+  }
+
+  if (HaveCapsule) {
+    EfiStatus = Capsule->CreateState (PeiServices, CapsuleBuffer,
+                           CapsuleBufferLength);
+
+    if (EFI_ERROR (EfiStatus)) {
+      DEBUG ((DEBUG_WARN, "%a: Capsule->CreateState failed (Status == %r)\n",
+              __FUNCTION__, EfiStatus));
+    }
   }
 
   if (FeaturePcdGet (PcdPrePiProduceMemoryTypeInformationHob)) {

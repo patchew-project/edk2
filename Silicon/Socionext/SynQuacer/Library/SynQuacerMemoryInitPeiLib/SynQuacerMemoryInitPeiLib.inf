@@ -36,14 +36,20 @@
 [LibraryClasses]
   ArmLib
   ArmMmuLib
+  CacheMaintenanceLib
   DebugLib
+  PeiServicesLib
+  PeiServicesTablePointerLib
 
 [FeaturePcd]
   gEmbeddedTokenSpaceGuid.PcdPrePiProduceMemoryTypeInformationHob
 
 [FixedPcd]
+  gArmTokenSpaceGuid.PcdFdBaseAddress
+  gArmTokenSpaceGuid.PcdFdSize
   gArmTokenSpaceGuid.PcdGicDistributorBase
   gArmTokenSpaceGuid.PcdGicRedistributorsBase
+  gArmTokenSpaceGuid.PcdSystemMemoryBase
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableSize
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase
@@ -53,3 +59,9 @@
   gNetsecDxeTokenSpaceGuid.PcdEepRomBase
   gFip006DxeTokenSpaceGuid.PcdFip006DxeRegBaseAddress
   gFip006DxeTokenSpaceGuid.PcdFip006DxeMemBaseAddress
+
+[Ppis]
+  gPeiCapsulePpiGuid
+
+[Depex]
+  gPeiCapsulePpiGuid
