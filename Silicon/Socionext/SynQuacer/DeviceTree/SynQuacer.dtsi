@@ -523,4 +523,13 @@
         clocks = <&clk_apb>;
         base = <0>;
     };
+
+    exiu: exiu@510c0000 {
+        compatible = "socionext,sc2a11-exiu";
+        reg = <0x0 0x510c0000 0x0 0x20>;
+        interrupt-controller;
+        interrupt-parent = <&gic>;
+        #interrupt-cells = <3>;
+        spi-base = <112>;
+    };
 };
