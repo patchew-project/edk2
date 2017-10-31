@@ -1,3 +1,4 @@
+
 #
 #  Copyright (c) 2013-2014, ARM Limited. All rights reserved.
 #  Copyright (c) 2017, Linaro Limited. All rights reserved.
@@ -206,6 +207,12 @@ READ_LOCK_STATUS   = TRUE
   INF RuleOverride = ACPITABLE Silicon/Socionext/SynQuacer/AcpiTables/AcpiTables.inf
   INF MdeModulePkg/Universal/Acpi/BootGraphicsResourceTableDxe/BootGraphicsResourceTableDxe.inf
 
+  #
+  # DT support
+  #
+  INF EmbeddedPkg/Drivers/DtPlatformDxe/DtPlatformDxe.inf
+  INF RuleOverride = DTB Silicon/Socionext/SynQuacer/DeviceTree/SynQuacerEvalBoard.inf
+
 [FV.FVMAIN_PEI]
 FvAlignment        = 16
 ERASE_POLARITY     = 1
@@ -367,4 +374,9 @@ READ_LOCK_STATUS   = TRUE
   FILE FREEFORM = $(NAMED_GUID) {
     RAW ACPI               |.acpi
     RAW ASL                |.aml
+  }
+
+[Rule.Common.USER_DEFINED.DTB]
+  FILE FREEFORM = $(NAMED_GUID) {
+    RAW BIN                |.dtb
   }
