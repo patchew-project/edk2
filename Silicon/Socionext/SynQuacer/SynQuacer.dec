@@ -30,3 +30,6 @@
 
   gSynQuacerTokenSpaceGuid.PcdSecondaryFvBase|0|UINT64|0x00000002
   gSynQuacerTokenSpaceGuid.PcdSecondaryFvSize|0|UINT64|0x00000003
+
+  gSynQuacerTokenSpaceGuid.PcdNetsecEepromBase|0|UINT32|0x00000004
+  gSynQuacerTokenSpaceGuid.PcdNetsecPhyAddress|0|UINT8|0x00000005
