@@ -19,3 +19,53 @@
     model = "SynQuacer Evaluation Board";
     compatible = "socionext,synquacer-eval-board", "socionext,synquacer";
 };
+
+&gpio {
+    dsw3_1 {
+        gpios = <0 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_2 {
+        gpios = <1 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_3 {
+        gpios = <2 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_4 {
+        gpios = <3 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_5 {
+        gpios = <4 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_6 {
+        gpios = <5 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_7 {
+        gpios = <6 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+
+    dsw3_8 {
+        gpios = <7 GPIO_ACTIVE_HIGH>;
+        gpio-hog;
+        input;
+    };
+};
