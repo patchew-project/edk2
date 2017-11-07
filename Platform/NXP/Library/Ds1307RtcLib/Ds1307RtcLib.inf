@@ -1,0 +1,40 @@
+#  @Ds1307RtcLib.inf
+#
+#  Lib to provide support for DS1307 Real Time Clock
+#
+#  Copyright (c) 2016, Freescale Semiconductor, Inc. All rights reserved.
+#  Copyright (c) 2017 NXP
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = Ds1307RtcLib
+  FILE_GUID                      = B661E02D-A90B-42AB-A5F9-CF841AAA43D9
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = RealTimeClockLib
+
+[Sources.common]
+  Ds1307RtcLib.c
+
+[Packages]
+  EmbeddedPkg/EmbeddedPkg.dec
+  MdePkg/MdePkg.dec
+  edk2-platforms/Platform/NXP/NxpQoriqLs.dec
+
+[LibraryClasses]
+  DebugLib
+  I2cLib
+
+[Pcd]
+  gNxpQoriqLsTokenSpaceGuid.PcdRtcI2cBus
+  gNxpQoriqLsTokenSpaceGuid.PcdI2cSpeed
+  gNxpQoriqLsTokenSpaceGuid.PcdDs1307I2cAddress
