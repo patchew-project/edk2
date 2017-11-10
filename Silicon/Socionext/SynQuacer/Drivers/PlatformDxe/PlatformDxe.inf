@@ -23,6 +23,7 @@
   ENTRY_POINT                    = PlatformDxeEntryPoint
 
 [Sources]
+  Emmc.c
   PlatformDxe.c
 
 [Packages]
@@ -34,10 +35,13 @@
   Silicon/Socionext/SynQuacer/SynQuacer.dec
 
 [LibraryClasses]
+  BaseLib
   BaseMemoryLib
   DebugLib
   DtPlatformDtbLoaderLib
+  IoLib
   MemoryAllocationLib
+  NonDiscoverableDeviceRegistrationLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
 
@@ -49,6 +53,7 @@
 
 [Protocols]
   gEdkiiNonDiscoverableDeviceProtocolGuid         ## PRODUCES
+  gEdkiiSdMmcOverrideProtocolGuid                 ## PRODUCES
   gPcf8563RealTimeClockLibI2cMasterProtolGuid     ## PRODUCES
 
 [FixedPcd]

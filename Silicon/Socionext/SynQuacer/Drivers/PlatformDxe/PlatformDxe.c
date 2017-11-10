@@ -12,14 +12,7 @@
   WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 **/
 
-#include <PiDxe.h>
-#include <Library/BaseMemoryLib.h>
-#include <Library/DebugLib.h>
-#include <Library/DtPlatformDtbLoaderLib.h>
-#include <Library/MemoryAllocationLib.h>
-#include <Library/UefiBootServicesTableLib.h>
-#include <Platform/MemoryMap.h>
-#include <Protocol/NonDiscoverableDevice.h>
+#include "PlatformDxe.h"
 
 STATIC EFI_ACPI_ADDRESS_SPACE_DESCRIPTOR mNetsecDesc[] = {
   {
@@ -176,6 +169,9 @@ PlatformDxeEntryPoint (
   Handle = NULL;
   Status = RegisterDevice (&gSynQuacerNonDiscoverableI2cMasterGuid, mI2c1Desc,
              &Handle);
+  ASSERT_EFI_ERROR (Status);
+
+  Status = RegisterEmmc ();
   ASSERT_EFI_ERROR (Status);
 
   return EFI_SUCCESS;
