@@ -501,8 +501,13 @@ IsGuardPage (
 {
   UINTN       BitMap;
 
+  //
+  // There must be at least one guarded page before and/or after given
+  // address if it's a Guard page. The bitmap pattern should be one of
+  // 001, 100 and 101
+  //
   BitMap = GetGuardedMemoryBits (Address - EFI_PAGE_SIZE, 3);
-  return ((BitMap == 0b001) || (BitMap == 0b100) || (BitMap == 0b101));
+  return ((BitMap == 1) || (BitMap == 4) || (BitMap == 5));
 }
 
 /**
@@ -519,7 +524,7 @@ IsHeadGuard (
   IN EFI_PHYSICAL_ADDRESS    Address
   )
 {
-  return (GetGuardedMemoryBits (Address, 2) == 0b10);
+  return (GetGuardedMemoryBits (Address, 2) == 2);
 }
 
 /**
@@ -536,7 +541,7 @@ IsTailGuard (
   IN EFI_PHYSICAL_ADDRESS    Address
   )
 {
-  return (GetGuardedMemoryBits (Address - EFI_PAGE_SIZE, 2) == 0b01);
+  return (GetGuardedMemoryBits (Address - EFI_PAGE_SIZE, 2) == 1);
 }
 
 /**
