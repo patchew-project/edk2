@@ -1,0 +1,45 @@
+#
+#  Copyright (c) 2016-2017, Linaro Limited. All rights reserved.
+#  Copyright (c) 2016-2017, comcast . All rights reserved.
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+
+################################################################################
+#
+# Defines Section - statements that will be processed to create a Makefile.
+#
+################################################################################
+
+[Defines]
+  INF_VERSION     = 0x00010006
+  BASE_NAME       = RDKDriver
+  FILE_GUID       = 305da1a1-cd7d-4d61-bf83-8e79a7839a33
+  MODULE_TYPE     = UEFI_DRIVER
+  VERSION_STRING  = 0.1
+  ENTRY_POINT     = RdkDriverEntryPoint
+
+[Sources]
+  RdkDxe.c
+  RdkDxe.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  EmbeddedPkg/Library/RdkBootManagerLib/RdkBootManagerLib.dec
+
+[LibraryClasses]
+  UefiBootManagerLib
+  UefiDriverEntryPoint
+
+[FixedPcd]
+  gRdkTokenSpaceGuid.PcdRdkDriFile
+  gRdkTokenSpaceGuid.PcdRdkSecureBootFile
+  gRdkTokenSpaceGuid.PcdRdkDriSecureBootFile
