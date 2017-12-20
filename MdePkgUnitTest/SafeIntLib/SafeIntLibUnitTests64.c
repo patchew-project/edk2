@@ -36,26 +36,28 @@ TestSafeInt32ToUintn_64 (
   )
 {
   EFI_STATUS  Status;
-  INT32 Operand = 0x5bababab;
-  UINTN Result = 0;
+  INT32       Operand;
+  UINTN       Result;
 
   //
   // If Operand is non-negative, then it's a cast
   //
-  Status = SafeInt32ToUintn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5bababab, Result);
+  Result = 0;
+  Operand = 0x5bababab;
+  Status = SafeInt32ToUintn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5bababab, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (-1537977259);
-  Status = SafeInt32ToUintn(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINTN_ERROR, Result);
+  Status = SafeInt32ToUintn (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINTN_ERROR, Result);
 
-  Status = SafeInt32ToUintn(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeInt32ToUintn (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -68,8 +70,8 @@ TestSafeUint32ToIntn_64 (
   )
 {
   EFI_STATUS  Status;
-  UINT32 Operand = 0xabababab;
-  INTN Result = 0;
+  UINT32      Operand;
+  INTN        Result;
 
   //
   // For x64, INTN is same as INT64 which is a superset of INT32
@@ -79,9 +81,11 @@ TestSafeUint32ToIntn_64 (
   //
   // If Operand is non-negative, then it's a cast
   //
-  Status = SafeUint32ToIntn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0xabababab, Result);
+  Result = 0;
+  Operand = 0xabababab;
+  Status = SafeUint32ToIntn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0xabababab, Result);
 
   return UNIT_TEST_PASSED;
 }
@@ -94,36 +98,38 @@ TestSafeIntnToInt32_64 (
   )
 {
   EFI_STATUS  Status;
-  INTN Operand = 0x5bababab;
-  INT32 Result = 0;
+  INTN        Operand;
+  INT32       Result;
 
   //
   // If Operand is between MIN_INT32 and  MAX_INT32 inclusive, then it's a cast
   //
-  Status = SafeIntnToInt32(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5bababab, Result);
+  Result = 0;
+  Operand = 0x5bababab;
+  Status = SafeIntnToInt32 (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5bababab, Result);
 
   Operand = (-1537977259);
-  Status = SafeIntnToInt32(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL((-1537977259), Result);
+  Status = SafeIntnToInt32 (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL ((-1537977259), Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (0x5babababefefefef);
-  Status = SafeIntnToInt32(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INT32_ERROR, Result);
+  Status = SafeIntnToInt32 (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INT32_ERROR, Result);
 
   Operand =  (-6605562033422200815);
-  Status = SafeIntnToInt32(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INT32_ERROR, Result);
+  Status = SafeIntnToInt32 (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INT32_ERROR, Result);
 
-  Status = SafeIntnToInt32(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeIntnToInt32 (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -136,31 +142,33 @@ TestSafeIntnToUint32_64 (
   )
 {
   EFI_STATUS  Status;
-  INTN Operand = 0xabababab;
-  UINT32 Result = 0;
+  INTN        Operand;
+  UINT32      Result;
 
   //
   // If Operand is between 0 and  MAX_UINT32 inclusive, then it's a cast
   //
-  Status = SafeIntnToUint32(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0xabababab, Result);
+  Result = 0;
+  Operand = 0xabababab;
+  Status = SafeIntnToUint32 (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0xabababab, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (0x5babababefefefef);
-  Status = SafeIntnToUint32(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINT32_ERROR, Result);
+  Status = SafeIntnToUint32 (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINT32_ERROR, Result);
 
   Operand =  (-6605562033422200815);
-  Status = SafeIntnToUint32(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINT32_ERROR, Result);
+  Status = SafeIntnToUint32 (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINT32_ERROR, Result);
 
-  Status = SafeIntnToUint32(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeIntnToUint32 (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -173,26 +181,28 @@ TestSafeUintnToUint32_64 (
   )
 {
   EFI_STATUS  Status;
-  UINTN Operand = 0xabababab;
-  UINT32 Result = 0;
+  UINTN       Operand;
+  UINT32      Result;
 
   //
   // If Operand is <= MAX_UINT32, then it's a cast
   //
-  Status = SafeUintnToUint32(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0xabababab, Result);
+  Result = 0;
+  Operand = 0xabababab;
+  Status = SafeUintnToUint32 (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0xabababab, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (0xababababefefefef);
-  Status = SafeUintnToUint32(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINT32_ERROR, Result);
+  Status = SafeUintnToUint32 (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINT32_ERROR, Result);
 
-  Status = SafeUintnToUint32(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUintnToUint32 (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -205,26 +215,28 @@ TestSafeUintnToIntn_64 (
   )
 {
   EFI_STATUS  Status;
-  UINTN Operand = 0x5babababefefefef;
-  INTN Result = 0;
+  UINTN       Operand;
+  INTN        Result;
 
   //
   // If Operand is <= MAX_INTN (0x7fff_ffff_ffff_ffff), then it's a cast
   //
-  Status = SafeUintnToIntn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5babababefefefef, Result);
+  Result = 0;
+  Operand = 0x5babababefefefef;
+  Status = SafeUintnToIntn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5babababefefefef, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (0xababababefefefef);
-  Status = SafeUintnToIntn(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeUintnToIntn (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
-  Status = SafeUintnToIntn(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUintnToIntn (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -237,26 +249,28 @@ TestSafeUintnToInt64_64 (
   )
 {
   EFI_STATUS  Status;
-  UINTN Operand = 0x5babababefefefef;
-  INT64 Result = 0;
+  UINTN       Operand;
+  INT64       Result;
 
   //
   // If Operand is <= MAX_INT64, then it's a cast
   //
-  Status = SafeUintnToInt64(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5babababefefefef, Result);
+  Result = 0;
+  Operand = 0x5babababefefefef;
+  Status = SafeUintnToInt64 (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5babababefefefef, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (0xababababefefefef);
-  Status = SafeUintnToInt64(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INT64_ERROR, Result);
+  Status = SafeUintnToInt64 (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INT64_ERROR, Result);
 
-  Status = SafeUintnToInt64(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUintnToInt64 (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -269,15 +283,17 @@ TestSafeInt64ToIntn_64 (
   )
 {
   EFI_STATUS  Status;
-  INT64 Operand = 0x5babababefefefef;
-  INTN Result = 0;
+  INT64       Operand;
+  INTN        Result;
 
   //
   // INTN is same as INT64 in x64, so this is just a cast
   //
-  Status = SafeInt64ToIntn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5babababefefefef, Result);
+  Result = 0;
+  Operand = 0x5babababefefefef;
+  Status = SafeInt64ToIntn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5babababefefefef, Result);
 
   return UNIT_TEST_PASSED;
 }
@@ -290,26 +306,28 @@ TestSafeInt64ToUintn_64 (
   )
 {
   EFI_STATUS  Status;
-  INT64 Operand = 0x5babababefefefef;
-  UINTN Result = 0;
+  INT64       Operand;
+  UINTN       Result;
 
   //
   // If Operand is non-negative, then it's a cast
   //
-  Status = SafeInt64ToUintn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5babababefefefef, Result);
+  Result = 0;
+  Operand = 0x5babababefefefef;
+  Status = SafeInt64ToUintn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5babababefefefef, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand =  (-6605562033422200815);
-  Status = SafeInt64ToUintn(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINTN_ERROR, Result);
+  Status = SafeInt64ToUintn (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINTN_ERROR, Result);
 
-  Status = SafeInt64ToUintn(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeInt64ToUintn (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -322,26 +340,28 @@ TestSafeUint64ToIntn_64 (
   )
 {
   EFI_STATUS  Status;
-  UINT64 Operand = 0x5babababefefefef;
-  INTN Result = 0;
+  UINT64      Operand;
+  INTN        Result;
 
   //
   // If Operand is <= MAX_INTN (0x7fff_ffff_ffff_ffff), then it's a cast
   //
-  Status = SafeUint64ToIntn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x5babababefefefef, Result);
+  Result = 0;
+  Operand = 0x5babababefefefef;
+  Status = SafeUint64ToIntn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x5babababefefefef, Result);
 
   //
   // Otherwise should result in an error status
   //
   Operand = (0xababababefefefef);
-  Status = SafeUint64ToIntn(Operand, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeUint64ToIntn (Operand, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
-  Status = SafeUint64ToIntn(Operand, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUint64ToIntn (Operand, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -354,15 +374,17 @@ TestSafeUint64ToUintn_64 (
   )
 {
   EFI_STATUS  Status;
-  UINT64 Operand = 0xababababefefefef;
-  UINTN Result = 0;
+  UINT64      Operand;
+  UINTN       Result;
 
   //
   // UINTN is same as UINT64 in x64, so this is just a cast
   //
-  Status = SafeUint64ToUintn(Operand, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0xababababefefefef, Result);
+  Result = 0;
+  Operand = 0xababababefefefef;
+  Status = SafeUint64ToUintn (Operand, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0xababababefefefef, Result);
 
   return UNIT_TEST_PASSED;
 }
@@ -375,28 +397,31 @@ TestSafeUintnAdd_64 (
   )
 {
   EFI_STATUS  Status;
-  UINTN Augend = 0x3a3a3a3a12121212;
-  UINTN Addend = 0x3a3a3a3a12121212;
-  UINTN Result = 0;
+  UINTN       Augend;
+  UINTN       Addend;
+  UINTN       Result;
 
   //
   // If the result of addition doesn't overflow MAX_UINTN, then it's addition
   //
-  Status = SafeUintnAdd(Augend, Addend, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x7474747424242424, Result);
+  Result = 0;
+  Augend = 0x3a3a3a3a12121212;
+  Addend = 0x3a3a3a3a12121212;
+  Status = SafeUintnAdd (Augend, Addend, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x7474747424242424, Result);
 
   //
   // Otherwise should result in an error status
   //
   Augend = 0xababababefefefef;
   Addend = 0xbcbcbcbcdededede;
-  Status = SafeUintnAdd(Augend, Addend, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINTN_ERROR, Result);
+  Status = SafeUintnAdd (Augend, Addend, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINTN_ERROR, Result);
 
-  Status = SafeUintnAdd(Augend, Addend, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUintnAdd (Augend, Addend, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -409,41 +434,44 @@ TestSafeIntnAdd_64 (
   )
 {
   EFI_STATUS  Status;
-  INTN Augend = 0x3a3a3a3a3a3a3a3a;
-  INTN Addend = 0x3a3a3a3a3a3a3a3a;
-  INTN Result = 0;
+  INTN        Augend;
+  INTN        Addend;
+  INTN        Result;
 
   //
   // If the result of addition doesn't overflow MAX_INTN
   // and doesn't underflow MIN_INTN, then it's addition
   //
-  Status = SafeIntnAdd(Augend, Addend, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x7474747474747474, Result);
+  Result = 0;
+  Augend = 0x3a3a3a3a3a3a3a3a;
+  Addend = 0x3a3a3a3a3a3a3a3a;
+  Status = SafeIntnAdd (Augend, Addend, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x7474747474747474, Result);
 
   Augend = (-4195730024608447034);
   Addend = (-4195730024608447034);
-  Status = SafeIntnAdd(Augend, Addend, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL((-8391460049216894068), Result);
+  Status = SafeIntnAdd (Augend, Addend, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL ((-8391460049216894068), Result);
 
   //
   // Otherwise should result in an error status
   //
   Augend = 0x5a5a5a5a5a5a5a5a;
   Addend = 0x5a5a5a5a5a5a5a5a;
-  Status = SafeIntnAdd(Augend, Addend, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeIntnAdd (Augend, Addend, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
   Augend = (-6510615555426900570);
   Addend = (-6510615555426900570);
-  Status = SafeIntnAdd(Augend, Addend, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeIntnAdd (Augend, Addend, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
-  Status = SafeIntnAdd(Augend, Addend, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeIntnAdd (Augend, Addend, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -456,28 +484,31 @@ TestSafeUintnSub_64 (
   )
 {
   EFI_STATUS  Status;
-  UINTN Minuend = 0x5a5a5a5a5a5a5a5a;
-  UINTN Subtrahend = 0x3b3b3b3b3b3b3b3b;
-  UINTN Result = 0;
+  UINTN       Minuend;
+  UINTN       Subtrahend;
+  UINTN       Result;
 
   //
   // If Minuend >= Subtrahend, then it's subtraction
   //
-  Status = SafeUintnSub(Minuend, Subtrahend, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x1f1f1f1f1f1f1f1f, Result);
+  Result = 0;
+  Minuend = 0x5a5a5a5a5a5a5a5a;
+  Subtrahend = 0x3b3b3b3b3b3b3b3b;
+  Status = SafeUintnSub (Minuend, Subtrahend, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x1f1f1f1f1f1f1f1f, Result);
 
   //
   // Otherwise should result in an error status
   //
   Minuend = 0x5a5a5a5a5a5a5a5a;
   Subtrahend = 0x6d6d6d6d6d6d6d6d;
-  Status = SafeUintnSub(Minuend, Subtrahend, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINTN_ERROR, Result);
+  Status = SafeUintnSub (Minuend, Subtrahend, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINTN_ERROR, Result);
 
-  Status = SafeUintnSub(Minuend, Subtrahend, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUintnSub (Minuend, Subtrahend, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -490,41 +521,44 @@ TestSafeIntnSub_64 (
   )
 {
   EFI_STATUS  Status;
-  INTN Minuend = 0x5a5a5a5a5a5a5a5a;
-  INTN Subtrahend = 0x3a3a3a3a3a3a3a3a;
-  INTN Result = 0;
+  INTN        Minuend;
+  INTN        Subtrahend;
+  INTN        Result;
 
   //
   // If the result of subtractions doesn't overflow MAX_INTN or
   // underflow MIN_INTN, then it's subtraction
   //
-  Status = SafeIntnSub(Minuend, Subtrahend, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x2020202020202020, Result);
+  Minuend = 0x5a5a5a5a5a5a5a5a;
+  Subtrahend = 0x3a3a3a3a3a3a3a3a;
+  Result = 0;
+  Status = SafeIntnSub (Minuend, Subtrahend, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x2020202020202020, Result);
 
   Minuend = 0x3a3a3a3a3a3a3a3a;
   Subtrahend = 0x5a5a5a5a5a5a5a5a;
-  Status = SafeIntnSub(Minuend, Subtrahend, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL((-2314885530818453536), Result);
+  Status = SafeIntnSub (Minuend, Subtrahend, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL ((-2314885530818453536), Result);
 
   //
   // Otherwise should result in an error status
   //
   Minuend = (-8825501086245354106);
   Subtrahend = 8825501086245354106;
-  Status = SafeIntnSub(Minuend, Subtrahend, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeIntnSub (Minuend, Subtrahend, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
   Minuend = (8825501086245354106);
   Subtrahend = (-8825501086245354106);
-  Status = SafeIntnSub(Minuend, Subtrahend, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeIntnSub (Minuend, Subtrahend, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
-  Status = SafeIntnSub(Minuend, Subtrahend, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeIntnSub (Minuend, Subtrahend, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -537,28 +571,31 @@ TestSafeUintnMult_64 (
   )
 {
   EFI_STATUS  Status;
-  UINTN Multiplicand = 0x123456789a;
-  UINTN Multiplier = 0x1234567;
-  UINTN Result = 0;
+  UINTN       Multiplicand;
+  UINTN       Multiplier;
+  UINTN       Result;
 
   //
   // If the result of multiplication doesn't overflow MAX_UINTN, it will succeed
   //
-  Status = SafeUintnMult(Multiplicand, Multiplier, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x14b66db9745a07f6, Result);
+  Result = 0;
+  Multiplicand = 0x123456789a;
+  Multiplier = 0x1234567;
+  Status = SafeUintnMult (Multiplicand, Multiplier, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x14b66db9745a07f6, Result);
 
   //
   // Otherwise should result in an error status
   //
   Multiplicand = 0x123456789a;
   Multiplier = 0x12345678;
-  Status = SafeUintnMult(Multiplicand, Multiplier, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(UINTN_ERROR, Result);
+  Status = SafeUintnMult (Multiplicand, Multiplier, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (UINTN_ERROR, Result);
 
-  Status = SafeUintnMult(Multiplicand, Multiplier, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeUintnMult (Multiplicand, Multiplier, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
@@ -571,29 +608,32 @@ TestSafeIntnMult_64 (
   )
 {
   EFI_STATUS  Status;
-  INTN Multiplicand = 0x123456789;
-  INTN Multiplier = 0x6789abcd;
-  INTN Result = 0;
+  INTN        Multiplicand;
+  INTN        Multiplier;
+  INTN        Result;
 
   //
   // If the result of multiplication doesn't overflow MAX_INTN and doesn't
   // underflow MIN_UINTN, it will succeed
   //
-  Status = SafeIntnMult(Multiplicand, Multiplier, &Result);
-  UT_ASSERT_NOT_EFI_ERROR(Status);
-  UT_ASSERT_EQUAL(0x75cd9045220d6bb5, Result);
+  Result = 0;
+  Multiplicand = 0x123456789;
+  Multiplier = 0x6789abcd;
+  Status = SafeIntnMult (Multiplicand, Multiplier, &Result);
+  UT_ASSERT_NOT_EFI_ERROR (Status);
+  UT_ASSERT_EQUAL (0x75cd9045220d6bb5, Result);
 
   //
   // Otherwise should result in an error status
   //
   Multiplicand = 0x123456789;
   Multiplier = 0xa789abcd;
-  Status = SafeIntnMult(Multiplicand, Multiplier, &Result);
-  UT_ASSERT_EQUAL(RETURN_BUFFER_TOO_SMALL, Status);
-  UT_ASSERT_EQUAL(INTN_ERROR, Result);
+  Status = SafeIntnMult (Multiplicand, Multiplier, &Result);
+  UT_ASSERT_EQUAL (RETURN_BUFFER_TOO_SMALL, Status);
+  UT_ASSERT_EQUAL (INTN_ERROR, Result);
 
-  Status = SafeIntnMult(Multiplicand, Multiplier, NULL);
-  UT_ASSERT_EQUAL(RETURN_INVALID_PARAMETER, Status);
+  Status = SafeIntnMult (Multiplicand, Multiplier, NULL);
+  UT_ASSERT_EQUAL (RETURN_INVALID_PARAMETER, Status);
 
   return UNIT_TEST_PASSED;
 }
