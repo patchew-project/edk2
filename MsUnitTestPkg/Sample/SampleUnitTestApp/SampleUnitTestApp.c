@@ -62,7 +62,7 @@ MakeSureThatPointerIsNull (
   IN UNIT_TEST_CONTEXT           Context
   )
 {
-  UT_ASSERT_EQUAL(mSampleGlobalTestPointer,          NULL);
+  UT_ASSERT_EQUAL ((UINTN)mSampleGlobalTestPointer, (UINTN)NULL);
   return UNIT_TEST_PASSED;
 } // ListsShouldHaveTheSameDescriptorSize()
 
@@ -131,7 +131,7 @@ GlobalPointerShouldBeChangeable (
   )
 {
   mSampleGlobalTestPointer = (VOID*)-1;
-  UT_ASSERT_EQUAL(mSampleGlobalTestPointer, ((VOID*)-1));
+  UT_ASSERT_EQUAL ((UINTN)mSampleGlobalTestPointer, (UINTN)((VOID *)-1));
   return UNIT_TEST_PASSED;
 } // GlobalPointerShouldBeChangeable()
 

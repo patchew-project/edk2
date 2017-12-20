@@ -278,7 +278,7 @@ InitUnitTestFramework (
   // If there is a persisted context, load it now.
   if (DoesCacheExist( NewFramework ))
   {
-    Status = LoadUnitTestCache( NewFramework, &(UNIT_TEST_SAVE_HEADER*)(NewFramework->SavedState) );
+    Status = LoadUnitTestCache( NewFramework, (UNIT_TEST_SAVE_HEADER **)(&(NewFramework->SavedState)));
     if (EFI_ERROR( Status ))
     {
       // Don't actually report it as an error, but emit a warning.
