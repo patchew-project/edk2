@@ -282,7 +282,7 @@ InitUnitTestFramework (
     if (EFI_ERROR( Status ))
     {
       // Don't actually report it as an error, but emit a warning.
-      DEBUG(( DEBUG_ERROR, __FUNCTION__" - Cache was detected, but failed to load.\n" ));
+      DEBUG(( DEBUG_ERROR, "%a - Cache was detected, but failed to load.\n", __FUNCTION__));
       Status = EFI_SUCCESS;
     }
   }
@@ -864,7 +864,7 @@ SaveFrameworkState (
   Status = SaveUnitTestCache( FrameworkHandle, Header );
   if (EFI_ERROR( Status ))
   {
-    DEBUG(( DEBUG_ERROR, __FUNCTION__" - Could not save state! %r\n", Status ));
+    DEBUG(( DEBUG_ERROR, "%a - Could not save state! %r\n", __FUNCTION__, Status ));
     Status = EFI_DEVICE_ERROR;
   }
 
@@ -908,7 +908,7 @@ SaveFrameworkStateAndQuit (
     //
     // Quit
     gBS->Exit( gImageHandle, EFI_SUCCESS, 0, NULL );
-    DEBUG(( DEBUG_ERROR, __FUNCTION__" - Unit test failed to quit! Framework can no longer be used!\n" ));
+    DEBUG(( DEBUG_ERROR, "%a - Unit test failed to quit! Framework can no longer be used!\n", __FUNCTION__ ));
 
     //
     // We REALLY shouldn't be here.
@@ -966,7 +966,7 @@ SaveFrameworkStateAndReboot (
     //
     // Reset
     gRT->ResetSystem( ResetType, EFI_SUCCESS, 0, NULL );
-    DEBUG(( DEBUG_ERROR, __FUNCTION__" - Unit test failed to quit! Framework can no longer be used!\n" ));
+    DEBUG(( DEBUG_ERROR, "%a - Unit test failed to quit! Framework can no longer be used!\n", __FUNCTION__));
 
     //
     // We REALLY shouldn't be here.
