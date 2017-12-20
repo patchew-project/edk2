@@ -46,7 +46,7 @@ SetUsbBootNext (
   UINTN       OptionBufferSize = 0, VariableSize = 0;
   BOOLEAN     IsUsbOptionFound = FALSE;
 
-  StrCpy(BootOptionName, L"Boot000");
+  StrCpyS(BootOptionName, sizeof (BootOptionName) / sizeof (BootOptionName[0]), L"Boot000");
   BootOptionIndexChar = BootOptionName + StrLen(BootOptionName);
 
   //
@@ -56,7 +56,7 @@ SetUsbBootNext (
   {
     // Construct the BootOption name for this boot option.
     // Do this by altering the last character of the name.
-    UnicodeValueToString(BootOptionIndexChar, 0, (INT64)BootOptionIndex, 1);
+    UnicodeValueToStringS(BootOptionIndexChar, sizeof (BootOptionName) / sizeof (BootOptionName[0]) - StrLen(BootOptionName), 0, (INT64)BootOptionIndex, 1);
 
     // Attempt to retrieve the option.
     DEBUG(( DEBUG_VERBOSE, __FUNCTION__" - Checking for %s...\n", BootOptionName ));
