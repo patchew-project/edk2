@@ -1,28 +1,27 @@
-/**
-Implement UnitTestResultReportLib doing plain txt out to console
+/** @file
+  Implement UnitTestResultReportLib doing plain txt out to console
 
+  Copyright (c) 2016, Microsoft Corporation
 
-Copyright (c) 2016, Microsoft Corporation
+  All rights reserved.
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
+  1. Redistributions of source code must retain the above copyright notice,
+  this list of conditions and the following disclaimer.
+  2. Redistributions in binary form must reproduce the above copyright notice,
+  this list of conditions and the following disclaimer in the documentation
+  and/or other materials provided with the distribution.
 
-All rights reserved.
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-1. Redistributions of source code must retain the above copyright notice,
-this list of conditions and the following disclaimer.
-2. Redistributions in binary form must reproduce the above copyright notice,
-this list of conditions and the following disclaimer in the documentation
- and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
-ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
-IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
-BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
-LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
-OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+  ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+  IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
+  INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+  BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+  DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+  LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+  OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 **/
 
@@ -35,31 +34,27 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 
 
-struct _UNIT_TEST_STATUS_STRING
-{
+struct _UNIT_TEST_STATUS_STRING {
   UNIT_TEST_STATUS    Status;
   CHAR8               *String;
 };
 
-struct _UNIT_TEST_STATUS_STRING   mStatusStrings[] =
-{
+struct _UNIT_TEST_STATUS_STRING   mStatusStrings[] = {
   { UNIT_TEST_PASSED,               "PASSED" },
   { UNIT_TEST_ERROR_PREREQ_NOT_MET, "NOT RUN - PREREQ FAILED" },
   { UNIT_TEST_ERROR_TEST_FAILED,    "FAILED" },
   { UNIT_TEST_RUNNING,              "RUNNING" },
   { UNIT_TEST_PENDING,              "PENDING" }
 };
-UINTN                             mStatusStringsCount = sizeof( mStatusStrings ) / sizeof( mStatusStrings[0] );
+UINTN                             mStatusStringsCount = sizeof (mStatusStrings) / sizeof (mStatusStrings[0]);
 CHAR8 *mUnknownStatus = "**UNKNOWN**";
 
-struct _UNIT_TEST_FAILURE_TYPE_STRING
-{
+struct _UNIT_TEST_FAILURE_TYPE_STRING {
   FAILURE_TYPE  Type;
   CHAR8         *String;
 };
 
-struct _UNIT_TEST_FAILURE_TYPE_STRING mFailureTypeStrings[]=
-{
+struct _UNIT_TEST_FAILURE_TYPE_STRING mFailureTypeStrings[] = {
   { FAILURETYPE_NOFAILURE, "NO FAILURE"},
   { FAILURETYPE_OTHER, "OTHER FAILURE" },
   { FAILURETYPE_ASSERTTRUE, "ASSERT_TRUE FAILURE" },
@@ -68,9 +63,9 @@ struct _UNIT_TEST_FAILURE_TYPE_STRING mFailureTypeStrings[]=
   { FAILURETYPE_ASSERTNOTEQUAL, "ASSERT_NOTEQUAL FAILURE"},
   { FAILURETYPE_ASSERTNOTEFIERROR, "ASSERT_NOTEFIERROR FAILURE"},
   { FAILURETYPE_ASSERTSTATUSEQUAL, "ASSERT_STATUSEQUAL FAILURE"},
-  { FAILURETYPE_ASSERTNOTNULL , "ASSERT_NOTNULL FAILURE" }
+  { FAILURETYPE_ASSERTNOTNULL, "ASSERT_NOTNULL FAILURE" }
 };
-UINTN mFailureTypeStringsCount = sizeof(mFailureTypeStrings) / sizeof(mFailureTypeStrings[0]);
+UINTN mFailureTypeStringsCount = sizeof (mFailureTypeStrings) / sizeof (mFailureTypeStrings[0]);
 CHAR8 *mUnknownFailureType = "*UNKNOWN* Failure";
 
 //=============================================================================
@@ -80,19 +75,17 @@ CHAR8 *mUnknownFailureType = "*UNKNOWN* Failure";
 //=============================================================================
 
 STATIC
-CONST CHAR8*
+CONST CHAR8 *
 GetStringForUnitTestStatus (
-  IN UNIT_TEST_STATUS   Status
+  IN UNIT_TEST_STATUS  Status
   )
 {
-  UINTN   Index;
-  CHAR8   *Result;
+  UINTN  Index;
+  CHAR8  *Result;
 
   Result = mUnknownStatus;
-  for (Index = 0; Index < mStatusStringsCount; Index++)
-  {
-    if (mStatusStrings[Index].Status == Status)
-    {
+  for (Index = 0; Index < mStatusStringsCount; Index++) {
+    if (mStatusStrings[Index].Status == Status) {
       Result = mStatusStrings[Index].String;
       break;
     }
@@ -102,39 +95,36 @@ GetStringForUnitTestStatus (
 }
 
 STATIC
-CONST CHAR8*
-GetStringForFailureType(
-  IN FAILURE_TYPE   Failure
-)
+CONST CHAR8 *
+GetStringForFailureType (
+  IN FAILURE_TYPE  Failure
+  )
 {
-  UINTN   Index;
-  CHAR8   *Result;
+  UINTN  Index;
+  CHAR8  *Result;
 
   Result = mUnknownFailureType;
-  for (Index = 0; Index < mFailureTypeStringsCount; Index++)
-  {
-    if (mFailureTypeStrings[Index].Type == Failure)
-    {
+  for (Index = 0; Index < mFailureTypeStringsCount; Index++) {
+    if (mFailureTypeStrings[Index].Type == Failure) {
       Result = mFailureTypeStrings[Index].String;
       break;
     }
   }
-  if (Result == mUnknownFailureType)
-  {
-    DEBUG((DEBUG_INFO, "%a Failure Type does not have string defined 0x%X\n", __FUNCTION__ , (UINT32)Failure));
+  if (Result == mUnknownFailureType) {
+    DEBUG ((DEBUG_INFO, "%a Failure Type does not have string defined 0x%X\n", __FUNCTION__, (UINT32)Failure));
   }
 
   return Result;
 }
 
 /*
-Method to print the Unit Test run results
+  Method to print the Unit Test run results
 
-@retval Success
+  @retval  Success
 */
 EFI_STATUS
 EFIAPI
-OutputUnitTestFrameworkReport(
+OutputUnitTestFrameworkReport (
   IN UNIT_TEST_FRAMEWORK  *Framework
   )
 {
@@ -143,87 +133,89 @@ OutputUnitTestFrameworkReport(
   INTN NotRun = 0;
   UNIT_TEST_SUITE_LIST_ENTRY *Suite = NULL;
 
-  if (Framework == NULL)
-  {
+  if (Framework == NULL) {
     return EFI_INVALID_PARAMETER;
   }
 
-  Print( L"---------------------------------------------------------\n" );
-  Print( L"------------- UNIT TEST FRAMEWORK RESULTS ---------------\n" );
-  Print( L"---------------------------------------------------------\n" );
+  Print (L"---------------------------------------------------------\n");
+  Print (L"------------- UNIT TEST FRAMEWORK RESULTS ---------------\n");
+  Print (L"---------------------------------------------------------\n");
 
   //print the version and time
 
   //
   // Iterate all suites
   //
-  for (Suite = (UNIT_TEST_SUITE_LIST_ENTRY*)GetFirstNode(&Framework->TestSuiteList);
-    (LIST_ENTRY*)Suite != &Framework->TestSuiteList;
-    Suite = (UNIT_TEST_SUITE_LIST_ENTRY*)GetNextNode(&Framework->TestSuiteList, (LIST_ENTRY*)Suite))
-  {
+  for (Suite = (UNIT_TEST_SUITE_LIST_ENTRY *)GetFirstNode (&Framework->TestSuiteList);
+       (LIST_ENTRY *)Suite != &Framework->TestSuiteList;
+       Suite = (UNIT_TEST_SUITE_LIST_ENTRY *)GetNextNode (&Framework->TestSuiteList, (LIST_ENTRY *)Suite)) {
     UNIT_TEST_LIST_ENTRY *Test = NULL;
     INTN SPassed = 0;
     INTN SFailed = 0;
     INTN SNotRun = 0;
 
-    Print( L"/////////////////////////////////////////////////////////\n" );
-    Print( L"  SUITE: %s\n", Suite->UTS.Title );
-    Print( L"   PACKAGE: %s\n", Suite->UTS.Package);
-    Print( L"/////////////////////////////////////////////////////////\n" );
+    Print (L"/////////////////////////////////////////////////////////\n");
+    Print (L"  SUITE: %s\n", Suite->UTS.Title);
+    Print (L"   PACKAGE: %s\n", Suite->UTS.Package);
+    Print (L"/////////////////////////////////////////////////////////\n");
 
     //
     // Iterate all tests within the suite
     //
-    for (Test = (UNIT_TEST_LIST_ENTRY*)GetFirstNode(&(Suite->UTS.TestCaseList));
-      (LIST_ENTRY*)Test != &(Suite->UTS.TestCaseList);
-      Test = (UNIT_TEST_LIST_ENTRY*)GetNextNode(&(Suite->UTS.TestCaseList), (LIST_ENTRY*)Test))
-    {
+    for (Test = (UNIT_TEST_LIST_ENTRY *)GetFirstNode (& (Suite->UTS.TestCaseList));
+         (LIST_ENTRY *)Test != &(Suite->UTS.TestCaseList);
+         Test = (UNIT_TEST_LIST_ENTRY *)GetNextNode (& (Suite->UTS.TestCaseList), (LIST_ENTRY *)Test)) {
 
-      Print (L"*********************************************************\n" );
+      Print (L"*********************************************************\n");
       Print (L"  CLASS NAME: %s\n", Test->UT.ClassName);
-      Print( L"  TEST:    %s\n", Test->UT.Description );
-      Print( L"  STATUS:  %a\n", GetStringForUnitTestStatus( Test->UT.Result ) );
-      Print( L"  FAILURE: %a\n", GetStringForFailureType(Test->UT.FailureType));
-      Print( L"  FAILURE MESSAGE:\n%a\n", Test->UT.FailureMessage);
+      Print (L"  TEST:    %s\n", Test->UT.Description);
+      Print (L"  STATUS:  %a\n", GetStringForUnitTestStatus (Test->UT.Result));
+      Print (L"  FAILURE: %a\n", GetStringForFailureType (Test->UT.FailureType));
+      Print (L"  FAILURE MESSAGE:\n%a\n", Test->UT.FailureMessage);
 
-      if (Test->UT.Log != NULL)
-      {
-        Print( L"  LOG:\n" );
+      if (Test->UT.Log != NULL) {
+        Print (L"  LOG:\n");
         // NOTE: This has to be done directly because all of the other
         //       "formatted" print statements have caps on the string size.
-        gST->ConOut->OutputString( gST->ConOut, Test->UT.Log );
+        gST->ConOut->OutputString (gST->ConOut, Test->UT.Log);
       }
 
-      switch (Test->UT.Result)
-      {
-        case UNIT_TEST_PASSED:                SPassed++; break;
-        case UNIT_TEST_ERROR_TEST_FAILED:     SFailed++; break;
-        case UNIT_TEST_PENDING:               // Fall through...
-        case UNIT_TEST_RUNNING:               // Fall through...
-        case UNIT_TEST_ERROR_PREREQ_NOT_MET:  SNotRun++; break;
-        default: break;
+      switch (Test->UT.Result) {
+      case UNIT_TEST_PASSED:
+        SPassed++;
+        break;
+      case UNIT_TEST_ERROR_TEST_FAILED:
+        SFailed++;
+        break;
+      case UNIT_TEST_PENDING:               // Fall through...
+      case UNIT_TEST_RUNNING:               // Fall through...
+      case UNIT_TEST_ERROR_PREREQ_NOT_MET:
+        SNotRun++;
+        break;
+      default:
+        break;
       }
-      Print( L"**********************************************************\n" );
+      Print (L"**********************************************************\n");
     } //End Test iteration
 
-    Print( L"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" );
-    Print( L"Suite Stats\n" );
-    Print( L" Passed:  %d  (%d%%)\n", SPassed, (SPassed * 100)/(SPassed+SFailed+SNotRun) );
-    Print( L" Failed:  %d  (%d%%)\n", SFailed, (SFailed * 100) / (SPassed + SFailed + SNotRun) );
-    Print( L" Not Run: %d  (%d%%)\n", SNotRun, (SNotRun * 100) / (SPassed + SFailed + SNotRun) );
-    Print( L"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n" );
+    Print (L"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
+    Print (L"Suite Stats\n");
+    Print (L" Passed:  %d  (%d%%)\n", SPassed, (SPassed * 100) / (SPassed + SFailed + SNotRun));
+    Print (L" Failed:  %d  (%d%%)\n", SFailed, (SFailed * 100) / (SPassed + SFailed + SNotRun));
+    Print (L" Not Run: %d  (%d%%)\n", SNotRun, (SNotRun * 100) / (SPassed + SFailed + SNotRun));
+    Print (L"+++++++++++++++++++++++++++++++++++++++++++++++++++++++++\n");
 
     Passed += SPassed;  //add to global counters
     Failed += SFailed;  //add to global counters
     NotRun += SNotRun;  //add to global coutners
   }//End Suite iteration
 
-  Print( L"=========================================================\n" );
-  Print( L"Total Stats\n" );
-  Print( L" Passed:  %d  (%d%%)\n", Passed, (Passed * 100) / (Passed + Failed + NotRun) );
-  Print( L" Failed:  %d  (%d%%)\n", Failed, (Failed * 100) / (Passed + Failed + NotRun) );
-  Print( L" Not Run: %d  (%d%%)\n", NotRun, (NotRun * 100) / (Passed + Failed + NotRun) );
-  Print( L"=========================================================\n" );
+  Print (L"=========================================================\n");
+  Print (L"Total Stats\n");
+  Print (L" Passed:  %d  (%d%%)\n", Passed, (Passed * 100) / (Passed + Failed + NotRun));
+  Print (L" Failed:  %d  (%d%%)\n", Failed, (Failed * 100) / (Passed + Failed + NotRun));
+  Print (L" Not Run: %d  (%d%%)\n", NotRun, (NotRun * 100) / (Passed + Failed + NotRun));
+  Print (L"=========================================================\n");
 
   return EFI_SUCCESS;
 }

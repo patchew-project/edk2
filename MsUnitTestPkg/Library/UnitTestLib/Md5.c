@@ -1,14 +1,14 @@
 /** @file
   Implementation of MD5 algorithm.
 
-Copyright (c) 2004 - 2008, Intel Corporation. All rights reserved.<BR>
-This program and the accompanying materials
-are licensed and made available under the terms and conditions of the BSD License
-which accompanies this distribution.  The full text of the license may be found at
-http://opensource.org/licenses/bsd-license.php
+  Copyright (c) 2004 - 2008, Intel Corporation. All rights reserved.<BR>
+  This program and the accompanying materials
+  are licensed and made available under the terms and conditions of the BSD License
+  which accompanies this distribution.  The full text of the license may be found at
+  http://opensource.org/licenses/bsd-license.php
 
-THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
-WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 
 **/
 
@@ -27,7 +27,7 @@ CONST UINT32  Md5_Data[][2] = {
 CONST UINT32  Md5_S[][4] = {
   { 7, 22, 17, 12 },
   { 5, 20, 14, 9 },
-  { 4, 23, 16 ,11 },
+  { 4, 23, 16, 11 },
   { 6, 21, 15, 10 },
 };
 
@@ -50,8 +50,7 @@ CONST UINT32  Md5_T[] = {
   0xF7537E82, 0xBD3AF235, 0x2AD7D2BB, 0xEB86D391
 };
 
-CONST UINT8 Md5HashPadding[] =
-{
+CONST UINT8 Md5HashPadding[] = {
   0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
   0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -73,7 +72,7 @@ CONST UINT8 Md5HashPadding[] =
 //
 // ROTATE_LEFT rotates x left n bits.
 //
-#define ROTATE_LEFT(x, n) (((x) << (n)) | ((x) >> (32 - (n))))
+#define ROTATE_LEFT(x, n)(((x) << (n)) | ((x) >> (32 - (n))))
 
 #define SA            MedStates[Index2 & 3]
 #define SB            MedStates[(Index2 + 1) & 3]
@@ -83,18 +82,18 @@ CONST UINT8 Md5HashPadding[] =
 /**
   Tf1 is one basic MD5 transform function.
 
-  @param[in]  A      A  32-bit quantity.
-  @param[in]  B      A  32-bit quantity.
-  @param[in]  C      A  32-bit quantity.
+  @param[in]  A  A 32-bit quantity.
+  @param[in]  B  A 32-bit quantity.
+  @param[in]  C  A 32-bit quantity.
 
-  @return             Output was produced as a 32-bit quantity based on the
-                      three 32-bit input quantity.
+  @return  Output was produced as a 32-bit quantity based on the
+           three 32-bit input quantity.
 **/
 UINT32
 Tf1 (
-  IN UINT32 A,
-  IN UINT32 B,
-  IN UINT32 C
+  IN UINT32  A,
+  IN UINT32  B,
+  IN UINT32  C
   )
 {
   return (A & B) | (~A & C);
@@ -103,18 +102,18 @@ Tf1 (
 /**
   Tf2 is one basic MD5 transform function.
 
-  @param[in]  A      A  32-bit quantity.
-  @param[in]  B      A  32-bit quantity.
-  @param[in]  C      A  32-bit quantity.
+  @param[in]  A  A 32-bit quantity.
+  @param[in]  B  A 32-bit quantity.
+  @param[in]  C  A 32-bit quantity.
 
-  @return             Output was produced as a 32-bit quantity based on the
-                      three 32-bit input quantity.
+  @return  Output was produced as a 32-bit quantity based on the
+           three 32-bit input quantity.
 **/
 UINT32
 Tf2 (
-  IN UINT32 A,
-  IN UINT32 B,
-  IN UINT32 C
+  IN UINT32  A,
+  IN UINT32  B,
+  IN UINT32  C
   )
 {
   return (A & C) | (B & ~C);
@@ -123,18 +122,18 @@ Tf2 (
 /**
   Tf3 is one basic MD5 transform function.
 
-  @param[in]  A      A  32-bit quantity.
-  @param[in]  B      A  32-bit quantity.
-  @param[in]  C      A  32-bit quantity.
+  @param[in]  A  A 32-bit quantity.
+  @param[in]  B  A 32-bit quantity.
+  @param[in]  C  A 32-bit quantity.
 
-  @return             Output was produced as a 32-bit quantity based on the
-                      three 32-bit input quantity.
+  @return  Output was produced as a 32-bit quantity based on the
+           three 32-bit input quantity.
 **/
 UINT32
 Tf3 (
-  IN UINT32 A,
-  IN UINT32 B,
-  IN UINT32 C
+  IN UINT32  A,
+  IN UINT32  B,
+  IN UINT32  C
   )
 {
   return A ^ B ^ C;
@@ -143,18 +142,18 @@ Tf3 (
 /**
   Tf4 is one basic MD5 transform function.
 
-  @param[in]  A      A  32-bit quantity.
-  @param[in]  B      A  32-bit quantity.
-  @param[in]  C      A  32-bit quantity.
+  @param[in]  A  A 32-bit quantity.
+  @param[in]  B  A 32-bit quantity.
+  @param[in]  C  A 32-bit quantity.
 
-  @return             Output was produced as a 32-bit quantity based on the
-                      three 32-bit input quantity.
+  @return  Output was produced as a 32-bit quantity based on the
+           three 32-bit input quantity.
 **/
 UINT32
 Tf4 (
-  IN UINT32 A,
-  IN UINT32 B,
-  IN UINT32 C
+  IN UINT32  A,
+  IN UINT32  B,
+  IN UINT32  C
   )
 {
   return B ^ (A | ~C);
@@ -162,7 +161,7 @@ Tf4 (
 
 typedef
 UINT32
-(*MD5_TRANSFORM_FUNC) (
+(*MD5_TRANSFORM_FUNC)(
   IN UINT32  A,
   IN UINT32  B,
   IN UINT32  C
@@ -203,7 +202,7 @@ MD5Transform (
   for (Index1 = 0; Index1 < 4; Index1++) {
     IndexD = Md5_Data[Index1][0];
     for (Index2 = 16; Index2 > 0; Index2--) {
-      SA += (*Md5_F[Index1]) (SB, SC, SD) + Data[IndexD] + Md5_T[IndexT];
+      SA += (*Md5_F[Index1])(SB, SC, SD) + Data[IndexD] + Md5_T[IndexT];
       SA  = ROTATE_LEFT (SA, Md5_S[Index1][Index2 & 3]);
       SA += SB;
 
@@ -227,19 +226,19 @@ MD5Transform (
   All of Md5 code generated for the sequential 64-bytes data segaments are be
   accumulated in MD5Final() function.
 
-  @param[in, out]  Md5Ctx  The data structure of storing the original data
-                           segment and the final result.
-  @param[in]       Data    The data wanted to be transformed.
-  @param[in]       DataLen The length of data.
+  @param[in, out]  Md5Ctx   The data structure of storing the original data
+                            segment and the final result.
+  @param[in]       Data     The data wanted to be transformed.
+  @param[in]       DataLen  The length of data.
 **/
 VOID
 MD5UpdateBlock (
-  IN OUT MD5_CTX  *Md5Ctx,
-  IN CONST UINT8  *Data,
-  IN       UINTN  DataLen
+  IN OUT MD5_CTX      *Md5Ctx,
+  IN     CONST UINT8  *Data,
+  IN     UINTN        DataLen
   )
 {
-  UINTN Limit;
+  UINTN  Limit;
 
   for (Limit = 64 - Md5Ctx->Count; DataLen >= 64 - Md5Ctx->Count; Limit = 64) {
     CopyMem (Md5Ctx->M + Md5Ctx->Count, (VOID *)Data, Limit);
@@ -257,9 +256,9 @@ MD5UpdateBlock (
 /**
   Initialize four 32-bits chaining variables and use them to do the Md5 transform.
 
-  @param[out]  Md5Ctx The data structure of Md5.
+  @param[out]  Md5Ctx  The data structure of Md5.
 
-  @retval EFI_SUCCESS Initialization is ok.
+  @retval  EFI_SUCCESS  Initialization is ok.
 **/
 EFI_STATUS
 MD5Init (
@@ -282,19 +281,19 @@ MD5Init (
 /**
   the external interface of Md5 algorithm
 
-  @param[in, out]  Md5Ctx  The data structure of storing the original data
-                           segment and the final result.
-  @param[in]       Data    The data wanted to be transformed.
-  @param[in]       DataLen The length of data.
+  @param[in, out]  Md5Ctx   The data structure of storing the original data
+                            segment and the final result.
+  @param[in]       Data     The data wanted to be transformed.
+  @param[in]       DataLen  The length of data.
 
-  @retval EFI_SUCCESS The transform is ok.
-  @retval Others      Other errors as indicated.
+  @retval  EFI_SUCCESS  The transform is ok.
+  @retval  Others       Other errors as indicated.
 **/
 EFI_STATUS
 MD5Update (
-  IN  OUT MD5_CTX  *Md5Ctx,
-  IN  VOID         *Data,
-  IN  UINTN        DataLen
+  IN OUT MD5_CTX  *Md5Ctx,
+  IN     VOID     *Data,
+  IN     UINTN    DataLen
   )
 {
   if (EFI_ERROR (Md5Ctx->Status)) {
@@ -310,20 +309,20 @@ MD5Update (
   Accumulate the MD5 value of every data segment and generate the finial
   result according to MD5 algorithm.
 
-  @param[in, out]   Md5Ctx  The data structure of storing the original data
+  @param[in, out]  Md5Ctx   The data structure of storing the original data
                             segment and the final result.
   @param[out]      HashVal  The final 128-bits output.
 
-  @retval EFI_SUCCESS  The transform is ok.
-  @retval Others       Other errors as indicated.
+  @retval  EFI_SUCCESS  The transform is ok.
+  @retval  Others       Other errors as indicated.
 **/
 EFI_STATUS
 MD5Final (
-  IN  OUT MD5_CTX  *Md5Ctx,
-  OUT UINT8        *HashVal
+  IN OUT MD5_CTX  *Md5Ctx,
+  OUT    UINT8    *HashVal
   )
 {
-  UINTN PadLength;
+  UINTN  PadLength;
 
   if (Md5Ctx->Status == EFI_ALREADY_STARTED) {
     //
