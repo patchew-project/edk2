@@ -39,19 +39,6 @@ ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ///================================================================================================
 ///================================================================================================
 
-
-// IMPORTANT NOTE: These macros should ONLY be used in a Unit Test.
-//                 They will consume the Framework Handle and update the Framework->CurrentTest.
-
-#define UT_LOG_ERROR(Format, ...)              \
-  UnitTestLog( Framework, DEBUG_ERROR, Format, __VA_ARGS__ );
-#define UT_LOG_WARNING(Format, ...)            \
-  UnitTestLog( Framework, DEBUG_WARN, Format, __VA_ARGS__ );
-#define UT_LOG_INFO(Format, ...)               \
-  UnitTestLog( Framework, DEBUG_INFO, Format, __VA_ARGS__ );
-#define UT_LOG_VERBOSE(Format, ...)            \
-  UnitTestLog( Framework, DEBUG_VERBOSE, Format, __VA_ARGS__ );
-
 VOID
 EFIAPI
 UnitTestLog (
