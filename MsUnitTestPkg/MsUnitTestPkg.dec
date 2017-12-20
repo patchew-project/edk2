@@ -1,7 +1,7 @@
-## @file  MsUnitTestPkg.dec
-#
-# This Package provides all definitions(including functions, MACROs, structures and library classes)
-# and libraries instances, which are used to support Unit Testing and Interface testing
+## @file
+# This Package provides all definitions(including functions, MACROs, structures
+# and library classes) and libraries instances, which are used to support Unit
+# Testing and Interface testing
 #
 # Copyright (c) 2016, Microsoft Corporation
 #
@@ -26,42 +26,45 @@
 # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 ##
 
-
 [Defines]
   DEC_SPECIFICATION              = 0x00010005
   PACKAGE_NAME                   = MsUnitTestPkg
   PACKAGE_GUID                   = 4A70C4A0-D72C-4D3F-9943-BE7C41C50BA3
   PACKAGE_VERSION                = 1.00
 
-
 [Includes]
   Include
 
 [LibraryClasses]
+  ## @libraryclass  Provide unit test assert helpers
+  UnitTestAssertLib|Include/Library/UnitTestAssertLib.h
 
-  ## @libraryclass Provides a unit test framework
-  #
-  UnitTestLib|Include\Library\UnitTestLib.h
+  ## @libraryclass  Provides a library function that can be customized to set
+  #                 the platform to boot from USB on the next boot.
+  UnitTestBootUsbLib|Include/Library/UnitTestBootUsbLib.h
 
-  ## @libraryclass Provide unit test assert helpers
-  #
-  UnitTestAssertLib|Include\Library\UnitTestAssertLib.h
+  ## @libraryclass  Provides a unit test framework
+  UnitTestLib|Include/Library/UnitTestLib.h
+
+  ## @libraryclass  Provides a unit test framework logging.  This allows tests
+  #                 to focus on testing logic and the library to handle unit
+  #                 test specific logging.
+  UnitTestLogLib|Include/Library/UnitTestLogLib.h
+
+  ## @libraryclass  Provides functions to save and restore unit test internal
+  #                 state, in case the test needs to pause and resume (eg. a
+  #                 reboot-based test).
+  UnitTestPersistenceLib|Include/Library/UnitTestPersistenceLib.h
+
+  ## @libraryclass  Provides a unit test result report.  This allows new result
+  #                 output formats to be easily customized.
+  UnitTestResultReportLib|Include/Library/UnitTestResultReportLib.h
 
 [Guids]
-
   ## Microsoft Unit Test Package token space guid
   #  Include/Guid/MsUnitTestPkgTokenSpace.h
   #  {833D3ABA-39B4-43A2-B930-7A34533931B3}
   gMsUnitTestPkgTokenSpaceGuid = { 0x833d3aba, 0x39b4, 0x43a2, { 0xb9, 0x30, 0x7a, 0x34, 0x53, 0x39, 0x31, 0xb3 } }
 
-[Ppis]
-
-[Protocols]
-
-[PcdsFeatureFlag]
-
-[PcdsDynamic, PcdsDynamicEx]
-
 [PcdsFixedAtBuild]
   gMsUnitTestPkgTokenSpaceGuid.UnitTestLogLevel|0xFFFFFFFF|UINT32|0x00000001
-
