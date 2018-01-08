@@ -1,0 +1,77 @@
+workspace structure:
+--------------------
+
+base directory
+    |__ edk2
+    |__ edk2-platforms
+    |__ uefi-tools
+
+Prerequisites:
+--------------
+
+Toolchain:
+# 32-bit linaro toolchain
+$ wget http://releases.linaro.org/archive/15.02/components/toolchain/binaries/arm-linux-gnueabihf/gcc-linaro-4.9-2015.02-3-x86_64_arm-linux-gnueabihf.tar.xz
+# 64-bit linaro toolchain
+$ wget http://releases.linaro.org/archive/15.02/components/toolchain/binaries/aarch64-linux-gnu/gcc-linaro-4.9-2015.02-3-x86_64_aarch64-linux-gnu.tar.xz
+
+# untar each toolchain (tar.xz file) to a separate directory
+# export the toolchain bin path
+$ export PATH=<32-bit toolchain path>/bin:<64-bit toolchain path>/bin:$PATH
+
+Before building EDK-II UEFI, prepare base tools
+$ cd edk2
+$ make -C BaseTools
+$ cd ..
+
+Building the firmware:
+----------------------
+
+$ cd <base directory>
+$ ./uefi-tools/edk2-build.sh rdk64 -b <Build mode> -D SECURE_BOOT_ENABLE=TRUE -D HTTP_BOOT_ENABLE=TRUE
+
+Built firmware (RDK_EFI.fd) can be found in Build/RDK-AARCH64/RELEASE_GCC49/FV directory
+and application (.efi files) found in OUTPUT directory from Build/RDK-AARCH64/RELEASE_GCC49/EmbeddedPkg/Application path
+
+
+Application can be tested:
+-------------------------
+1) Secure boot
+2) Disaster Recovery Image (DRI) download
+3) DRI Secure boot
+
+above applications source code path- edk2/EmbeddedPkg/Application
+
+QEMU setup:
+-----------
+$ qemu-system-aarch64 -cpu cortex-a57 -M virt -m 512M -bios RDK_EFI.fd -nographic -no-acpi -hda bootpartition.img -hdb fat:keys -drive if=none,file=rootfs.img,format=raw,id=hd0 -device virtio-blk-device,drive=hd0
+
+hdb: a directory which contains KEK.cer and PK.cer (public key) files
+
+hda: bootparititon.img
+
+$ dd if=/dev/zero bs=1M count=64 of=bootpartition.img
+$ mkfs.vfat -F 32 bootpartition.img
+$ sudo mount bootpartition.img /mnt
+#copy kernel image file (for secure boot), Rdk.conf configuration file, server.url file
+$ sudo cp <files> /mnt
+$ sudo umount /mnt
+
+Configuration file:
+
+RDK Secure boot application accepts 6 configuration
+ROOTCERT - key file to validate rootfs
+KEKCERT - KEK public Key
+PKCERT - PK public key
+URL - a text file that contains server URL where DRI image is stored
+IMAGE - kernel image file
+DTB - Device tree blob file
+
+// rdk conf file for getting  PK , KEK and kernel path in flash partitions
+Typical Rdk.conf file:
+############################################################
+KEKCERT="PciRoot(0x0)/Pci(0x3,0x0)/HD(1,MBR,0xBE1AFDFA,0x3F,0xFBFC1)/KEK.cer"
+PKCERT="PciRoot(0x0)/Pci(0x3,0x0)/HD(1,MBR,0xBE1AFDFA,0x3F,0xFBFC1)/PK.cer"
+URL="PciRoot(0x0)/Pci(0x2,0x0)/server.url"
+IMAGE="PciRoot(0x0)/Pci(0x2,0x0)/Image"
+################################################################
