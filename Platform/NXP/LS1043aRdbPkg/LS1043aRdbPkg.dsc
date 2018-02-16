@@ -42,6 +42,8 @@
   BoardLib|Platform/NXP/LS1043aRdbPkg/Library/BoardLib/BoardLib.inf
   FpgaLib|Platform/NXP/LS1043aRdbPkg/Library/FpgaLib/FpgaLib.inf
   NorFlashLib|Silicon/NXP/Library/NorFlashLib/NorFlashLib.inf
+  PciSegmentLib|Silicon/NXP/Library/PciSegmentLib/PciSegmentLib.inf
+  PciHostBridgeLib|Silicon/NXP/Library/PciHostBridgeLib/PciHostBridgeLib.inf
 
 [PcdsFixedAtBuild.common]
 
@@ -79,6 +81,13 @@
   gNxpQoriqLsTokenSpaceGuid.PcdFlashDeviceBase64|0x060000000
   gNxpQoriqLsTokenSpaceGuid.PcdFlashReservedRegionBase64|0x60300000
 
+  #
+  # PCI PCDs.
+  #
+  gNxpQoriqLsTokenSpaceGuid.PcdPciDebug|FALSE
+  gNxpQoriqLsTokenSpaceGuid.PcdPcieLutBase|0x10000
+  gNxpQoriqLsTokenSpaceGuid.PcdPcieLutDbg|0x7FC
+
 ################################################################################
 #
 # Components Section - list of all EDK II Modules needed by this Platform
@@ -98,5 +107,12 @@
   Silicon/NXP/Drivers/WatchDog/WatchDogDxe.inf
   Silicon/NXP/Drivers/I2cDxe/I2cDxe.inf
   Silicon/NXP/Drivers/NorFlashDxe/NorFlashDxe.inf
+
+  Silicon/NXP/Drivers/PciCpuIo2Dxe/PciCpuIo2Dxe.inf
+  MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf {
+    <PcdsFixedAtBuild>
+  gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x8010004F
+  }
+  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
 
  ##

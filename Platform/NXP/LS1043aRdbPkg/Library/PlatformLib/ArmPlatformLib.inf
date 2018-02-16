@@ -65,3 +65,5 @@
   gNxpQoriqLsTokenSpaceGuid.PcdDram3Size
   gNxpQoriqLsTokenSpaceGuid.PcdQspiRegionBaseAddr
   gNxpQoriqLsTokenSpaceGuid.PcdQspiRegionSize
+  gNxpQoriqLsTokenSpaceGuid.PcdRomBaseAddr
+  gNxpQoriqLsTokenSpaceGuid.PcdRomSize

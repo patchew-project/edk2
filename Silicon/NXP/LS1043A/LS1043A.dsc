@@ -64,6 +64,9 @@
   gNxpQoriqLsTokenSpaceGuid.PcdQspiRegionBaseAddr|0x40000000
   gNxpQoriqLsTokenSpaceGuid.PcdQspiRegionSize|0x20000000
   gNxpQoriqLsTokenSpaceGuid.PcdIfcBaseAddr|0x1530000
+  gNxpQoriqLsTokenSpaceGuid.PcdNumPciController|3
+  gNxpQoriqLsTokenSpaceGuid.PcdRomBaseAddr|0x00000000
+  gNxpQoriqLsTokenSpaceGuid.PcdRomSize|0x00100000
 
   #
   # Big Endian IPs
@@ -71,5 +74,6 @@
   gNxpQoriqLsTokenSpaceGuid.PcdGurBigEndian|TRUE
   gNxpQoriqLsTokenSpaceGuid.PcdWdogBigEndian|TRUE
   gNxpQoriqLsTokenSpaceGuid.PcdIfcBigEndian|TRUE
+  gNxpQoriqLsTokenSpaceGuid.PcdPciLutBigEndian|TRUE
 
 ##

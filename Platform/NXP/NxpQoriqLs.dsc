@@ -244,6 +244,8 @@
 
   gEfiMdePkgTokenSpaceGuid.PcdReportStatusCodePropertyMask|0x07
 
+  gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize|20
+
   #
   # Optional feature to help prevent EFI memory map fragments
   # Turned on and off via: PcdPrePiProduceMemoryTypeInformationHob
@@ -408,5 +410,10 @@
       NULL|ShellPkg/Library/UefiShellNetwork1CommandsLib/UefiShellNetwork1CommandsLib.inf
 !endif #$(NO_SHELL_PROFILES)
   }
+
+  #
+  # TFTP Shell Command
+  #
+  ShellPkg/DynamicCommand/TftpDynamicCommand/TftpDynamicCommand.inf
 
   ##
