@@ -38,6 +38,9 @@
   BeIoLib|Silicon/NXP/Library/BeIoLib/BeIoLib.inf
   SocLib|Silicon/NXP/Chassis/LS1043aSocLib.inf
   RealTimeClockLib|Silicon/Maxim/Library/Ds1307RtcLib/Ds1307RtcLib.inf
+  IfcLib|Silicon/NXP/Library/IfcLib/IfcLib.inf
+  BoardLib|Platform/NXP/LS1043aRdbPkg/Library/BoardLib/BoardLib.inf
+  FpgaLib|Platform/NXP/LS1043aRdbPkg/Library/FpgaLib/FpgaLib.inf
 
 [PcdsFixedAtBuild.common]
 
