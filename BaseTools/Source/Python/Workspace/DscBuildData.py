@@ -991,6 +991,8 @@ class DscBuildData(PlatformBuildClassObject):
                     NewValue = self.GetFieldValueFromComm(pcdvalue, TokenSpaceGuidCName, TokenCName, FieldName)
                     GlobalData.BuildOptionPcd[i] = (TokenSpaceGuidCName, TokenCName, FieldName,NewValue,("build command options",1))
                 else:
+                    # Replace \' to ', \\\' to \'
+                    pcdvalue = pcdvalue.replace("\\\\\\'", '\\\\\\"').replace('\\\'', '\'').replace('\\\\\\"', "\\'")
                     for key in self.DecPcds:
                         PcdItem = self.DecPcds[key]
                         if HasTokenSpace:
@@ -1002,24 +1004,21 @@ class DscBuildData(PlatformBuildClassObject):
                                     except BadExpression, Value:
                                         EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
                                                         (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
-                                    if PcdDatumType == "VOID*":
-                                        pcdvalue = 'H' + pcdvalue
+                                    pcdvalue = 'H' + pcdvalue
                                 elif pcdvalue.startswith("L'"):
                                     try:
                                         pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(True)
                                     except BadExpression, Value:
                                         EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
                                                         (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
-                                    if pcdvalue.startswith('{'):
-                                        pcdvalue = 'H' + pcdvalue
+                                    pcdvalue = 'H' + pcdvalue
                                 elif pcdvalue.startswith("'"):
                                     try:
                                         pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(True)
                                     except BadExpression, Value:
                                         EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
                                                         (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
-                                    if pcdvalue.startswith('{'):
-                                        pcdvalue = 'H' + pcdvalue
+                                    pcdvalue = 'H' + pcdvalue
                                 elif pcdvalue.startswith('L'):
                                     pcdvalue = 'L"' + pcdvalue[1:] + '"'
                                     try:
@@ -1031,8 +1030,12 @@ class DscBuildData(PlatformBuildClassObject):
                                     try:
                                         pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(True)
                                     except BadExpression, Value:
-                                        EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
-                                                        (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
+                                        try:
+                                            pcdvalue = '"' + pcdvalue + '"'
+                                            pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(True)
+                                        except BadExpression, Value:
+                                            EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
+                                                            (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
                                 NewValue = BuildOptionPcdValueFormat(TokenSpaceGuidCName, TokenCName, PcdDatumType, pcdvalue)
                                 FoundFlag = True
                         else:
@@ -1048,8 +1051,7 @@ class DscBuildData(PlatformBuildClassObject):
                                             except BadExpression, Value:
                                                 EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s", %s' %
                                                                 (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
-                                            if PcdDatumType == "VOID*":
-                                                pcdvalue = 'H' + pcdvalue
+                                            pcdvalue = 'H' + pcdvalue
                                         elif pcdvalue.startswith("L'"):
                                             try:
                                                 pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(
@@ -1057,8 +1059,7 @@ class DscBuildData(PlatformBuildClassObject):
                                             except BadExpression, Value:
                                                 EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
                                                                 (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
-                                            if pcdvalue.startswith('{'):
-                                                pcdvalue = 'H' + pcdvalue
+                                            pcdvalue = 'H' + pcdvalue
                                         elif pcdvalue.startswith("'"):
                                             try:
                                                 pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(
@@ -1066,8 +1067,7 @@ class DscBuildData(PlatformBuildClassObject):
                                             except BadExpression, Value:
                                                 EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
                                                                 (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
-                                            if pcdvalue.startswith('{'):
-                                                pcdvalue = 'H' + pcdvalue
+                                            pcdvalue = 'H' + pcdvalue
                                         elif pcdvalue.startswith('L'):
                                             pcdvalue = 'L"' + pcdvalue[1:] + '"'
                                             try:
@@ -1080,9 +1080,12 @@ class DscBuildData(PlatformBuildClassObject):
                                             try:
                                                 pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(True)
                                             except BadExpression, Value:
-                                                EdkLogger.error('Parser', FORMAT_INVALID,
-                                                                'PCD [%s.%s] Value "%s",  %s' %
-                                                                (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
+                                                try:
+                                                    pcdvalue = '"' + pcdvalue + '"'
+                                                    pcdvalue = ValueExpressionEx(pcdvalue, PcdDatumType, self._GuidDict)(True)
+                                                except BadExpression, Value:
+                                                    EdkLogger.error('Parser', FORMAT_INVALID, 'PCD [%s.%s] Value "%s",  %s' %
+                                                                    (TokenSpaceGuidCName, TokenCName, pcdvalue, Value))
                                         NewValue = BuildOptionPcdValueFormat(TokenSpaceGuidCName, TokenCName, PcdDatumType, pcdvalue)
                                         FoundFlag = True
                                     else:
