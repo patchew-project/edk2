@@ -42,6 +42,8 @@ function HelpMsg()
   echo Please note: This script must be \'sourced\' so the environment can be changed.
   echo ". $SCRIPTNAME"
   echo "source $SCRIPTNAME"
+  echo "If this script is being sourced from another script, the sourcing script"
+  echo "should have no set positional parameters unsupported by this script."
 }
 
 function SetWorkspace()
