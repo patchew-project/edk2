@@ -1,0 +1,127 @@
+/** @file
+*  Multiple APIC Description Table (MADT)
+*
+*  Copyright (c) 2018, ARM Limited. All rights reserved.
+*
+*  This program and the accompanying materials are licensed and made available
+*  under the terms and conditions of the BSD License which accompanies this
+*  distribution.  The full text of the license may be found at
+*  http://opensource.org/licenses/bsd-license.php
+*
+*  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+*  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+*
+**/
+
+#include "SgiPlatform.h"
+#include "SgiAcpiHeader.h"
+#include <Library/AcpiLib.h>
+#include <Library/ArmLib.h>
+#include <Library/PcdLib.h>
+#include <IndustryStandard/Acpi.h>
+
+/* SGI575 configuration */
+#define SGI575_CORE_COUNT                  4
+#define SGI575_CLUSTER_COUNT               2
+
+#define EFI_ACPI_6_1_GICC_STRUCTURE_INIT(GicId, AcpiCpuUid, Mpidr, Flags, PmuIrq,    \
+    GicBase, GicVBase, GicHBase, GsivId, GicRBase, Efficiency)                       \
+  {                                                                                  \
+    EFI_ACPI_6_1_GIC, sizeof (EFI_ACPI_6_1_GIC_STRUCTURE), EFI_ACPI_RESERVED_WORD,   \
+    GicId, AcpiCpuUid, Flags, 0, PmuIrq, 0, GicBase, GicVBase, GicHBase,             \
+    GsivId, GicRBase, Mpidr, Efficiency,                                             \
+    {EFI_ACPI_RESERVED_BYTE, EFI_ACPI_RESERVED_BYTE, EFI_ACPI_RESERVED_BYTE}         \
+  }
+
+#define EFI_ACPI_6_1_GIC_DISTRIBUTOR_INIT(GicDistHwId, GicDistBase, GicDistVector, GicVersion) \
+  { \
+    EFI_ACPI_6_1_GICD, sizeof (EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE), EFI_ACPI_RESERVED_WORD, \
+    GicDistHwId, GicDistBase, GicDistVector, GicVersion, \
+    {EFI_ACPI_RESERVED_BYTE, EFI_ACPI_RESERVED_BYTE, EFI_ACPI_RESERVED_BYTE} \
+  }
+
+#define EFI_ACPI_6_1_GIC_REDISTRIBUTOR_INIT(RedisRegionAddr, RedisDiscLength) \
+  { \
+    EFI_ACPI_6_1_GICR, sizeof (EFI_ACPI_6_1_GICR_STRUCTURE), 0, RedisRegionAddr, RedisDiscLength \
+  }
+
+
+//
+// Multiple APIC Description Table
+//
+  #pragma pack (1)
+
+  typedef struct {
+    EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_HEADER   Header;
+    EFI_ACPI_6_1_GIC_STRUCTURE                            GicInterfaces[SGI575_CORE_COUNT * SGI575_CLUSTER_COUNT];
+    EFI_ACPI_6_1_GIC_DISTRIBUTOR_STRUCTURE                GicDistributor;
+    EFI_ACPI_6_1_GICR_STRUCTURE                           GicRedistributor;
+    EFI_ACPI_6_1_GIC_ITS_STRUCTURE                        GicIts;
+  } EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE;
+
+  #pragma pack ()
+
+  EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE Madt = {
+    {
+      ARM_ACPI_HEADER (
+        EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_SIGNATURE,
+        EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE,
+        EFI_ACPI_6_1_MULTIPLE_APIC_DESCRIPTION_TABLE_REVISION
+      ),
+      //
+      // MADT specific fields
+      //
+      0, // LocalApicAddress
+      0, // Flags
+    },
+    {
+      // Format: EFI_ACPI_6_1_GICC_STRUCTURE_INIT(GicId, AcpiCpuUid, Mpidr, Flags, PmuIrq, GicBase, GicVBase,
+      //                                          GicHBase, GsivId, GicRBase, Efficiency)
+      // Note: The GIC Structure of the primary CPU must be the first entry (see note in 5.2.12.14 GICC Structure of
+      //       ACPI v6.1).
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-0
+          0, 0, GET_MPID(0x0, 0x0), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-1
+          0, 1, GET_MPID(0x0, 0x100), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-2
+          0, 2, GET_MPID(0x0, 0x200), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-3
+          0, 3, GET_MPID(0x0, 0x300), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-4
+          0, 4, GET_MPID(0x100, 0x00), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-5
+          0, 5, GET_MPID(0x100, 0x100), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-6
+          0, 6, GET_MPID(0x100, 0x200), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+      EFI_ACPI_6_1_GICC_STRUCTURE_INIT( // A72-7
+          0, 7, GET_MPID(0x100, 0x300), EFI_ACPI_6_1_GIC_ENABLED, 23, SGI_SUBSYS_GENERIC_GIC_BASE,
+          0x2c020000, 0x2c010000, 25, 0 /* GicRBase */, 0 /* Processor Power Efficiency Class */),
+    },
+    // GIC Distributor Entry
+    EFI_ACPI_6_1_GIC_DISTRIBUTOR_INIT(0, SGI_SUBSYS_GENERIC_GIC_BASE, 0, 3),
+    // GIC Redistributor
+    EFI_ACPI_6_1_GIC_REDISTRIBUTOR_INIT(SGI_SUBSYS_GENERIC_GICR_BASE, SIZE_1MB),
+    /* GIC ITS */
+    {
+      EFI_ACPI_6_1_GIC_ITS,
+      sizeof(EFI_ACPI_6_1_GIC_ITS_STRUCTURE),
+      EFI_ACPI_RESERVED_WORD,
+      0x00000000,  // GIC ITS ID
+      0x30040000,  // Base address of GIC ITS0
+      EFI_ACPI_RESERVED_DWORD,
+    }
+  };
+
+//
+// Reference the table being generated to prevent the optimizer from removing the
+// data structure from the executable
+//
+VOID* CONST ReferenceAcpiTable = &Madt;
