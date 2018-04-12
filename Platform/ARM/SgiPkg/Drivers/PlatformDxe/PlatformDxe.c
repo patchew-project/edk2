@@ -12,7 +12,10 @@
 *
 **/
 
+#include <Library/AcpiLib.h>
 #include <Library/DebugLib.h>
+
+STATIC CONST EFI_GUID mSgi575AcpiTableFile = { 0xc712719a, 0x0aaf, 0x438c, { 0x9c, 0xdd, 0x35, 0xab, 0x4d, 0x60, 0x20, 0x7d } };
 
 EFI_STATUS
 InitVirtioBlockIo (
@@ -27,6 +30,12 @@ ArmSgiPkgEntryPoint (
   )
 {
   EFI_STATUS              Status;
+
+  Status = LocateAndInstallAcpiFromFv (&mSgi575AcpiTableFile);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "PlatformDxe: Failed to install ACPI tables\n"));
+    return Status;
+  }
 
   // Install Virtio Block IO.
   if ( FeaturePcdGet (PcdVirtioSupported) == TRUE ) {
