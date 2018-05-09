@@ -20,6 +20,7 @@
 
 [Sources.common]
   PlatformDxe.c
+  VirtioBlockIo.c
 
 [Packages]
   ArmPkg/ArmPkg.dec
