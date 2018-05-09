@@ -12,6 +12,7 @@
 *
 **/
 
+#include <Library/AcpiLib.h>
 #include <Library/DebugLib.h>
 
 EFI_STATUS
@@ -27,6 +28,12 @@ ArmSgiPkgEntryPoint (
   )
 {
   EFI_STATUS              Status;
+
+  Status = LocateAndInstallAcpiFromFv (&gSgi575AcpiTablesiFileGuid);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "PlatformDxe: Failed to install ACPI tables\n"));
+    return Status;
+  }
 
   // Install Virtio Block IO.
   if (FeaturePcdGet (PcdVirtioSupported) == TRUE) {
