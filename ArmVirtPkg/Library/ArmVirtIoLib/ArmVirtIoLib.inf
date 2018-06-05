@@ -1,0 +1,49 @@
+## @file
+#  Instance of I/O Library using assembler, avoiding link time optimizations
+#  of these routines resulting in instructions that are unsupported by KVM
+#  when used to perform MMIO on regions that are backed by emulation.
+#
+#  Copyright (c) 2018, Linaro, Ltd. All rights reserved.<BR>
+#
+#  This program and the accompanying materials are licensed and made available
+#  under the terms and conditions of the BSD License which accompanies this
+#  distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php.
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x0001001A
+  BASE_NAME                      = ArmVirtIoLib
+  FILE_GUID                      = e9723e7d-5df1-4165-9518-597faba42692
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = IoLib 
+
+#
+#  VALID_ARCHITECTURES           = ARM AARCH64
+#
+
+[Sources]
+  ArmVirtIoLib.c
+  ArmVirtIoLib.h
+  IoLibMmioBuffer.c
+  IoHighLevel.c
+
+[Sources.ARM]
+  Arm/ArmVirtMmio.S   | GCC
+  Arm/ArmVirtMmio.asm | RVCT
+
+[Sources.AARCH64]
+  AArch64/ArmVirtMmio.S
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  DebugLib
+  BaseLib
