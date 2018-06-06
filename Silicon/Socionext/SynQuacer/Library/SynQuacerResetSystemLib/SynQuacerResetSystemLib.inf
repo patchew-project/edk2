@@ -1,0 +1,41 @@
+#/** @file
+#  ResetSystemLib implementation for SynQuacer using PSCI calls
+#
+#  Copyright (c) 2018, Linaro Ltd. All rights reserved.<BR>
+#
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution. The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  INF_VERSION                    = 0x0001001A
+  BASE_NAME                      = SynQuacerResetSystemLib
+  FILE_GUID                      = 6dd8d2f7-08b2-439b-99dd-28247ecd831c
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = ResetSystemLib|DXE_RUNTIME_DRIVER
+
+[Sources]
+  SynQuacerResetSystemLib.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  MdePkg/MdePkg.dec
+
+[LibraryClasses]
+  ArmMmuLib
+  ArmSmcLib
+  BaseLib
+  DebugLib
+  UefiBootServicesTableLib
+  UefiRuntimeLib
+
+[FixedPcd]
+  gArmTokenSpaceGuid.PcdFvBaseAddress
