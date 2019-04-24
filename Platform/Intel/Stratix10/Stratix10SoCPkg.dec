@@ -1,0 +1,30 @@
+#/** @file
+#  Intel Stratix 10 SoC FPGA Package
+#
+# Copyright (c) 2019, Intel All rights reserved.
+#
+#    This program and the accompanying materials are licensed and made available under
+#    the terms and conditions of the BSD License which accompanies this distribution.
+#    The full text of the license may be found at
+#    http://opensource.org/licenses/bsd-license.php
+#
+#    THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#    WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+#**/
+
+[Defines]
+  DEC_SPECIFICATION              = 0x00010005
+  PACKAGE_NAME                   = IntelSoCFpgaPkg
+  PACKAGE_GUID                   = 45533DD0-C41F-4ab6-A5DF-65B52684AC60
+  PACKAGE_VERSION                = 0.1
+
+[Includes.common]
+
+[Guids.common]
+  gIntelSocFpgaTokenSpaceGuid =  { 0xb89b8744, 0x4a1c, 0x4cd6, { 0xba, 0xa, 0x69, 0xb3, 0xfe, 0xe6, 0x91, 0x6b } }
+[PcdsFeatureFlag.common]
+
+[PcdsFixedAtBuild.common]
+
+
