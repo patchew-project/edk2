@@ -1,0 +1,30 @@
+### @file
+# Library producing CMOS access functionalities are relevant to platform.
+#
+# Copyright (c) 2019, Intel Corporation. All rights reserved.<BR>
+#
+# This program and the accompanying materials are licensed and made available under
+# the terms and conditions of the BSD License which accompanies this distribution.
+# The full text of the license may be found at
+# http://opensource.org/licenses/bsd-license.php
+#
+# THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+# WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
+#
+###
+
+[Defines]
+  INF_VERSION    = 0x00010005
+  BASE_NAME      = PlatformCmosAccessLib
+  FILE_GUID      = C315A8B6-FF6C-41D1-A934-7330501F308C
+  VERSION_STRING = 1.0
+  MODULE_TYPE    = BASE
+  LIBRARY_CLASS  = PlatformCmosAccessLib
+
+
+[Sources]
+  PlatformCmosAccessLibNull.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  AdvancedFeaturePkg/AdvancedFeaturePkg.dec
