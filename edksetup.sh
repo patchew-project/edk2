@@ -49,11 +49,11 @@ function SetWorkspace()
     return 0
   fi
 
-  if [ ! ${BASH_SOURCE[0]} -ef ./edksetup.sh ] && [ -z "$PACKAGES_PATH" ]
+  if [ ! ${BASH_SOURCE[0]} -ef ./$SCRIPTNAME ] && [ -z "$PACKAGES_PATH" ]
   then
     echo Run this script from the base of your tree.  For example:
-    echo "  cd /Path/To/Edk/Root"
-    echo "  . edksetup.sh"
+    echo "  cd /path/to/edk2/root"
+    echo "  . $SCRIPTNAME"
     return 1
   fi
 
@@ -71,7 +71,7 @@ function SetWorkspace()
   #
   # Set $WORKSPACE
   #
-  export WORKSPACE=`pwd`
+  export WORKSPACE=$PWD
   return 0
 }
 
@@ -107,24 +107,10 @@ function SetupEnv()
 
 function SetupPython3()
 {
-  if [ $origin_version ];then
-    origin_version=
-  fi
-  for python in $(whereis python3)
-  do
-    python=$(echo $python | grep "[[:digit:]]$" || true)
-    python_version=${python##*python}
-    if [ -z "${python_version}" ] || (! command -v $python >/dev/null 2>&1);then
-      continue
-    fi
-    if [ -z $origin_version ];then
-      origin_version=$python_version
-      export PYTHON_COMMAND=$python
-      continue
-    fi
-      if [[ "$origin_version" < "$python_version" ]]; then
-      origin_version=$python_version
-      export PYTHON_COMMAND=$python
+  for python in $(seq -f "python3.%g" 15 -1 1) python3; do
+    if command -v $python >/dev/null 2>&1; then
+      export PYTHON_COMMAND=$(which $python)
+      break
     fi
   done
   return 0
@@ -132,8 +118,8 @@ function SetupPython3()
 
 function SetupPython()
 {
-  if [ $PYTHON_COMMAND ] && [ -z $PYTHON3_ENABLE ];then
-    if ( command -v $PYTHON_COMMAND >/dev/null 2>&1 );then
+  if [ -n "$PYTHON_COMMAND" ] && [ -z "$PYTHON3_ENABLE" ]; then
+    if command -v $PYTHON_COMMAND >/dev/null 2>&1; then
       return 0
     else
       echo $PYTHON_COMMAND Cannot be used to build or execute the python tools.
@@ -141,32 +127,15 @@ function SetupPython()
     fi
   fi
 
-  if [ $PYTHON3_ENABLE ] && [ $PYTHON3_ENABLE == TRUE ]
-  then
+  if [ "$PYTHON3_ENABLE" == "TRUE" ]; then
     SetupPython3
   fi
 
-  if [ $PYTHON3_ENABLE ] && [ $PYTHON3_ENABLE != TRUE ]
-  then
-    if [ $origin_version ];then
-      origin_version=
-    fi
-    for python in $(whereis python2)
-    do
-      python=$(echo $python | grep "[[:digit:]]$" || true)
-      python_version=${python##*python}
-      if [ -z "${python_version}" ] || (! command -v $python >/dev/null 2>&1);then
-        continue
-      fi
-      if [ -z $origin_version ]
-      then
-        origin_version=$python_version
-        export PYTHON_COMMAND=$python
-        continue
-      fi
-      if [[ "$origin_version" < "$python_version" ]]; then
-        origin_version=$python_version
-        export PYTHON_COMMAND=$python
+  if [ -n "$PYTHON3_ENABLE" ] && [ "$PYTHON3_ENABLE" != "TRUE" ]; then
+    for python in $(seq -f "python2.%g" 10 -1 1) python2; do
+      if command -v $python >/dev/null 2>&1; then
+        export PYTHON_COMMAND=$(which $python)
+        break
       fi
     done
     return 0
@@ -194,12 +163,12 @@ do
       RECONFIG=TRUE
       shift
     ;;
-    -?|-h|--help|*)
+    *)
       HelpMsg
       break
     ;;
   esac
-  I=$(($I - 1))
+  I=$((I - 1))
 done
 
 if [ $I -gt 0 ]
