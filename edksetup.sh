@@ -107,24 +107,10 @@ function SetupEnv()
 
 function SetupPython3()
 {
-  if [ $origin_version ];then
-    origin_version=
-  fi
-  for python in $(whereis python3)
-  do
-    python=$(echo $python | grep "[[:digit:]]$" || true)
-    python_version=${python##*python}
-    if [ -z "${python_version}" ] || (! command -v $python >/dev/null 2>&1);then
-      continue
-    fi
-    if [ -z $origin_version ];then
-      origin_version=$python_version
+  for ((pyver=15; pyver>=1; --pyver)); do
+    if python=$(command -v python3.$pyver); then
       export PYTHON_COMMAND=$python
-      continue
-    fi
-      if [[ "$origin_version" < "$python_version" ]]; then
-      origin_version=$python_version
-      export PYTHON_COMMAND=$python
+      break
     fi
   done
   return 0
@@ -146,27 +132,11 @@ function SetupPython()
     SetupPython3
   fi
 
-  if [ $PYTHON3_ENABLE ] && [ $PYTHON3_ENABLE != TRUE ]
-  then
-    if [ $origin_version ];then
-      origin_version=
-    fi
-    for python in $(whereis python2)
-    do
-      python=$(echo $python | grep "[[:digit:]]$" || true)
-      python_version=${python##*python}
-      if [ -z "${python_version}" ] || (! command -v $python >/dev/null 2>&1);then
-        continue
-      fi
-      if [ -z $origin_version ]
-      then
-        origin_version=$python_version
+  if [ -n "$PYTHON3_ENABLE" ] && [ "$PYTHON3_ENABLE" != "TRUE" ]; then
+    for ((pyver=10; pyver>=1; --pyver)); do
+      if python=$(command -v python2.$pyver); then
         export PYTHON_COMMAND=$python
-        continue
-      fi
-      if [[ "$origin_version" < "$python_version" ]]; then
-        origin_version=$python_version
-        export PYTHON_COMMAND=$python
+        break
       fi
     done
     return 0
