@@ -256,6 +256,11 @@ else
   echo using prebuilt tools
 fi
 
+#
+# Build the edk2 OvmfPkg
+#
+echo Running edk2 build for OvmfPkg$Processor
+build -p $PLATFORMFILE $BUILD_OPTIONS -b $BUILDTARGET -t $TARGET_TOOLS -n $THREADNUMBER
 
 if [[ "$RUN_QEMU" == "yes" ]]; then
   if [[ ! -d $QEMU_FIRMWARE_DIR ]]; then
@@ -275,10 +280,4 @@ if [[ "$RUN_QEMU" == "yes" ]]; then
   exit $?
 fi
 
-#
-# Build the edk2 OvmfPkg
-#
-echo Running edk2 build for OvmfPkg$Processor
-build -p $PLATFORMFILE $BUILD_OPTIONS -b $BUILDTARGET -t $TARGET_TOOLS -n $THREADNUMBER
 exit $?
-
