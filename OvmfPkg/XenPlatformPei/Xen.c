@@ -276,9 +276,12 @@ XenPublishRamRegions (
   VOID
   )
 {
-  EFI_E820_ENTRY64  *E820Map;
-  UINT32            E820EntriesCount;
-  EFI_STATUS        Status;
+  EFI_E820_ENTRY64      *E820Map;
+  UINT32                E820EntriesCount;
+  EFI_STATUS            Status;
+  EFI_E820_ENTRY64      *Entry;
+  UINTN                 Index;
+  EFI_PHYSICAL_ADDRESS  LocalApic;
 
   DEBUG ((DEBUG_INFO, "Using memory map provided by Xen\n"));
 
@@ -287,26 +290,47 @@ XenPublishRamRegions (
   //
   E820EntriesCount = 0;
   Status = XenGetE820Map (&E820Map, &E820EntriesCount);
-
   ASSERT_EFI_ERROR (Status);
 
-  if (E820EntriesCount > 0) {
-    EFI_E820_ENTRY64 *Entry;
-    UINT32 Loop;
+  LocalApic = PcdGet32(PcdCpuLocalApicBaseAddress);
+  AddIoMemoryBaseSizeHob (LocalApic, SIZE_1MB);
 
-    for (Loop = 0; Loop < E820EntriesCount; Loop++) {
-      Entry = E820Map + Loop;
+  for (Index = 0; Index < E820EntriesCount; Index++) {
+    UINT64 Base;
+    UINT64 End;
 
-      //
-      // Only care about RAM
-      //
-      if (Entry->Type != EfiAcpiAddressRangeMemory) {
-        continue;
+    Entry = &E820Map[Index];
+
+    //
+    // Round up the start address, and round down the end address.
+    //
+    Base = ALIGN_VALUE (Entry->BaseAddr, (UINT64)EFI_PAGE_SIZE);
+    End = (Entry->BaseAddr + Entry->Length) & ~(UINT64)EFI_PAGE_MASK;
+
+    switch (Entry->Type) {
+    case EfiAcpiAddressRangeMemory:
+      AddMemoryRangeHob (Base, End);
+      break;
+    case EfiAcpiAddressRangeACPI:
+      AddReservedMemoryRangeHob (Base, End, FALSE);
+      break;
+    case EfiAcpiAddressRangeReserved:
+      if (Base < LocalApic && LocalApic < End) {
+        //
+        // hvmloader marks a range that overlaps with the local APIC memory
+        // mapped region as reserved, but CpuDxe wants it as mapped IO. We
+        // have already added it as mapped IO, so skip it here.
+        //
+        AddReservedMemoryRangeHob (Base, LocalApic, FALSE);
+        if (End > (LocalApic + SIZE_1MB)) {
+          AddReservedMemoryRangeHob (LocalApic + SIZE_1MB, End, FALSE);
+        }
+      } else {
+        AddReservedMemoryRangeHob (Base, End, FALSE);
       }
-
-      AddMemoryBaseSizeHob (Entry->BaseAddr, Entry->Length);
-
-      MtrrSetMemoryAttribute (Entry->BaseAddr, Entry->Length, CacheWriteBack);
+      break;
+    default:
+      break;
     }
   }
 }
@@ -325,12 +349,6 @@ InitializeXen (
   )
 {
   RETURN_STATUS PcdStatus;
-
-  //
-  // Reserve away HVMLOADER reserved memory [0xFC000000,0xFD000000).
-  // This needs to match HVMLOADER RESERVED_MEMBASE/RESERVED_MEMSIZE.
-  //
-  AddReservedMemoryBaseSizeHob (0xFC000000, 0x1000000, FALSE);
 
   PcdStatus = PcdSetBoolS (PcdPciDisableBusEnumeration, TRUE);
   ASSERT_RETURN_ERROR (PcdStatus);
