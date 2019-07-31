@@ -906,8 +906,14 @@ cleanlib:
                                     self._AutoGenObject.IncludePathList + self._AutoGenObject.BuildOptionIncPathList
                                     )
 
+        # Get a set of unique package includes from MetaFile
+        parentMetaFileIncludes = set()
+        for aInclude in self._AutoGenObject.PackageIncludePathList:
+            aIncludeName = str(aInclude)
+            parentMetaFileIncludes.add(aIncludeName.lower())
+
         # Check if header files are listed in metafile
-        # Get a list of unique module header source files from MetaFile
+        # Get a set of unique module header source files from MetaFile
         headerFilesInMetaFileSet = set()
         for aFile in self._AutoGenObject.SourceFileList:
             aFileName = str(aFile)
@@ -915,23 +921,26 @@ cleanlib:
                 continue
             headerFilesInMetaFileSet.add(aFileName.lower())
 
-        # Get a list of unique module autogen files
+        # Get a set of unique module autogen files
         localAutoGenFileSet = set()
         for aFile in self._AutoGenObject.AutoGenFileList:
             localAutoGenFileSet.add(str(aFile).lower())
 
-        # Get a list of unique module dependency header files
+        # Get a set of unique module dependency header files
         # Exclude autogen files and files not in the source directory
         headerFileDependencySet = set()
         localSourceDir = str(self._AutoGenObject.SourceDir).lower()
         for Dependency in FileDependencyDict.values():
             for aFile in Dependency:
                 aFileName = str(aFile).lower()
+                aFileDirectory = os.path.dirname(aFileName)
                 if not aFileName.endswith('.h'):
                     continue
                 if aFileName in localAutoGenFileSet:
                     continue
                 if localSourceDir not in aFileName:
+                    continue
+                if aFileDirectory in parentMetaFileIncludes:
                     continue
                 headerFileDependencySet.add(aFileName)
 
