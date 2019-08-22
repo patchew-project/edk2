@@ -46,6 +46,7 @@ if defined VS90COMNTOOLS (
     set "WINSDKx86_PREFIX=c:\Program Files (x86)\Microsoft SDKs\Windows\v6.0A\bin\"
   )
 )
+if /I "%1"=="VS2008" goto SetWinDDK
 
 if defined VS100COMNTOOLS (
   if not defined VS2010_PREFIX (
@@ -58,6 +59,7 @@ if defined VS100COMNTOOLS (
     set "WINSDK7x86_PREFIX=c:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\Bin\"
   )
 )
+if /I "%1"=="VS2010" goto SetWinDDK
 
 :SetVS2012
 if defined VS110COMNTOOLS (

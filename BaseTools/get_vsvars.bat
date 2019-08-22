@@ -14,6 +14,8 @@ if /I "%1"=="VS2017" goto VS2017Vars
 if /I "%1"=="VS2015" goto VS2015Vars
 if /I "%1"=="VS2013" goto VS2013Vars
 if /I "%1"=="VS2012" goto VS2012Vars
+if /I "%1"=="VS2010" goto VS2010Vars
+if /I "%1"=="VS2008" goto VS2008Vars
 
 :set_vsvars
 for /f "usebackq tokens=1* delims=: " %%i in (`%*`) do (
@@ -68,8 +70,12 @@ if defined VCINSTALLDIR goto :done
   :VS2012Vars
   if defined VS110COMNTOOLS (call :read_vsvars  "%VS110COMNTOOLS%") else (if /I "%1"=="VS2012" goto ToolNotInstall)
 
-  if defined VS100COMNTOOLS  call :read_vsvars  "%VS100COMNTOOLS%"
-  if defined VS90COMNTOOLS   call :read_vsvars  "%VS90COMNTOOLS%"
+  :VS2010Vars
+  if defined VS100COMNTOOLS (call :read_vsvars  "%VS100COMNTOOLS%") else (if /I "%1"=="VS2010" goto ToolNotInstall)
+
+  :VS2008Vars
+  if defined VS90COMNTOOLS  (call :read_vsvars  "%VS90COMNTOOLS%") else (if /I "%1"=="VS2008" goto ToolNotInstall)
+
   if defined VS80COMNTOOLS   call :read_vsvars  "%VS80COMNTOOLS%"
   if defined VS71COMNTOOLS   call :read_vsvars  "%VS71COMNTOOLS%"
 
