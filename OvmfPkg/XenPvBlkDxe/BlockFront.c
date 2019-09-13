@@ -309,6 +309,8 @@ Again:
           Dev->MediaInfo.Sectors, Dev->MediaInfo.SectorSize));
 
   *DevPtr = Dev;
+
+  XenBusIo->RegisterExitCallback (XenBusIo, XenPvBlockFrontReset, Dev);
   return EFI_SUCCESS;
 
 Error2:
@@ -326,12 +328,15 @@ Error:
 
 VOID
 XenPvBlockFrontShutdown (
-  IN XEN_BLOCK_FRONT_DEVICE *Dev
+  IN XEN_BLOCK_FRONT_DEVICE *Dev,
+  IN BOOLEAN                ResetOnly
   )
 {
   XENBUS_PROTOCOL *XenBusIo = Dev->XenBusIo;
   XENSTORE_STATUS Status;
   UINT64 Value;
+
+  XenBusIo->RegisterExitCallback (XenBusIo, NULL, NULL);
 
   XenPvBlockSync (Dev);
 
@@ -393,12 +398,38 @@ XenPvBlockFrontShutdown (
   }
 
 Close:
-  XenBusIo->UnregisterWatch (XenBusIo, Dev->StateWatchToken);
+  if (!ResetOnly) {
+    XenBusIo->UnregisterWatch (XenBusIo, Dev->StateWatchToken);
+  }
   XenBusIo->XsRemove (XenBusIo, XST_NIL, "ring-ref");
   XenBusIo->XsRemove (XenBusIo, XST_NIL, "event-channel");
   XenBusIo->XsRemove (XenBusIo, XST_NIL, "protocol");
 
-  XenPvBlockFree (Dev);
+  if (ResetOnly) {
+    XenBusIo->GrantEndAccess (XenBusIo, Dev->RingRef);
+    XenBusIo->EventChannelClose (XenBusIo, Dev->EventChannel);
+  } else {
+    XenPvBlockFree (Dev);
+  }
+}
+
+/**
+  To be called when ExitBootServices has been called.
+
+  This should reset the PV backend without using memory allocation
+  services.
+**/
+VOID
+EFIAPI
+XenPvBlockFrontReset (
+  IN VOID *Context
+  )
+{
+  XEN_BLOCK_FRONT_DEVICE *Dev;
+
+  Dev = Context;
+
+  XenPvBlockFrontShutdown (Dev, TRUE);
 }
 
 STATIC

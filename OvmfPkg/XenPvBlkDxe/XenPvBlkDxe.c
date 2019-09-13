@@ -312,7 +312,7 @@ XenPvBlkDxeDriverBindingStart (
 
 UninitBlockFront:
   FreePool (Media);
-  XenPvBlockFrontShutdown (Dev);
+  XenPvBlockFrontShutdown (Dev, FALSE);
 CloseProtocol:
   gBS->CloseProtocol (ControllerHandle, &gXenBusProtocolGuid,
                       This->DriverBindingHandle, ControllerHandle);
@@ -377,7 +377,7 @@ XenPvBlkDxeDriverBindingStop (
 
   Media = BlockIo->Media;
   Dev = XEN_BLOCK_FRONT_FROM_BLOCK_IO (BlockIo);
-  XenPvBlockFrontShutdown (Dev);
+  XenPvBlockFrontShutdown (Dev, FALSE);
 
   FreePool (Media);
 

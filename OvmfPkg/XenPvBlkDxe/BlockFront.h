@@ -67,9 +67,19 @@ XenPvBlockFrontInitialization (
   OUT XEN_BLOCK_FRONT_DEVICE **DevPtr
   );
 
+/**
+  @param ResetOnly      Set to TRUE when called during the ExitBootServices.
+**/
 VOID
 XenPvBlockFrontShutdown (
-  IN XEN_BLOCK_FRONT_DEVICE *Dev
+  IN XEN_BLOCK_FRONT_DEVICE *Dev,
+  IN BOOLEAN                ResetOnly
+  );
+
+VOID
+EFIAPI
+XenPvBlockFrontReset (
+  IN VOID *Context
   );
 
 VOID
