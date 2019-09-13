@@ -53,7 +53,7 @@
 
 typedef struct {
   CONST VOID  *Data;
-  UINT32      Len;
+  UINTN       Len;
 } WRITE_REQUEST;
 
 /* Register callback to watch subtree (node) in the XenStore. */
@@ -258,6 +258,35 @@ XenStoreFindWatch (
   }
 
   return NULL;
+}
+
+/**
+  Fill the first three slots of a WRITE_REQUEST array.
+
+  When those three slots are concatenated to generate a string, the resulting
+  string will be "$Path\0" or "$Path/$SubPath\0" if SubPath is provided.
+**/
+STATIC
+VOID
+XenStorePrepareWriteRequest (
+  IN OUT WRITE_REQUEST *WriteRequest,
+  IN     CONST CHAR8   *Path,
+  IN     CONST CHAR8   *SubPath OPTIONAL
+  )
+{
+  SetMem(WriteRequest, 3 * sizeof (WRITE_REQUEST), 0);
+  WriteRequest[0].Data = Path;
+  WriteRequest[0].Len = AsciiStrSize (Path);
+  if (SubPath != NULL && SubPath[0] != '\0') {
+    //
+    // Remove the \0 from the first part of the request.
+    //
+    WriteRequest[0].Len--;
+    WriteRequest[1].Data = "/";
+    WriteRequest[1].Len = 1;
+    WriteRequest[2].Data = SubPath;
+    WriteRequest[2].Len = AsciiStrSize (SubPath);
+  }
 }
 
 //
@@ -842,6 +871,7 @@ Error:
   @param Transaction    The transaction to use for this request.
   @param RequestType    The type of message to send.
   @param Body           The body of the request.
+  @param SubPath        If !NULL and not "", "/$SubPath" is append to Body.
   @param LenPtr         The returned length of the reply.
   @param Result         The returned body of the reply.
 
@@ -854,16 +884,16 @@ XenStoreSingle (
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  enum xsd_sockmsg_type   RequestType,
   IN  CONST CHAR8             *Body,
+  IN  CONST CHAR8             *SubPath OPTIONAL,
   OUT UINT32                  *LenPtr OPTIONAL,
   OUT VOID                    **Result OPTIONAL
   )
 {
-  WRITE_REQUEST WriteRequest;
+  WRITE_REQUEST   WriteRequest[3];
 
-  WriteRequest.Data = (VOID *) Body;
-  WriteRequest.Len = (UINT32)AsciiStrSize (Body);
+  XenStorePrepareWriteRequest (WriteRequest, Body, SubPath);
 
-  return XenStoreTalkv (Transaction, RequestType, &WriteRequest, 1,
+  return XenStoreTalkv (Transaction, RequestType, WriteRequest, 3,
                         LenPtr, Result);
 }
 
@@ -1113,15 +1143,12 @@ XenStoreListDirectory (
   OUT CONST CHAR8           ***DirectoryListPtr
   )
 {
-  CHAR8 *Path;
   CHAR8 *TempStr;
   UINT32 Len = 0;
   XENSTORE_STATUS Status;
 
-  Path = XenStoreJoin (DirectoryPath, Node);
-  Status = XenStoreSingle (Transaction, XS_DIRECTORY, Path, &Len,
+  Status = XenStoreSingle (Transaction, XS_DIRECTORY, DirectoryPath, Node, &Len,
                            (VOID **) &TempStr);
-  FreePool (Path);
   if (Status != XENSTORE_STATUS_SUCCESS) {
     return Status;
   }
@@ -1160,13 +1187,11 @@ XenStoreRead (
   OUT VOID                    **Result
   )
 {
-  CHAR8 *Path;
   VOID *Value;
   XENSTORE_STATUS Status;
 
-  Path = XenStoreJoin (DirectoryPath, Node);
-  Status = XenStoreSingle (Transaction, XS_READ, Path, LenPtr, &Value);
-  FreePool (Path);
+  Status = XenStoreSingle (Transaction, XS_READ, DirectoryPath, Node,
+    LenPtr, &Value);
   if (Status != XENSTORE_STATUS_SUCCESS) {
     return Status;
   }
@@ -1183,21 +1208,13 @@ XenStoreWrite (
   IN CONST CHAR8           *Str
   )
 {
-  CHAR8 *Path;
-  WRITE_REQUEST WriteRequest[2];
-  XENSTORE_STATUS Status;
+  WRITE_REQUEST   WriteRequest[4];
 
-  Path = XenStoreJoin (DirectoryPath, Node);
+  XenStorePrepareWriteRequest (WriteRequest, DirectoryPath, Node);
+  WriteRequest[3].Data = Str;
+  WriteRequest[3].Len = AsciiStrLen (Str);
 
-  WriteRequest[0].Data = (VOID *) Path;
-  WriteRequest[0].Len = (UINT32)AsciiStrSize (Path);
-  WriteRequest[1].Data = (VOID *) Str;
-  WriteRequest[1].Len = (UINT32)AsciiStrLen (Str);
-
-  Status = XenStoreTalkv (Transaction, XS_WRITE, WriteRequest, 2, NULL, NULL);
-  FreePool (Path);
-
-  return Status;
+  return XenStoreTalkv (Transaction, XS_WRITE, WriteRequest, 4, NULL, NULL);
 }
 
 XENSTORE_STATUS
@@ -1207,12 +1224,9 @@ XenStoreRemove (
   IN CONST CHAR8            *Node
   )
 {
-  CHAR8 *Path;
   XENSTORE_STATUS Status;
 
-  Path = XenStoreJoin (DirectoryPath, Node);
-  Status = XenStoreSingle (Transaction, XS_RM, Path, NULL, NULL);
-  FreePool (Path);
+  Status = XenStoreSingle (Transaction, XS_RM, DirectoryPath, Node, NULL, NULL);
 
   return Status;
 }
@@ -1226,7 +1240,7 @@ XenStoreTransactionStart (
   XENSTORE_STATUS Status;
 
   Status = XenStoreSingle (XST_NIL, XS_TRANSACTION_START, "", NULL,
-                           (VOID **) &IdStr);
+    NULL, (VOID **) &IdStr);
   if (Status == XENSTORE_STATUS_SUCCESS) {
     Transaction->Id = (UINT32)AsciiStrDecimalToUintn (IdStr);
     FreePool (IdStr);
@@ -1246,7 +1260,7 @@ XenStoreTransactionEnd (
   AbortStr[0] = Abort ? 'F' : 'T';
   AbortStr[1] = '\0';
 
-  return XenStoreSingle (Transaction, XS_TRANSACTION_END, AbortStr, NULL, NULL);
+  return XenStoreSingle (Transaction, XS_TRANSACTION_END, AbortStr, NULL, NULL, NULL);
 }
 
 XENSTORE_STATUS
