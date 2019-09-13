@@ -72,27 +72,6 @@ struct _XENSTORE_WATCH
 #define XENSTORE_WATCH_FROM_LINK(l) \
   CR (l, XENSTORE_WATCH, Link, XENSTORE_WATCH_SIGNATURE)
 
-
-/**
- * Structure capturing messages received from the XenStore service.
- */
-#define XENSTORE_MESSAGE_SIGNATURE SIGNATURE_32 ('X', 'S', 's', 'm')
-typedef struct {
-  UINT32 Signature;
-  LIST_ENTRY Link;
-
-  struct xsd_sockmsg Header;
-
-  union {
-    /* Queued replies. */
-    struct {
-      CHAR8 *Body;
-    } Reply;
-  } u;
-} XENSTORE_MESSAGE;
-#define XENSTORE_MESSAGE_FROM_LINK(r) \
-  CR (r, XENSTORE_MESSAGE, Link, XENSTORE_MESSAGE_SIGNATURE)
-
 /**
  * Container for all XenStore related state.
  */
@@ -104,21 +83,6 @@ typedef struct {
   struct xenstore_domain_interface *XenStore;
 
   XENBUS_DEVICE *Dev;
-
-  /**
-   * A list of replies to our requests.
-   *
-   * The reply list is filled by xs_rcv_thread().  It
-   * is consumed by the context that issued the request
-   * to which a reply is made.  The requester blocks in
-   * XenStoreReadReply ().
-   *
-   * /note Only one requesting context can be active at a time.
-   */
-  LIST_ENTRY ReplyList;
-
-  /** Lock protecting the reply list. */
-  EFI_LOCK ReplyLock;
 
   /**
    * List of registered watches.
@@ -136,6 +100,13 @@ typedef struct {
 
   /** Handle for XenStore events. */
   EFI_EVENT EventChannelEvent;
+
+  /** Buffer used to copy payloads from the xenstore ring */
+  // The + 1 is to allow to have a \0.
+  CHAR8 Buffer[XENSTORE_PAYLOAD_MAX + 1];
+
+  /** ID used when sending messages to xenstored */
+  UINTN NextRequestId;
 } XENSTORE_PRIVATE;
 
 //
@@ -147,6 +118,12 @@ static XENSTORE_PRIVATE xs;
 //
 // Private Utility Functions
 //
+
+STATIC
+XENSTORE_STATUS
+XenStoreGetError (
+  CONST CHAR8 *ErrorStr
+  );
 
 /**
   Count and optionally record pointers to a number of NUL terminated
@@ -613,70 +590,106 @@ XenStoreReadStore (
   Block reading the next message from the XenStore service and
   process the result.
 
+  @param ExpectedRequestId      Block until a reply to with this ID is seen.
+  @param ExpectedTransactionId  Idem, but should also match this ID.
+  @param BufferSize             IN: size of the buffer
+                                OUT: The returned length of the reply.
+  @param Buffer                 The returned body of the reply.
+
   @return  XENSTORE_STATUS_SUCCESS on success.  Otherwise an errno value
            indicating the type of failure encountered.
 **/
 STATIC
 XENSTORE_STATUS
 XenStoreProcessMessage (
-  VOID
+  IN     UINT32    ExpectedRequestId,
+  IN     UINT32    ExpectedTransactionId,
+  IN OUT UINTN     *BufferSize OPTIONAL,
+  IN OUT CHAR8     *Buffer OPTIONAL
   )
 {
-  XENSTORE_MESSAGE *Message;
-  CHAR8 *Body;
-  XENSTORE_STATUS Status;
+  struct xsd_sockmsg Header;
+  CHAR8              *Payload;
+  XENSTORE_STATUS    Status;
 
-  Message = AllocateZeroPool (sizeof (XENSTORE_MESSAGE));
-  Message->Signature = XENSTORE_MESSAGE_SIGNATURE;
-  Status = XenStoreReadStore (&Message->Header, sizeof (Message->Header));
-  if (Status != XENSTORE_STATUS_SUCCESS) {
-    FreePool (Message);
-    DEBUG ((EFI_D_ERROR, "XenStore: Error read store (%d)\n", Status));
-    return Status;
-  }
+  while (TRUE) {
 
-  Body = AllocatePool (Message->Header.len + 1);
-  Status = XenStoreReadStore (Body, Message->Header.len);
-  if (Status != XENSTORE_STATUS_SUCCESS) {
-    FreePool (Body);
-    FreePool (Message);
-    DEBUG ((EFI_D_ERROR, "XenStore: Error read store (%d)\n", Status));
-    return Status;
-  }
-  Body[Message->Header.len] = '\0';
-
-  if (Message->Header.type == XS_WATCH_EVENT) {
-    CONST CHAR8    *WatchEventPath;
-    CONST CHAR8    *WatchEventToken;
-    VOID           *ConvertedToken;
-    XENSTORE_WATCH *Watch;
-
-    //
-    // Parse WATCH_EVENT messages
-    //   <path>\0<token>\0
-    //
-    WatchEventPath = Body;
-    WatchEventToken = WatchEventPath + AsciiStrSize (WatchEventPath);
-
-    ConvertedToken = (VOID *) AsciiStrHexToUintn (WatchEventToken);
-
-    EfiAcquireLock (&xs.RegisteredWatchesLock);
-    Watch = XenStoreFindWatch (ConvertedToken);
-    DEBUG ((DEBUG_INFO, "XenStore: Watch event %a\n", WatchEventToken));
-    if (Watch != NULL) {
-      Watch->Triggered = TRUE;
-    } else {
-      DEBUG ((EFI_D_WARN, "XenStore: Watch handle %a not found\n",
-              WatchEventToken));
+    Status = XenStoreReadStore (&Header, sizeof (Header));
+    if (Status != XENSTORE_STATUS_SUCCESS) {
+      DEBUG ((DEBUG_ERROR, "XenStore: Error read store (%d)\n", Status));
+      return Status;
     }
-    EfiReleaseLock (&xs.RegisteredWatchesLock);
-    FreePool (Message);
-    FreePool (Body);
-  } else {
-    Message->u.Reply.Body = Body;
-    EfiAcquireLock (&xs.ReplyLock);
-    InsertTailList (&xs.ReplyList, &Message->Link);
-    EfiReleaseLock (&xs.ReplyLock);
+
+    ASSERT (Header.len <= XENSTORE_PAYLOAD_MAX);
+    if (Header.len > XENSTORE_PAYLOAD_MAX) {
+      DEBUG ((DEBUG_ERROR, "XenStore: Message payload over %d (is %d)\n",
+          XENSTORE_PAYLOAD_MAX, Header.len));
+      Header.len = XENSTORE_PAYLOAD_MAX;
+    }
+
+    Payload = xs.Buffer;
+    Status = XenStoreReadStore (Payload, Header.len);
+    if (Status != XENSTORE_STATUS_SUCCESS) {
+      DEBUG ((DEBUG_ERROR, "XenStore: Error read store (%d)\n", Status));
+      return Status;
+    }
+    Payload[Header.len] = '\0';
+
+    if (Header.type == XS_WATCH_EVENT) {
+      CONST CHAR8    *WatchEventPath;
+      CONST CHAR8    *WatchEventToken;
+      VOID           *ConvertedToken;
+      XENSTORE_WATCH *Watch;
+
+      //
+      // Parse WATCH_EVENT messages
+      //   <path>\0<token>\0
+      //
+      WatchEventPath = Payload;
+      WatchEventToken = WatchEventPath + AsciiStrSize (WatchEventPath);
+
+      ConvertedToken = (VOID *) AsciiStrHexToUintn (WatchEventToken);
+
+      EfiAcquireLock (&xs.RegisteredWatchesLock);
+      Watch = XenStoreFindWatch (ConvertedToken);
+      DEBUG ((DEBUG_INFO, "XenStore: Watch event %a\n", WatchEventToken));
+      if (Watch != NULL) {
+        Watch->Triggered = TRUE;
+      } else {
+        DEBUG ((DEBUG_WARN, "XenStore: Watch handle %a not found\n",
+                WatchEventToken));
+      }
+      EfiReleaseLock (&xs.RegisteredWatchesLock);
+
+      if (Header.req_id == ExpectedRequestId
+        && Header.tx_id == ExpectedTransactionId
+        && Buffer == NULL) {
+        //
+        // We were waiting for a watch event
+        //
+        return XENSTORE_STATUS_SUCCESS;
+      }
+    } else if (Header.req_id == ExpectedRequestId
+      && Header.tx_id == ExpectedTransactionId) {
+      Status = XENSTORE_STATUS_SUCCESS;
+      if (Header.type == XS_ERROR) {
+        Status = XenStoreGetError (Payload);
+      } else if (Buffer != NULL) {
+        ASSERT (BufferSize != NULL);
+        ASSERT (*BufferSize >= Header.len);
+        CopyMem (Buffer, Payload, MIN (Header.len + 1, *BufferSize));
+        *BufferSize = Header.len;
+      } else {
+        //
+        // Payload should be "OK" if the function sending a request doesn't
+        // expect a reply.
+        //
+        ASSERT (Header.len == 3);
+        ASSERT (AsciiStrCmp (Payload, "OK") == 0);
+      }
+      return Status;
+    }
+
   }
 
   return XENSTORE_STATUS_SUCCESS;
@@ -737,51 +750,6 @@ XenStoreGetError (
 }
 
 /**
-  Block waiting for a reply to a message request.
-
-  @param TypePtr The returned type of the reply.
-  @param LenPtr  The returned body length of the reply.
-  @param Result  The returned body of the reply.
-**/
-STATIC
-XENSTORE_STATUS
-XenStoreReadReply (
-  OUT enum xsd_sockmsg_type *TypePtr,
-  OUT UINT32 *LenPtr OPTIONAL,
-  OUT VOID **Result
-  )
-{
-  XENSTORE_MESSAGE *Message;
-  LIST_ENTRY *Entry;
-  CHAR8 *Body;
-
-  while (IsListEmpty (&xs.ReplyList)) {
-    XENSTORE_STATUS Status;
-    Status = XenStoreProcessMessage ();
-    if (Status != XENSTORE_STATUS_SUCCESS && Status != XENSTORE_STATUS_EAGAIN) {
-      DEBUG ((DEBUG_ERROR, "XenStore, error while reading the ring (%d).\n",
-              Status));
-      return Status;
-    }
-  }
-  EfiAcquireLock (&xs.ReplyLock);
-  Entry = GetFirstNode (&xs.ReplyList);
-  Message = XENSTORE_MESSAGE_FROM_LINK (Entry);
-  RemoveEntryList (Entry);
-  EfiReleaseLock (&xs.ReplyLock);
-
-  *TypePtr = Message->Header.type;
-  if (LenPtr != NULL) {
-    *LenPtr = Message->Header.len;
-  }
-  Body = Message->u.Reply.Body;
-
-  FreePool (Message);
-  *Result = Body;
-  return XENSTORE_STATUS_SUCCESS;
-}
-
-/**
   Send a message with an optionally muti-part body to the XenStore service.
 
   @param Transaction    The transaction to use for this request.
@@ -806,16 +774,17 @@ XenStoreTalkv (
   )
 {
   struct xsd_sockmsg Message;
-  void *Return = NULL;
-  UINT32 Index;
-  XENSTORE_STATUS Status;
+  UINTN              Index;
+  XENSTORE_STATUS    Status;
+  VOID               *Buffer;
+  UINTN              BufferSize;
 
   if (Transaction == XST_NIL) {
     Message.tx_id = 0;
   } else {
     Message.tx_id = Transaction->Id;
   }
-  Message.req_id = 0;
+  Message.req_id = xs.NextRequestId++;
   Message.type = RequestType;
   Message.len = 0;
   for (Index = 0; Index < NumRequests; Index++) {
@@ -836,29 +805,36 @@ XenStoreTalkv (
     }
   }
 
-  Status = XenStoreReadReply ((enum xsd_sockmsg_type *)&Message.type, LenPtr, &Return);
+  if (ResultPtr) {
+    Buffer = AllocatePool (XENSTORE_PAYLOAD_MAX + 1);
+    BufferSize = XENSTORE_PAYLOAD_MAX;
+  } else {
+    Buffer = NULL;
+    BufferSize = 0;
+  }
 
-Error:
+  //
+  // Wait for a reply to our request
+  //
+  Status = XenStoreProcessMessage (Message.req_id, Message.tx_id,
+    &BufferSize, Buffer);
+
   if (Status != XENSTORE_STATUS_SUCCESS) {
+    DEBUG ((DEBUG_ERROR, "XenStore, error while reading the ring (%d).\n",
+        Status));
+    FreePool (Buffer);
     return Status;
   }
-
-  if (Message.type == XS_ERROR) {
-    Status = XenStoreGetError (Return);
-    FreePool (Return);
-    return Status;
-  }
-
-  /* Reply is either error or an echo of our request message type. */
-  ASSERT ((enum xsd_sockmsg_type)Message.type == RequestType);
 
   if (ResultPtr) {
-    *ResultPtr = Return;
-  } else {
-    FreePool (Return);
+    *ResultPtr = Buffer;
+    if (LenPtr) {
+      *LenPtr = BufferSize;
+    }
   }
 
-  return XENSTORE_STATUS_SUCCESS;
+Error:
+  return Status;
 }
 
 /**
@@ -975,7 +951,7 @@ XenStoreWaitWatch (
       return XENSTORE_STATUS_SUCCESS;
     }
 
-    Status = XenStoreProcessMessage ();
+    Status = XenStoreProcessMessage (0, 0, NULL, NULL);
     if (Status != XENSTORE_STATUS_SUCCESS && Status != XENSTORE_STATUS_EAGAIN) {
       return Status;
     }
@@ -1060,11 +1036,11 @@ XenStoreInit (
   DEBUG ((EFI_D_INFO, "XenBusInit: XenBus rings @%p, event channel %x\n",
           xs.XenStore, xs.EventChannel));
 
-  InitializeListHead (&xs.ReplyList);
   InitializeListHead (&xs.RegisteredWatches);
 
-  EfiInitializeLock (&xs.ReplyLock, TPL_NOTIFY);
   EfiInitializeLock (&xs.RegisteredWatchesLock, TPL_NOTIFY);
+
+  xs.NextRequestId = 1;
 
   /* Initialize the shared memory rings to talk to xenstored */
   Status = XenStoreInitComms (&xs);
@@ -1092,19 +1068,6 @@ XenStoreDeinit (
       Entry = GetNextNode (&xs.RegisteredWatches, Entry);
 
       XenStoreUnregisterWatch (Watch);
-    }
-  }
-
-  if (!IsListEmpty (&xs.ReplyList)) {
-    XENSTORE_MESSAGE *Message;
-    LIST_ENTRY *Entry;
-    Entry = GetFirstNode (&xs.ReplyList);
-    while (!IsNull (&xs.ReplyList, Entry)) {
-      Message = XENSTORE_MESSAGE_FROM_LINK (Entry);
-      Entry = GetNextNode (&xs.ReplyList, Entry);
-      RemoveEntryList (&Message->Link);
-      FreePool (Message->u.Reply.Body);
-      FreePool (Message);
     }
   }
 
