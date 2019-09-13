@@ -1259,20 +1259,17 @@ XenStoreVSPrint (
   IN VA_LIST               Marker
   )
 {
-  CHAR8 *Buf;
-  XENSTORE_STATUS Status;
-  UINTN BufSize;
-  VA_LIST Marker2;
+  CHAR8           Buf[XENSTORE_PAYLOAD_MAX];
+  UINTN           Count;
 
-  VA_COPY (Marker2, Marker);
-  BufSize = SPrintLengthAsciiFormat (FormatString, Marker2) + 1;
-  VA_END (Marker2);
-  Buf = AllocateZeroPool (BufSize);
-  AsciiVSPrint (Buf, BufSize, FormatString, Marker);
-  Status = XenStoreWrite (Transaction, DirectoryPath, Node, Buf);
-  FreePool (Buf);
+  Count = AsciiVSPrint (Buf, sizeof (Buf), FormatString, Marker);
+  ASSERT (Count > 0);
+  ASSERT (Count < sizeof (Buf));
+  if ((Count == 0) || (Count >= sizeof (Buf))) {
+    return XENSTORE_STATUS_EINVAL;
+  }
 
-  return Status;
+  return XenStoreWrite (Transaction, DirectoryPath, Node, Buf);
 }
 
 XENSTORE_STATUS
