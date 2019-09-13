@@ -343,6 +343,23 @@ Out:
   return Status;
 }
 
+STATIC
+VOID
+EFIAPI
+XenBusRegisterExitCallback (
+  IN XENBUS_PROTOCOL       *This,
+  IN XENBUS_EXIT_CALLBACK  NotifyFunction,
+  IN VOID                  *NotifyContext
+  )
+{
+  XENBUS_PRIVATE_DATA *Dev;
+
+  Dev = XENBUS_PRIVATE_DATA_FROM_THIS (This);
+
+  Dev->ExitCallback = NotifyFunction;
+  Dev->ExitCallbackContext = NotifyContext;
+}
+
 STATIC XENBUS_PRIVATE_DATA gXenBusPrivateData = {
   XENBUS_PRIVATE_DATA_SIGNATURE,    // Signature
   { NULL, NULL },                   // Link
@@ -364,6 +381,7 @@ STATIC XENBUS_PRIVATE_DATA gXenBusPrivateData = {
     XenBusRegisterWatchBackend,     // XenBusIo.RegisterWatchBackend
     XenBusUnregisterWatch,          // XenBusIo.UnregisterWatch
     XenBusWaitForWatch,             // XenBusIo.WaitForWatch
+    XenBusRegisterExitCallback,     // XenBusIo.RegisterExitCallback
 
     NULL,                           // XenBusIo.Type
     0,                              // XenBusIo.DeviceId

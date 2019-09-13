@@ -373,6 +373,38 @@ XENSTORE_STATUS
   IN VOID             *Token
   );
 
+typedef
+VOID
+(EFIAPI *XENBUS_EXIT_CALLBACK)(
+  IN  VOID                     *Context
+  );
+
+/**
+  Register a function to be called during the ExitBootServices event.
+
+  NotifyFunction will be called when XenBusDxe is notified of
+  EVT_SIGNAL_EXIT_BOOT_SERVICES. The function should follow the same
+  requirements as if it as registered an event on
+  EVT_SIGNAL_EXIT_BOOT_SERVICES, i.e. no use of the Memory Allocation
+  Services.
+
+  To unregister the function, call RegisterExitCallback with
+  NotifyFunction=NULL.
+
+  @note There can only be one callback per driver.
+
+  @param This             A pointer to the XENBUS_PROTOCOL.
+  @param NotifyFunction   The function to be called.
+  @param NotifyContext    A context.
+**/
+typedef
+VOID
+(EFIAPI *XENBUS_SET_EXIT_CALLBACK) (
+  IN XENBUS_PROTOCOL       *This,
+  IN XENBUS_EXIT_CALLBACK  NotifyFunction,
+  IN VOID                  *NotifyContext
+  );
+
 
 ///
 /// Protocol structure
@@ -400,6 +432,9 @@ struct _XENBUS_PROTOCOL {
   XENBUS_REGISTER_WATCH_BACKEND RegisterWatchBackend;
   XENBUS_UNREGISTER_WATCH       UnregisterWatch;
   XENBUS_WAIT_FOR_WATCH         WaitForWatch;
+
+  XENBUS_SET_EXIT_CALLBACK      RegisterExitCallback;
+
   //
   // Protocol data fields
   //

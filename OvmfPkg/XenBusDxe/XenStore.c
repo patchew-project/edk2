@@ -1054,8 +1054,18 @@ XenStoreDeinit (
     }
   }
 
+  XenStoreResetRing (Dev);
+
   gBS->CloseEvent (xs.EventChannelEvent);
 
+  xs.XenStore = NULL;
+}
+
+VOID
+XenStoreResetRing (
+  IN XENBUS_DEVICE *Dev
+  )
+{
   if (xs.XenStore->server_features & XENSTORE_SERVER_FEATURE_RECONNECTION) {
     xs.XenStore->connection = XENSTORE_RECONNECT;
     XenEventChannelNotify (xs.Dev, xs.EventChannel);
@@ -1072,7 +1082,17 @@ XenStoreDeinit (
     xs.XenStore->req_cons = xs.XenStore->req_prod = 0;
     xs.XenStore->rsp_cons = xs.XenStore->rsp_prod = 0;
   }
-  xs.XenStore = NULL;
+}
+
+VOID
+XenStoreResetWatches (
+  VOID
+  )
+{
+  XENSTORE_STATUS     Status;
+
+  Status = XenStoreSingle (XST_NIL, XS_RESET_WATCHES, "", NULL, NULL, NULL);
+  ASSERT (Status == XENSTORE_STATUS_SUCCESS);
 }
 
 //

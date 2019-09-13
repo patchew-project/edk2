@@ -94,6 +94,8 @@ typedef struct {
     XENBUS_PROTOCOL XenBusIo;
     XENBUS_DEVICE *Dev;
     XENBUS_DEVICE_PATH *DevicePath;
+    XENBUS_EXIT_CALLBACK ExitCallback;
+    VOID *ExitCallbackContext;
 } XENBUS_PRIVATE_DATA;
 
 #define XENBUS_PRIVATE_DATA_FROM_THIS(a) \

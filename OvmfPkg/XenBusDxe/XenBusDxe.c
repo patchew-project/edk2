@@ -258,10 +258,31 @@ NotifyExitBoot (
   IN VOID *Context
   )
 {
-  XENBUS_DEVICE *Dev = Context;
+  XENBUS_DEVICE       *Dev;
+  LIST_ENTRY          *Entry;
+  XENBUS_PRIVATE_DATA *Child;
 
-  gBS->DisconnectController(Dev->ControllerHandle,
-                            Dev->This->DriverBindingHandle, NULL);
+  Dev = Context;
+
+  //
+  // First, ask every driver using xenbus to disconnect without
+  // deallocating memory.
+  //
+  for (Entry = GetFirstNode (&Dev->ChildList);
+       !IsNodeAtEnd (&Dev->ChildList, Entry);
+       Entry = GetNextNode (&Dev->ChildList, Entry)) {
+    Child = XENBUS_PRIVATE_DATA_FROM_LINK (Entry);
+    if (Child->ExitCallback != NULL) {
+      Child->ExitCallback (Child->ExitCallbackContext);
+    }
+  }
+
+  //
+  // Now, we can reset the devices used by XenBusDxe.
+  //
+  XenStoreResetWatches ();
+  XenStoreResetRing (Dev);
+  XenGrantTableDeinit (Dev);
 }
 
 /**

@@ -271,6 +271,27 @@ XenStoreDeinit (
   IN XENBUS_DEVICE *Dev
   );
 
+/**
+  Effectively reset all watches registered with xenstore.
+
+  To be used by ExitBootServices
+**/
+VOID
+XenStoreResetWatches (
+  VOID
+  );
+
+/**
+  Reset the xenstore shared ring before handing it over to the next
+  operating system.
+
+  To be used by ExitBootServices
+**/
+VOID
+XenStoreResetRing (
+  IN XENBUS_DEVICE *Dev
+  );
+
 
 //
 // XENBUS protocol
