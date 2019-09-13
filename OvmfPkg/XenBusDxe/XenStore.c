@@ -1336,27 +1336,11 @@ XenBusXenStoreRead (
   IN  XENBUS_PROTOCOL       *This,
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8           *Node,
-  OUT VOID                  **Value
+  IN OUT UINTN              *BufferSize,
+  OUT VOID                  *Buffer
   )
 {
-  XENSTORE_STATUS Status;
-  UINTN           BufferSize;
-  VOID            *Buffer;
-
-  BufferSize = XENSTORE_PAYLOAD_MAX + 1;
-  Buffer = AllocatePool (BufferSize);
-  if (Buffer == NULL) {
-    return XENSTORE_STATUS_ENOMEM;
-  }
-
-  Status = XenStoreRead (Transaction, This->Node, Node, &BufferSize, Buffer);
-
-  if (Status == XENSTORE_STATUS_SUCCESS) {
-    *Value = Buffer;
-  } else {
-    FreePool (Buffer);
-  }
-  return Status;
+  return XenStoreRead (Transaction, This->Node, Node, BufferSize, Buffer);
 }
 
 XENSTORE_STATUS
@@ -1365,27 +1349,11 @@ XenBusXenStoreBackendRead (
   IN  XENBUS_PROTOCOL       *This,
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8           *Node,
-  OUT VOID                  **Value
+  IN OUT UINTN              *BufferSize,
+  OUT VOID                  *Buffer
   )
 {
-  XENSTORE_STATUS Status;
-  UINTN           BufferSize;
-  VOID            *Buffer;
-
-  BufferSize = XENSTORE_PAYLOAD_MAX + 1;
-  Buffer = AllocatePool (BufferSize);
-  if (Buffer == NULL) {
-    return XENSTORE_STATUS_ENOMEM;
-  }
-
-  Status = XenStoreRead (Transaction, This->Backend, Node, &BufferSize, Buffer);
-
-  if (Status == XENSTORE_STATUS_SUCCESS) {
-    *Value = Buffer;
-  } else {
-    FreePool (Buffer);
-  }
-  return Status;
+  return XenStoreRead (Transaction, This->Backend, Node, BufferSize, Buffer);
 }
 
 XENSTORE_STATUS

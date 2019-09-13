@@ -289,7 +289,8 @@ XenBusXenStoreRead (
   IN  XENBUS_PROTOCOL       *This,
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8           *Node,
-  OUT VOID                  **Value
+  IN OUT UINTN              *BufferSize,
+  OUT VOID                  *Buffer
   );
 
 XENSTORE_STATUS
@@ -298,7 +299,8 @@ XenBusXenStoreBackendRead (
   IN  XENBUS_PROTOCOL       *This,
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8           *Node,
-  OUT VOID                  **Value
+  IN OUT UINTN              *BufferSize,
+  OUT VOID                  *Buffer
   );
 
 XENSTORE_STATUS

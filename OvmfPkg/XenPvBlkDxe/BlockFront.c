@@ -41,19 +41,22 @@ XenBusReadUint64 (
   )
 {
   XENSTORE_STATUS Status;
-  CHAR8 *Ptr;
+  CHAR8           Buffer[22];
+  UINTN           BufferSize;
+
+  BufferSize = sizeof (Buffer) - 1;
 
   if (!FromBackend) {
-    Status = This->XsRead (This, XST_NIL, Node, (VOID**)&Ptr);
+    Status = This->XsRead (This, XST_NIL, Node, &BufferSize, Buffer);
   } else {
-    Status = This->XsBackendRead (This, XST_NIL, Node, (VOID**)&Ptr);
+    Status = This->XsBackendRead (This, XST_NIL, Node, &BufferSize, Buffer);
   }
   if (Status != XENSTORE_STATUS_SUCCESS) {
     return Status;
   }
+  Buffer[BufferSize] = '\0';
   // AsciiStrDecimalToUint64 will ASSERT if Ptr overflow UINT64.
-  *ValuePtr = AsciiStrDecimalToUint64 (Ptr);
-  FreePool (Ptr);
+  *ValuePtr = AsciiStrDecimalToUint64 (Buffer);
   return Status;
 }
 
@@ -143,16 +146,18 @@ XenPvBlockFrontInitialization (
   OUT XEN_BLOCK_FRONT_DEVICE  **DevPtr
   )
 {
-  XENSTORE_TRANSACTION Transaction;
-  CHAR8 *DeviceType;
-  blkif_sring_t *SharedRing;
-  XENSTORE_STATUS Status;
+  XENSTORE_TRANSACTION   Transaction;
+  CHAR8                  Buffer[XENSTORE_PAYLOAD_MAX + 1];
+  UINTN                  BufferSize;
+  blkif_sring_t          *SharedRing;
+  XENSTORE_STATUS        Status;
   XEN_BLOCK_FRONT_DEVICE *Dev;
-  XenbusState State;
-  UINT64 Value;
-  CHAR8 *Params;
+  XenbusState            State;
+  UINT64                 Value;
 
   ASSERT (NodeName != NULL);
+
+  BufferSize = sizeof (Buffer) - 1;
 
   Dev = AllocateZeroPool (sizeof (XEN_BLOCK_FRONT_DEVICE));
   Dev->Signature = XEN_BLOCK_FRONT_SIGNATURE;
@@ -160,26 +165,28 @@ XenPvBlockFrontInitialization (
   Dev->XenBusIo = XenBusIo;
   Dev->DeviceId = XenBusIo->DeviceId;
 
-  XenBusIo->XsRead (XenBusIo, XST_NIL, "device-type", (VOID**)&DeviceType);
-  if (AsciiStrCmp (DeviceType, "cdrom") == 0) {
+  BufferSize = sizeof (Buffer) - 1;
+  XenBusIo->XsRead (XenBusIo, XST_NIL, "device-type", &BufferSize, Buffer);
+  Buffer[BufferSize] = '\0';
+  if (AsciiStrCmp (Buffer, "cdrom") == 0) {
     Dev->MediaInfo.CdRom = TRUE;
   } else {
     Dev->MediaInfo.CdRom = FALSE;
   }
-  FreePool (DeviceType);
 
   if (Dev->MediaInfo.CdRom) {
-    Status = XenBusIo->XsBackendRead (XenBusIo, XST_NIL, "params", (VOID**)&Params);
+    BufferSize = sizeof (Buffer) - 1;
+    Status = XenBusIo->XsBackendRead (XenBusIo, XST_NIL, "params",
+      &BufferSize, Buffer);
     if (Status != XENSTORE_STATUS_SUCCESS) {
       DEBUG ((EFI_D_ERROR, "%a: Failed to read params (%d)\n", __FUNCTION__, Status));
       goto Error;
     }
-    if (AsciiStrLen (Params) == 0 || AsciiStrCmp (Params, "aio:") == 0) {
-      FreePool (Params);
+    Buffer[BufferSize] = '\0';
+    if (AsciiStrLen (Buffer) == 0 || AsciiStrCmp (Buffer, "aio:") == 0) {
       DEBUG ((EFI_D_INFO, "%a: Empty cdrom\n", __FUNCTION__));
       goto Error;
     }
-    FreePool (Params);
   }
 
   Status = XenBusReadUint64 (XenBusIo, "backend-id", FALSE, &Value);

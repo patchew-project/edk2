@@ -35,6 +35,12 @@ typedef struct
 
 #define XST_NIL ((XENSTORE_TRANSACTION *) NULL)
 
+//
+// When reading a node from xenstore, if the size of the data to be read is
+// unknown, this value can be use for the size of the buffer.
+//
+#define XENSTORE_PAYLOAD_MAX 4096
+
 typedef enum {
   XENSTORE_STATUS_SUCCESS = 0,
   XENSTORE_STATUS_FAIL,
@@ -64,19 +70,17 @@ typedef enum {
 ///
 
 /**
-  Get the contents of the node Node of the PV device. Returns the contents in
-  *Result which should be freed after use.
+  Get the contents of the node Node of the PV device.
 
   @param This           A pointer to XENBUS_PROTOCOL instance.
   @param Transaction    The XenStore transaction covering this request.
   @param Node           The basename of the file to read.
-  @param Result         The returned contents from this file.
+  @param BufferSize     On input, a pointer to the size of the buffer at Buffer.
+                        On output, the size of the data written to Buffer.
+  @param Buffer         A pointer to a buffer into which the data read will be saved.
 
   @return  On success, XENSTORE_STATUS_SUCCESS. Otherwise an errno value
            indicating the type of failure.
-
-  @note The results buffer is malloced and should be free'd by the
-        caller.
 **/
 typedef
 XENSTORE_STATUS
@@ -84,23 +88,22 @@ XENSTORE_STATUS
   IN  XENBUS_PROTOCOL       *This,
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8           *Node,
-  OUT VOID                  **Result
+  IN OUT UINTN              *BufferSize,
+  OUT VOID                  *Buffer
   );
 
 /**
-  Get the contents of the node Node of the PV device's backend. Returns the
-  contents in *Result which should be freed after use.
+  Get the contents of the node Node of the PV device's backend.
 
   @param This           A pointer to XENBUS_PROTOCOL instance.
   @param Transaction    The XenStore transaction covering this request.
   @param Node           The basename of the file to read.
-  @param Result         The returned contents from this file.
+  @param BufferSize     On input, a pointer to the size of the buffer at Buffer.
+                        On output, the size of the data written to Buffer.
+  @param Buffer         A pointer to a buffer into which the data read will be saved.
 
   @return  On success, XENSTORE_STATUS_SUCCESS. Otherwise an errno value
            indicating the type of failure.
-
-  @note The results buffer is malloced and should be free'd by the
-        caller.
 **/
 typedef
 XENSTORE_STATUS
@@ -108,7 +111,8 @@ XENSTORE_STATUS
   IN  XENBUS_PROTOCOL       *This,
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8           *Node,
-  OUT VOID                  **Result
+  IN OUT UINTN              *BufferSize,
+  OUT VOID                  *Buffer
   );
 
 /**
