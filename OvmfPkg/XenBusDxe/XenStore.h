@@ -64,29 +64,26 @@ XenStorePathExists (
   );
 
 /**
-  Get the contents of a single "file".  Returns the contents in *Result which
-  should be freed after use.  The length of the value in bytes is returned in
-  *LenPtr.
+  Get the contents of a single "file".  Copy the contents in Buffer if
+  provided.  The length of the value in bytes is returned in *BufferSize.
 
   @param Transaction    The XenStore transaction covering this request.
   @param DirectoryPath  The dirname of the file to read.
   @param Node           The basename of the file to read.
-  @param LenPtr         The amount of data read.
-  @param Result         The returned contents from this file.
+  @param BufferSize     IN: size of the buffer
+                        OUT: The returned length of the reply.
+  @param Buffer         The returned body of the reply.
 
   @return  On success, XENSTORE_STATUS_SUCCESS. Otherwise an errno value
            indicating the type of failure.
-
-  @note The results buffer is malloced and should be free'd by the
-        caller.
 **/
 XENSTORE_STATUS
 XenStoreRead (
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8             *DirectoryPath,
   IN  CONST CHAR8             *Node,
-  OUT UINT32                  *LenPtr OPTIONAL,
-  OUT VOID                    **Result
+  IN OUT UINTN                *BufferSize,
+  OUT VOID                    *Buffer
   );
 
 /**

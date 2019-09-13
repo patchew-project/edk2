@@ -89,19 +89,18 @@ XenBusReadDriverState (
   IN CONST CHAR8 *Path
   )
 {
-  XenbusState State;
-  CHAR8 *Ptr = NULL;
+  XenbusState     State;
+  CHAR8           Buffer[4];
+  UINTN           BufferSize;
   XENSTORE_STATUS Status;
 
-  Status = XenStoreRead (XST_NIL, Path, "state", NULL, (VOID **)&Ptr);
+  BufferSize = sizeof (Buffer) - 1;
+  Status = XenStoreRead (XST_NIL, Path, "state", &BufferSize, Buffer);
   if (Status != XENSTORE_STATUS_SUCCESS) {
     State = XenbusStateClosed;
   } else {
-    State = AsciiStrDecimalToUintn (Ptr);
-  }
-
-  if (Ptr != NULL) {
-    FreePool (Ptr);
+    Buffer[BufferSize] = '\0';
+    State = AsciiStrDecimalToUintn (Buffer);
   }
 
   return State;
@@ -129,8 +128,11 @@ XenBusAddDevice (
 
   if (XenStorePathExists (XST_NIL, DevicePath, "")) {
     XENBUS_PRIVATE_DATA *Child;
-    enum xenbus_state State;
-    CHAR8 *BackendPath;
+    enum xenbus_state   State;
+    CHAR8               BackendPath[XENSTORE_ABS_PATH_MAX + 1];
+    UINTN               BackendPathSize;
+
+    BackendPathSize = sizeof (BackendPath);
 
     Child = XenBusDeviceInitialized (Dev, DevicePath);
     if (Child != NULL) {
@@ -155,17 +157,18 @@ XenBusAddDevice (
     }
 
     StatusXenStore = XenStoreRead (XST_NIL, DevicePath, "backend",
-                                   NULL, (VOID **) &BackendPath);
+      &BackendPathSize, BackendPath);
     if (StatusXenStore != XENSTORE_STATUS_SUCCESS) {
       DEBUG ((EFI_D_ERROR, "xenbus: %a no backend path.\n", DevicePath));
       Status = EFI_NOT_FOUND;
       goto out;
     }
+    BackendPath[BackendPathSize] = '\0';
 
     Private = AllocateCopyPool (sizeof (*Private), &gXenBusPrivateData);
     Private->XenBusIo.Type = AsciiStrDup (Type);
     Private->XenBusIo.Node = AsciiStrDup (DevicePath);
-    Private->XenBusIo.Backend = BackendPath;
+    Private->XenBusIo.Backend = AsciiStrDup (BackendPath);
     Private->XenBusIo.DeviceId = (UINT16)AsciiStrDecimalToUintn (Id);
     Private->Dev = Dev;
 
@@ -309,17 +312,20 @@ XenBusSetState (
   )
 {
   enum xenbus_state CurrentState;
-  XENSTORE_STATUS Status;
-  CHAR8 *Temp;
+  XENSTORE_STATUS   Status;
+  CHAR8             Buffer[4];
+  UINTN             BufferSize;
+
+  BufferSize = sizeof (Buffer) - 1;
 
   DEBUG ((EFI_D_INFO, "XenBus: Set state to %d\n", NewState));
 
-  Status = XenStoreRead (Transaction, This->Node, "state", NULL, (VOID **)&Temp);
+  Status = XenStoreRead (Transaction, This->Node, "state", &BufferSize, Buffer);
   if (Status != XENSTORE_STATUS_SUCCESS) {
     goto Out;
   }
-  CurrentState = AsciiStrDecimalToUintn (Temp);
-  FreePool (Temp);
+  Buffer[BufferSize] = '\0';
+  CurrentState = AsciiStrDecimalToUintn (Buffer);
   if (CurrentState == NewState) {
     goto Out;
   }

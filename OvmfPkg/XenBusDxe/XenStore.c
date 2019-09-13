@@ -756,8 +756,9 @@ XenStoreGetError (
   @param RequestType    The type of message to send.
   @param WriteRequest   Pointers to the body sections of the request.
   @param NumRequests    The number of body sections in the request.
-  @param LenPtr         The returned length of the reply.
-  @param ResultPtr      The returned body of the reply.
+  @param BufferSize     IN: size of the buffer
+                        OUT: The returned length of the reply.
+  @param Buffer         The returned body of the reply.
 
   @return  XENSTORE_STATUS_SUCCESS on success.  Otherwise an errno indicating
            the cause of failure.
@@ -769,15 +770,13 @@ XenStoreTalkv (
   IN  enum xsd_sockmsg_type   RequestType,
   IN  CONST WRITE_REQUEST     *WriteRequest,
   IN  UINT32                  NumRequests,
-  OUT UINT32                  *LenPtr OPTIONAL,
-  OUT VOID                    **ResultPtr OPTIONAL
+  IN OUT UINTN                *BufferSize OPTIONAL,
+  OUT VOID                    *Buffer OPTIONAL
   )
 {
   struct xsd_sockmsg Message;
   UINTN              Index;
   XENSTORE_STATUS    Status;
-  VOID               *Buffer;
-  UINTN              BufferSize;
 
   if (Transaction == XST_NIL) {
     Message.tx_id = 0;
@@ -805,32 +804,15 @@ XenStoreTalkv (
     }
   }
 
-  if (ResultPtr) {
-    Buffer = AllocatePool (XENSTORE_PAYLOAD_MAX + 1);
-    BufferSize = XENSTORE_PAYLOAD_MAX;
-  } else {
-    Buffer = NULL;
-    BufferSize = 0;
-  }
-
   //
   // Wait for a reply to our request
   //
   Status = XenStoreProcessMessage (Message.req_id, Message.tx_id,
-    &BufferSize, Buffer);
+    BufferSize, Buffer);
 
   if (Status != XENSTORE_STATUS_SUCCESS) {
     DEBUG ((DEBUG_ERROR, "XenStore, error while reading the ring (%d).\n",
         Status));
-    FreePool (Buffer);
-    return Status;
-  }
-
-  if (ResultPtr) {
-    *ResultPtr = Buffer;
-    if (LenPtr) {
-      *LenPtr = BufferSize;
-    }
   }
 
 Error:
@@ -848,8 +830,9 @@ Error:
   @param RequestType    The type of message to send.
   @param Body           The body of the request.
   @param SubPath        If !NULL and not "", "/$SubPath" is append to Body.
-  @param LenPtr         The returned length of the reply.
-  @param Result         The returned body of the reply.
+  @param BufferSize     IN: sizef of the buffer
+                        OUT: The returned length of the reply.
+  @param Buffer         The returned body of the reply.
 
   @return  0 on success.  Otherwise an errno indicating
            the cause of failure.
@@ -861,8 +844,8 @@ XenStoreSingle (
   IN  enum xsd_sockmsg_type   RequestType,
   IN  CONST CHAR8             *Body,
   IN  CONST CHAR8             *SubPath OPTIONAL,
-  OUT UINT32                  *LenPtr OPTIONAL,
-  OUT VOID                    **Result OPTIONAL
+  IN OUT UINTN                *BufferSize OPTIONAL,
+  OUT VOID                    *Buffer OPTIONAL
   )
 {
   WRITE_REQUEST   WriteRequest[3];
@@ -870,7 +853,7 @@ XenStoreSingle (
   XenStorePrepareWriteRequest (WriteRequest, Body, SubPath);
 
   return XenStoreTalkv (Transaction, RequestType, WriteRequest, 3,
-                        LenPtr, Result);
+    BufferSize, Buffer);
 }
 
 //
@@ -1106,13 +1089,16 @@ XenStoreListDirectory (
   OUT CONST CHAR8           ***DirectoryListPtr
   )
 {
-  CHAR8 *TempStr;
-  UINT32 Len = 0;
+  CHAR8           *TempStr;
+  UINTN           Len;
   XENSTORE_STATUS Status;
 
+  TempStr = AllocatePool (XENSTORE_PAYLOAD_MAX);
+  Len = XENSTORE_PAYLOAD_MAX;
   Status = XenStoreSingle (Transaction, XS_DIRECTORY, DirectoryPath, Node, &Len,
-                           (VOID **) &TempStr);
+    TempStr);
   if (Status != XENSTORE_STATUS_SUCCESS) {
+    FreePool (TempStr);
     return Status;
   }
 
@@ -1146,21 +1132,14 @@ XenStoreRead (
   IN  CONST XENSTORE_TRANSACTION *Transaction,
   IN  CONST CHAR8             *DirectoryPath,
   IN  CONST CHAR8             *Node,
-  OUT UINT32                  *LenPtr OPTIONAL,
-  OUT VOID                    **Result
+  IN OUT UINTN                *BufferSize,
+  OUT VOID                    *Buffer
   )
 {
-  VOID *Value;
-  XENSTORE_STATUS Status;
-
-  Status = XenStoreSingle (Transaction, XS_READ, DirectoryPath, Node,
-    LenPtr, &Value);
-  if (Status != XENSTORE_STATUS_SUCCESS) {
-    return Status;
-  }
-
-  *Result = Value;
-  return XENSTORE_STATUS_SUCCESS;
+  ASSERT (BufferSize != NULL);
+  ASSERT (Buffer != NULL);
+  return XenStoreSingle (Transaction, XS_READ, DirectoryPath, Node,
+    BufferSize, Buffer);
 }
 
 XENSTORE_STATUS
@@ -1199,14 +1178,16 @@ XenStoreTransactionStart (
   OUT XENSTORE_TRANSACTION  *Transaction
   )
 {
-  CHAR8 *IdStr;
+  CHAR8           IdStr[XENSTORE_PAYLOAD_MAX];
+  UINTN           BufferSize;
   XENSTORE_STATUS Status;
 
+  BufferSize = sizeof (IdStr);
+
   Status = XenStoreSingle (XST_NIL, XS_TRANSACTION_START, "", NULL,
-    NULL, (VOID **) &IdStr);
+    &BufferSize, IdStr);
   if (Status == XENSTORE_STATUS_SUCCESS) {
     Transaction->Id = (UINT32)AsciiStrDecimalToUintn (IdStr);
-    FreePool (IdStr);
   }
 
   return Status;
@@ -1358,7 +1339,24 @@ XenBusXenStoreRead (
   OUT VOID                  **Value
   )
 {
-  return XenStoreRead (Transaction, This->Node, Node, NULL, Value);
+  XENSTORE_STATUS Status;
+  UINTN           BufferSize;
+  VOID            *Buffer;
+
+  BufferSize = XENSTORE_PAYLOAD_MAX + 1;
+  Buffer = AllocatePool (BufferSize);
+  if (Buffer == NULL) {
+    return XENSTORE_STATUS_ENOMEM;
+  }
+
+  Status = XenStoreRead (Transaction, This->Node, Node, &BufferSize, Buffer);
+
+  if (Status == XENSTORE_STATUS_SUCCESS) {
+    *Value = Buffer;
+  } else {
+    FreePool (Buffer);
+  }
+  return Status;
 }
 
 XENSTORE_STATUS
@@ -1370,7 +1368,24 @@ XenBusXenStoreBackendRead (
   OUT VOID                  **Value
   )
 {
-  return XenStoreRead (Transaction, This->Backend, Node, NULL, Value);
+  XENSTORE_STATUS Status;
+  UINTN           BufferSize;
+  VOID            *Buffer;
+
+  BufferSize = XENSTORE_PAYLOAD_MAX + 1;
+  Buffer = AllocatePool (BufferSize);
+  if (Buffer == NULL) {
+    return XENSTORE_STATUS_ENOMEM;
+  }
+
+  Status = XenStoreRead (Transaction, This->Backend, Node, &BufferSize, Buffer);
+
+  if (Status == XENSTORE_STATUS_SUCCESS) {
+    *Value = Buffer;
+  } else {
+    FreePool (Buffer);
+  }
+  return Status;
 }
 
 XENSTORE_STATUS
