@@ -65,6 +65,8 @@ struct _XENSTORE_WATCH
 
   /* Path being watched. */
   CHAR8       *Node;
+
+  BOOLEAN     Triggered;
 };
 
 #define XENSTORE_WATCH_FROM_LINK(l) \
@@ -86,13 +88,6 @@ typedef struct {
     struct {
       CHAR8 *Body;
     } Reply;
-
-    /* Queued watch events. */
-    struct {
-      XENSTORE_WATCH *Handle;
-      CONST CHAR8 **Vector;
-      UINT32 VectorSize;
-    } Watch;
   } u;
 } XENSTORE_MESSAGE;
 #define XENSTORE_MESSAGE_FROM_LINK(r) \
@@ -132,14 +127,6 @@ typedef struct {
 
   /** Lock protecting the registered watches list. */
   EFI_LOCK RegisteredWatchesLock;
-
-  /**
-   * List of pending watch callback events.
-   */
-  LIST_ENTRY WatchEvents;
-
-  /** Lock protecting the watch calback list. */
-  EFI_LOCK WatchEventsLock;
 
   /**
    * The event channel for communicating with the
@@ -630,29 +617,32 @@ XenStoreProcessMessage (
   Body[Message->Header.len] = '\0';
 
   if (Message->Header.type == XS_WATCH_EVENT) {
-    VOID *ConvertedToken;
+    CONST CHAR8    *WatchEventPath;
+    CONST CHAR8    *WatchEventToken;
+    VOID           *ConvertedToken;
+    XENSTORE_WATCH *Watch;
 
-    Message->u.Watch.Vector = Split(Body, Message->Header.len,
-                                    &Message->u.Watch.VectorSize);
+    //
+    // Parse WATCH_EVENT messages
+    //   <path>\0<token>\0
+    //
+    WatchEventPath = Body;
+    WatchEventToken = WatchEventPath + AsciiStrSize (WatchEventPath);
 
-    ConvertedToken =
-      (VOID *) AsciiStrHexToUintn (Message->u.Watch.Vector[XS_WATCH_TOKEN]);
+    ConvertedToken = (VOID *) AsciiStrHexToUintn (WatchEventToken);
 
     EfiAcquireLock (&xs.RegisteredWatchesLock);
-    Message->u.Watch.Handle = XenStoreFindWatch (ConvertedToken);
-    DEBUG ((EFI_D_INFO, "XenStore: Watch event %a\n",
-            Message->u.Watch.Vector[XS_WATCH_TOKEN]));
-    if (Message->u.Watch.Handle != NULL) {
-      EfiAcquireLock (&xs.WatchEventsLock);
-      InsertHeadList (&xs.WatchEvents, &Message->Link);
-      EfiReleaseLock (&xs.WatchEventsLock);
+    Watch = XenStoreFindWatch (ConvertedToken);
+    DEBUG ((DEBUG_INFO, "XenStore: Watch event %a\n", WatchEventToken));
+    if (Watch != NULL) {
+      Watch->Triggered = TRUE;
     } else {
       DEBUG ((EFI_D_WARN, "XenStore: Watch handle %a not found\n",
-              Message->u.Watch.Vector[XS_WATCH_TOKEN]));
-      FreePool((VOID*)Message->u.Watch.Vector);
-      FreePool(Message);
+              WatchEventToken));
     }
     EfiReleaseLock (&xs.RegisteredWatchesLock);
+    FreePool (Message);
+    FreePool (Body);
   } else {
     Message->u.Reply.Body = Body;
     EfiAcquireLock (&xs.ReplyLock);
@@ -936,40 +926,29 @@ XenStoreUnwatch (
 STATIC
 XENSTORE_STATUS
 XenStoreWaitWatch (
-  VOID *Token
+  IN VOID *Token
   )
 {
-  XENSTORE_MESSAGE *Message;
-  LIST_ENTRY *Entry = NULL;
-  LIST_ENTRY *Last = NULL;
+  XENSTORE_WATCH  *Watch;
   XENSTORE_STATUS Status;
 
+  EfiAcquireLock (&xs.RegisteredWatchesLock);
+  Watch = XenStoreFindWatch (Token);
+  EfiReleaseLock (&xs.RegisteredWatchesLock);
+  if (Watch == NULL) {
+    return XENSTORE_STATUS_EINVAL;
+  }
+
   while (TRUE) {
-    EfiAcquireLock (&xs.WatchEventsLock);
-    if (IsListEmpty (&xs.WatchEvents) ||
-        Last == GetFirstNode (&xs.WatchEvents)) {
-      EfiReleaseLock (&xs.WatchEventsLock);
-      Status = XenStoreProcessMessage ();
-      if (Status != XENSTORE_STATUS_SUCCESS && Status != XENSTORE_STATUS_EAGAIN) {
-        return Status;
-      }
-      continue;
+    if (Watch->Triggered) {
+      Watch->Triggered = FALSE;
+      return XENSTORE_STATUS_SUCCESS;
     }
 
-    for (Entry = GetFirstNode (&xs.WatchEvents);
-         Entry != Last && !IsNull (&xs.WatchEvents, Entry);
-         Entry = GetNextNode (&xs.WatchEvents, Entry)) {
-      Message = XENSTORE_MESSAGE_FROM_LINK (Entry);
-      if (Message->u.Watch.Handle == Token) {
-        RemoveEntryList (Entry);
-        EfiReleaseLock (&xs.WatchEventsLock);
-        FreePool((VOID*)Message->u.Watch.Vector);
-        FreePool(Message);
-        return XENSTORE_STATUS_SUCCESS;
-      }
+    Status = XenStoreProcessMessage ();
+    if (Status != XENSTORE_STATUS_SUCCESS && Status != XENSTORE_STATUS_EAGAIN) {
+      return Status;
     }
-    Last = GetFirstNode (&xs.WatchEvents);
-    EfiReleaseLock (&xs.WatchEventsLock);
   }
 }
 
@@ -1052,12 +1031,10 @@ XenStoreInit (
           xs.XenStore, xs.EventChannel));
 
   InitializeListHead (&xs.ReplyList);
-  InitializeListHead (&xs.WatchEvents);
   InitializeListHead (&xs.RegisteredWatches);
 
   EfiInitializeLock (&xs.ReplyLock, TPL_NOTIFY);
   EfiInitializeLock (&xs.RegisteredWatchesLock, TPL_NOTIFY);
-  EfiInitializeLock (&xs.WatchEventsLock, TPL_NOTIFY);
 
   /* Initialize the shared memory rings to talk to xenstored */
   Status = XenStoreInitComms (&xs);
@@ -1085,23 +1062,6 @@ XenStoreDeinit (
       Entry = GetNextNode (&xs.RegisteredWatches, Entry);
 
       XenStoreUnregisterWatch (Watch);
-    }
-  }
-
-  //
-  // Emptying the list WatchEvents, but this list should already be empty after
-  // having cleanup the list RegisteredWatches.
-  //
-  if (!IsListEmpty (&xs.WatchEvents)) {
-    LIST_ENTRY *Entry;
-    DEBUG ((DEBUG_WARN, "XenStore: WatchEvents is not empty, cleaning up...\n"));
-    Entry = GetFirstNode (&xs.WatchEvents);
-    while (!IsNull (&xs.WatchEvents, Entry)) {
-      XENSTORE_MESSAGE *Message = XENSTORE_MESSAGE_FROM_LINK (Entry);
-      Entry = GetNextNode (&xs.WatchEvents, Entry);
-      RemoveEntryList (&Message->Link);
-      FreePool ((VOID*)Message->u.Watch.Vector);
-      FreePool (Message);
     }
   }
 
@@ -1382,7 +1342,6 @@ XenStoreUnregisterWatch (
   )
 {
   CHAR8 Token[sizeof (Watch) * 2 + 1];
-  LIST_ENTRY *Entry;
 
   ASSERT (Watch->Signature == XENSTORE_WATCH_SIGNATURE);
 
@@ -1396,20 +1355,6 @@ XenStoreUnregisterWatch (
 
   AsciiSPrint (Token, sizeof (Token), "%p", (VOID *) Watch);
   XenStoreUnwatch (Watch->Node, Token);
-
-  /* Cancel pending watch events. */
-  EfiAcquireLock (&xs.WatchEventsLock);
-  Entry = GetFirstNode (&xs.WatchEvents);
-  while (!IsNull (&xs.WatchEvents, Entry)) {
-    XENSTORE_MESSAGE *Message = XENSTORE_MESSAGE_FROM_LINK (Entry);
-    Entry = GetNextNode (&xs.WatchEvents, Entry);
-    if (Message->u.Watch.Handle == Watch) {
-      RemoveEntryList (&Message->Link);
-      FreePool ((VOID*)Message->u.Watch.Vector);
-      FreePool (Message);
-    }
-  }
-  EfiReleaseLock (&xs.WatchEventsLock);
 
   FreePool (Watch->Node);
   FreePool (Watch);
