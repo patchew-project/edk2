@@ -253,13 +253,11 @@ Split (
 STATIC
 XENSTORE_WATCH *
 XenStoreFindWatch (
-  IN CONST CHAR8 *Token
+  IN VOID *Token
   )
 {
-  XENSTORE_WATCH *Watch, *WantedWatch;
+  XENSTORE_WATCH *Watch;
   LIST_ENTRY *Entry;
-
-  WantedWatch = (VOID *) AsciiStrHexToUintn (Token);
 
   if (IsListEmpty (&xs.RegisteredWatches)) {
     return NULL;
@@ -268,7 +266,7 @@ XenStoreFindWatch (
        !IsNull (&xs.RegisteredWatches, Entry);
        Entry = GetNextNode (&xs.RegisteredWatches, Entry)) {
     Watch = XENSTORE_WATCH_FROM_LINK (Entry);
-    if (Watch == WantedWatch)
+    if ((VOID *) Watch == Token)
       return Watch;
   }
 
@@ -632,12 +630,16 @@ XenStoreProcessMessage (
   Body[Message->Header.len] = '\0';
 
   if (Message->Header.type == XS_WATCH_EVENT) {
+    VOID *ConvertedToken;
+
     Message->u.Watch.Vector = Split(Body, Message->Header.len,
                                     &Message->u.Watch.VectorSize);
 
+    ConvertedToken =
+      (VOID *) AsciiStrHexToUintn (Message->u.Watch.Vector[XS_WATCH_TOKEN]);
+
     EfiAcquireLock (&xs.RegisteredWatchesLock);
-    Message->u.Watch.Handle =
-      XenStoreFindWatch (Message->u.Watch.Vector[XS_WATCH_TOKEN]);
+    Message->u.Watch.Handle = XenStoreFindWatch (ConvertedToken);
     DEBUG ((EFI_D_INFO, "XenStore: Watch event %a\n",
             Message->u.Watch.Vector[XS_WATCH_TOKEN]));
     if (Message->u.Watch.Handle != NULL) {
@@ -1384,8 +1386,7 @@ XenStoreUnregisterWatch (
 
   ASSERT (Watch->Signature == XENSTORE_WATCH_SIGNATURE);
 
-  AsciiSPrint (Token, sizeof (Token), "%p", (VOID *) Watch);
-  if (XenStoreFindWatch (Token) == NULL) {
+  if (XenStoreFindWatch (Watch) == NULL) {
     return;
   }
 
@@ -1393,6 +1394,7 @@ XenStoreUnregisterWatch (
   RemoveEntryList (&Watch->Link);
   EfiReleaseLock (&xs.RegisteredWatchesLock);
 
+  AsciiSPrint (Token, sizeof (Token), "%p", (VOID *) Watch);
   XenStoreUnwatch (Watch->Node, Token);
 
   /* Cancel pending watch events. */
