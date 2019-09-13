@@ -264,6 +264,8 @@ NotifyExitBoot (
 
   Dev = Context;
 
+  Dev->ExitBootNotified = TRUE;
+
   //
   // First, ask every driver using xenbus to disconnect without
   // deallocating memory.

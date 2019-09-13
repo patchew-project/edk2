@@ -401,17 +401,22 @@ XenStoreWaitForEvent (
   EFI_EVENT TimerEvent;
   EFI_EVENT WaitList[2];
 
+  //
+  // If the ExitBootServices event have been signaled, simply allow to have
+  // busy loop in the caller.
+  //
+  if (xs.Dev->ExitBootNotified) {
+    return EFI_SUCCESS;
+  }
+
   gBS->CreateEvent (EVT_TIMER, 0, NULL, NULL, &TimerEvent);
   gBS->SetTimer (TimerEvent, TimerRelative, Timeout);
 
   WaitList[0] = xs.EventChannelEvent;
   WaitList[1] = TimerEvent;
   Status = gBS->WaitForEvent (2, WaitList, &Index);
-  ASSERT (Status != EFI_INVALID_PARAMETER);
+  ASSERT_EFI_ERROR (Status);
   gBS->CloseEvent (TimerEvent);
-  if (Status == EFI_UNSUPPORTED) {
-    return EFI_SUCCESS;
-  }
   if (Index == 1) {
     return EFI_TIMEOUT;
   } else {

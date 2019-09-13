@@ -79,6 +79,7 @@ struct _XENBUS_DEVICE {
   EFI_HANDLE                    ControllerHandle;
   XENIO_PROTOCOL                *XenIo;
   EFI_EVENT                     ExitBootEvent;
+  BOOLEAN                       ExitBootNotified;
   EFI_DEVICE_PATH_PROTOCOL      *DevicePath;
   LIST_ENTRY                    ChildList;
 
