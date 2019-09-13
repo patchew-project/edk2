@@ -44,7 +44,8 @@ XenBusEventChannelAllocate (
                                    EVTCHNOP_alloc_unbound,
                                    &Parameter);
   if (ReturnCode != 0) {
-    DEBUG ((EFI_D_ERROR, "ERROR: alloc_unbound failed with rc=%d", ReturnCode));
+    DEBUG ((DEBUG_ERROR, "ERROR: alloc_unbound failed with rc=%d\n",
+        ReturnCode));
     return ReturnCode;
   }
   *Port = Parameter.port;

@@ -738,7 +738,7 @@ XenStoreReadReply (
     XENSTORE_STATUS Status;
     Status = XenStoreProcessMessage ();
     if (Status != XENSTORE_STATUS_SUCCESS && Status != XENSTORE_STATUS_EAGAIN) {
-      DEBUG ((EFI_D_ERROR, "XenStore, error while reading the ring (%d).",
+      DEBUG ((DEBUG_ERROR, "XenStore, error while reading the ring (%d).\n",
               Status));
       return Status;
     }
@@ -1076,7 +1076,7 @@ XenStoreDeinit (
   if (!IsListEmpty (&xs.RegisteredWatches)) {
     XENSTORE_WATCH *Watch;
     LIST_ENTRY *Entry;
-    DEBUG ((EFI_D_WARN, "XenStore: RegisteredWatches is not empty, cleaning up..."));
+    DEBUG ((DEBUG_WARN, "XenStore: RegisteredWatches is not empty, cleaning up...\n"));
     Entry = GetFirstNode (&xs.RegisteredWatches);
     while (!IsNull (&xs.RegisteredWatches, Entry)) {
       Watch = XENSTORE_WATCH_FROM_LINK (Entry);
@@ -1092,7 +1092,7 @@ XenStoreDeinit (
   //
   if (!IsListEmpty (&xs.WatchEvents)) {
     LIST_ENTRY *Entry;
-    DEBUG ((EFI_D_WARN, "XenStore: WatchEvents is not empty, cleaning up..."));
+    DEBUG ((DEBUG_WARN, "XenStore: WatchEvents is not empty, cleaning up...\n"));
     Entry = GetFirstNode (&xs.WatchEvents);
     while (!IsNull (&xs.WatchEvents, Entry)) {
       XENSTORE_MESSAGE *Message = XENSTORE_MESSAGE_FROM_LINK (Entry);
