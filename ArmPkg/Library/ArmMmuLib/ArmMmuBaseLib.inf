@@ -23,7 +23,7 @@
 [Sources.ARM]
   Arm/ArmMmuLibCore.c
   Arm/ArmMmuLibV7Support.S   | GCC
-  Arm/ArmMmuLibV7Support.asm |RVCT 
+  Arm/ArmMmuLibV7Support.asm | MSFT
 
 [Packages]
   ArmPkg/ArmPkg.dec

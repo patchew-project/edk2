@@ -21,7 +21,7 @@
 
 [Sources.ARM]
   Arm/Reset.S       | GCC
-  Arm/Reset.asm     | RVCT
+  Arm/Reset.asm     | MSFT
 
 [Sources]
   ArmSmcPsciResetSystemLib.c

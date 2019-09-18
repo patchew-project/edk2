@@ -14,7 +14,7 @@
   LIBRARY_CLASS                  = ArmSmcLib
 
 [Sources.ARM]
-  Arm/ArmSmc.asm    | RVCT
+  Arm/ArmSmc.asm    | MSFT
   Arm/ArmSmc.S      | GCC
 
 [Sources.AARCH64]

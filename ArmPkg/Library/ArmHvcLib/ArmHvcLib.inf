@@ -15,7 +15,7 @@
   LIBRARY_CLASS                  = ArmHvcLib
 
 [Sources.ARM]
-  Arm/ArmHvc.asm    | RVCT
+  Arm/ArmHvc.asm    | MSFT
   Arm/ArmHvc.S      | GCC
 
 [Sources.AARCH64]

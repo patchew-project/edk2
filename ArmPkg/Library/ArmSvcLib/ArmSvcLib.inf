@@ -14,7 +14,7 @@
   LIBRARY_CLASS                  = ArmSvcLib
 
 [Sources.ARM]
-  Arm/ArmSvc.asm    | RVCT
+  Arm/ArmSvc.asm    | MSFT
   Arm/ArmSvc.S      | GCC
 
 [Sources.AARCH64]

@@ -33,7 +33,7 @@
 
 [Sources.Arm]
   Arm/ArmException.c
-  Arm/ExceptionSupport.asm | RVCT
+  Arm/ExceptionSupport.asm | MSFT
   Arm/ExceptionSupport.S   | GCC
 
 [Sources.AARCH64]

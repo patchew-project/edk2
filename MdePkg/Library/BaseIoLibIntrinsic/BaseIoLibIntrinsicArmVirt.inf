@@ -31,7 +31,7 @@
 [Sources.ARM]
   IoLibArmVirt.c
   Arm/ArmVirtMmio.S       | GCC
-  Arm/ArmVirtMmio.asm     | RVCT
+  Arm/ArmVirtMmio.asm     | MSFT
 
 [Sources.AARCH64]
   IoLibArmVirt.c

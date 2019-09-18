@@ -29,7 +29,7 @@
 
 [Sources.Arm]
   Arm/ArmPlatformHelper.S    | GCC
-  Arm/ArmPlatformHelper.asm  | RVCT
+  Arm/ArmPlatformHelper.asm  | MSFT
 
 [Sources.AArch64]
   AArch64/ArmPlatformHelper.S

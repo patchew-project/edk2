@@ -70,7 +70,7 @@
 
 [Sources.ARM]
   Synchronization.c
-  Arm/Synchronization.asm       | RVCT
+  Arm/Synchronization.asm       | MSFT
   Arm/Synchronization.S         | GCC
 
 [Sources.AARCH64]

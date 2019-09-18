@@ -21,11 +21,11 @@
 
 [Sources.ARM]
   Arm/ArchPrePeiCore.c
-  Arm/PrePeiCoreEntryPoint.asm | RVCT
+  Arm/PrePeiCoreEntryPoint.asm | MSFT
   Arm/PrePeiCoreEntryPoint.S   | GCC
-  Arm/SwitchStack.asm      | RVCT
+  Arm/SwitchStack.asm      | MSFT
   Arm/SwitchStack.S        | GCC
-  Arm/Exception.asm        | RVCT
+  Arm/Exception.asm        | MSFT
   Arm/Exception.S          | GCC
 
 [Sources.AARCH64]
