@@ -200,8 +200,10 @@ Loop2
   mov   R9, R4                  ; R9 working copy of the max way size (right aligned)
 
 Loop3
-  orr   R0, R10, R9, LSL R5     ; factor in the way number and cache number into R11
-  orr   R0, R0, R7, LSL R2      ; factor in the index number
+  lsl   R8, R9, R5
+  orr   R0, R10, R8             ; factor in the way number and cache number
+  lsl   R8, R7, R2
+  orr   R0, R0, R8              ; factor in the index number
 
   blx   R1
 

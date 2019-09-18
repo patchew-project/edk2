@@ -90,7 +90,7 @@ Fiq
 ResetEntry
   srsfd     #0x13!                    ; Store return state on SVC stack
                                       ; We are already in SVC mode
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -102,7 +102,7 @@ UndefinedInstructionEntry
   sub       LR, LR, #4                ; Only -2 for Thumb, adjust in CommonExceptionEntry
   srsfd     #0x13!                    ; Store return state on SVC stack
   cps       #0x13                     ; Switch to SVC for common stack
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -113,7 +113,7 @@ UndefinedInstructionEntry
 SoftwareInterruptEntry
   srsfd     #0x13!                    ; Store return state on SVC stack
                                       ; We are already in SVC mode
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -125,7 +125,7 @@ PrefetchAbortEntry
   sub       LR,LR,#4
   srsfd     #0x13!                    ; Store return state on SVC stack
   cps       #0x13                     ; Switch to SVC for common stack
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -137,7 +137,7 @@ DataAbortEntry
   sub       LR,LR,#8
   srsfd     #0x13!                    ; Store return state on SVC stack
   cps       #0x13                     ; Switch to SVC for common stack
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -148,7 +148,7 @@ DataAbortEntry
 ReservedExceptionEntry
   srsfd     #0x13!                    ; Store return state on SVC stack
   cps       #0x13                     ; Switch to SVC for common stack
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -160,7 +160,7 @@ IrqEntry
   sub       LR,LR,#4
   srsfd     #0x13!                    ; Store return state on SVC stack
   cps       #0x13                     ; Switch to SVC for common stack
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
 
@@ -172,7 +172,7 @@ FiqEntry
   sub       LR,LR,#4
   srsfd     #0x13!                    ; Store return state on SVC stack
   cps       #0x13                     ; Switch to SVC for common stack
-  stmfd     SP!,{LR}                  ; Store the link register for the current mode
+  push      {LR}                      ; Store the link register for the current mode
   sub       SP,SP,#0x20               ; Save space for SP, LR, PC, IFAR - CPSR
   stmfd     SP!,{R0-R12}              ; Store the register state
                                       ; Since we have already switch to SVC R8_fiq - R12_fiq
@@ -213,9 +213,11 @@ AsmCommonExceptionEntry
   and       R3, R1, #0x1f           ; Check CPSR to see if User or System Mode
   cmp       R3, #0x1f               ; if ((CPSR == 0x10) || (CPSR == 0x1f))
   cmpne     R3, #0x10               ;
-  stmeqed   R2, {lr}^               ;   save unbanked lr
+  mrseq     R8, lr_usr              ;   save unbanked lr to R8
+  streq     R2, [R8]                ;   make R2 point to R8
                                     ; else
-  stmneed   R2, {lr}                ;   save SVC lr
+  mrsne     R8, lr_svc              ;   save SVC lr to R8
+  strne     R2, [R8]                ;   make R2 point to R8
 
 
   ldr       R5, [SP, #0x58]         ; PC is the LR pushed by srsfd
@@ -280,15 +282,17 @@ CommonCExceptionHandler (
   and       R1, R1, #0x1f           ; Check to see if User or System Mode
   cmp       R1, #0x1f               ; if ((CPSR == 0x10) || (CPSR == 0x1f))
   cmpne     R1, #0x10               ;
-  ldmeqed   R2, {lr}^               ;   restore unbanked lr
+  ldreq     R8, [R2]                ;   load sys/usr lr from R2 pointer
+  msreq     lr_usr, R8              ;   restore unbanked lr
                                     ; else
-  ldmneed   R3, {lr}                ;   restore SVC lr, via ldmfd SP!, {LR}
+  ldrne     R8, [R3]                ;   load SVC lr from R3 pointer
+  msrne     lr_svc, R8              ;   restore SVC lr, via ldmfd SP!, {LR}
 
   ldmfd     SP!,{R0-R12}            ; Restore general purpose registers
                                     ; Exception handler can not change SP
 
   add       SP,SP,#0x20             ; Clear out the remaining stack space
-  ldmfd     SP!,{LR}                ; restore the link register for this context
+  pop       {LR}                    ; restore the link register for this context
   rfefd     SP!                     ; return from exception via srsfd stack slot
 
   END
