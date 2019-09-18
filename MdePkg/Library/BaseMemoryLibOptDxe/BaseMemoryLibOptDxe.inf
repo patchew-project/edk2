@@ -79,11 +79,11 @@
   LIBRARY_CLASS = BaseMemoryLib|DXE_CORE DXE_DRIVER DXE_RUNTIME_DRIVER UEFI_DRIVER UEFI_APPLICATION
 
 [Sources.ARM]
-  Arm/ScanMem.S       |GCC
-  Arm/SetMem.S        |GCC
-  Arm/CopyMem.S       |GCC
-  Arm/CompareMem.S    |GCC
-  Arm/CompareGuid.S   |GCC
+  Arm/ScanMem.S       | GCC
+  Arm/SetMem.S        | GCC
+  Arm/CopyMem.S       | GCC
+  Arm/CompareMem.S    | GCC
+  Arm/CompareGuid.S   | GCC
 
   Arm/ScanMem.asm     |RVCT
   Arm/SetMem.asm      |RVCT
