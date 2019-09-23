@@ -27,6 +27,8 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Protocol/PciOverride.h>
 #include <Protocol/PciEnumerationComplete.h>
 #include <Protocol/IoMmu.h>
+#include <Protocol/PciPlatform2.h>
+#include <Protocol/PciOverride2.h>
 
 #include <Library/DebugLib.h>
 #include <Library/UefiDriverEntryPoint.h>
@@ -79,6 +81,7 @@ typedef enum {
 #include "PciPowerManagement.h"
 #include "PciHotPlugSupport.h"
 #include "PciLib.h"
+#include "PciFeatureSupport.h"
 
 #define VGABASE1  0x3B0
 #define VGALIMIT1 0x3BB
@@ -263,9 +266,13 @@ struct _PCI_IO_DEVICE {
 
   BOOLEAN                                   IsPciExp;
   //
-  // For SR-IOV
+  // For PCI Express Capability List Structure
   //
   UINT8                                     PciExpressCapabilityOffset;
+  PCI_CAPABILITY_PCIEXP                     PciExpStruct;
+  //
+  // For SR-IOV
+  //
   UINT32                                    AriCapabilityOffset;
   UINT32                                    SrIovCapabilityOffset;
   UINT32                                    MrIovCapabilityOffset;
@@ -279,6 +286,11 @@ struct _PCI_IO_DEVICE {
   // This field is used to support this case.
   //
   UINT16                                    BridgeIoAlignment;
+  //
+  // Other PCI features setup flags
+  //
+  UINT8                                     SetupMPS;
+  UINT8                                     SetupMRRS;
 };
 
 #define PCI_IO_DEVICE_FROM_PCI_IO_THIS(a) \

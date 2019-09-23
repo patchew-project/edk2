@@ -1026,6 +1026,16 @@
   # @Prompt Enable UEFI Stack Guard.
   gEfiMdeModulePkgTokenSpaceGuid.PcdCpuStackGuard|FALSE|BOOLEAN|0x30001055
 
+  ## This PCD is to indicate the PCI Bus driver to setup other new PCI features.
+  #  Each PCI feature is represented by its mask bit position and it configures
+  #  if that bit is set.
+  #
+  #   Bit 0 - if set, the PCI Bus driver programs the device's Max_Payload_Size.<BR>
+  #   Bit 1 - if set, the PCI Bus driver programs the device's Max_Read_Req_Size.<BR>
+  #   Bit 2 to 31 - Reserved for future use by the PCI Bus driver.<BR>
+  # @Prompt The UEFI PCU Bus driver enables the new set of other PCI Features.
+  gEfiMdeModulePkgTokenSpaceGuid.PcdOtherPciFeatures|0x00000003|UINT32|0x30001056
+
 [PcdsFixedAtBuild, PcdsPatchableInModule]
   ## Dynamic type PCD can be registered callback function for Pcd setting action.
   #  PcdMaxPeiPcdCallBackNumberPerPcdEntry indicates the maximum number of callback function

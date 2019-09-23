@@ -8,7 +8,7 @@
   PCI Root Bridges. So it means platform needs install PCI Root Bridge IO protocol for each
   PCI Root Bus and install PCI Host Bridge Resource Allocation Protocol.
 
-Copyright (c) 2006 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2006 - 2019, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -34,8 +34,6 @@ BOOLEAN                                       gFullEnumeration     = TRUE;
 UINT64                                        gAllOne              = 0xFFFFFFFFFFFFFFFFULL;
 UINT64                                        gAllZero             = 0;
 
-EFI_PCI_PLATFORM_PROTOCOL                     *gPciPlatformProtocol;
-EFI_PCI_OVERRIDE_PROTOCOL                     *gPciOverrideProtocol;
 EDKII_IOMMU_PROTOCOL                          *mIoMmuProtocol;
 
 
@@ -266,24 +264,7 @@ PciBusDriverBindingStart (
   // If PCI Platform protocol is available, get it now.
   // If the platform implements this, it must be installed before BDS phase
   //
-  gPciPlatformProtocol = NULL;
-  gBS->LocateProtocol (
-        &gEfiPciPlatformProtocolGuid,
-        NULL,
-        (VOID **) &gPciPlatformProtocol
-        );
-
-  //
-  // If PCI Platform protocol doesn't exist, try to Pci Override Protocol.
-  //
-  if (gPciPlatformProtocol == NULL) {
-    gPciOverrideProtocol = NULL;
-    gBS->LocateProtocol (
-          &gEfiPciOverrideProtocolGuid,
-          NULL,
-          (VOID **) &gPciOverrideProtocol
-          );
-  }
+  GetPciPlatformProtocol ();
 
   if (mIoMmuProtocol == NULL) {
     gBS->LocateProtocol (

@@ -170,6 +170,8 @@ DestroyRootBridgeByHandle (
 
     if (Temp->Handle == Controller) {
 
+      DestroyRootBridgePciFeaturesConfigCompletionList ( Temp);
+
       RemoveEntryList (CurrentLink);
 
       DestroyPciDeviceTree (Temp);
@@ -208,8 +210,6 @@ RegisterPciDevice (
   )
 {
   EFI_STATUS          Status;
-  VOID                *PlatformOpRomBuffer;
-  UINTN               PlatformOpRomSize;
   EFI_PCI_IO_PROTOCOL *PciIo;
   UINT8               Data8;
   BOOLEAN             HasEfiImage;
@@ -244,23 +244,13 @@ RegisterPciDevice (
     //
     // Get the OpRom provided by platform
     //
-    if (gPciPlatformProtocol != NULL) {
-      Status = gPciPlatformProtocol->GetPciRom (
-                                       gPciPlatformProtocol,
-                                       PciIoDevice->Handle,
-                                       &PlatformOpRomBuffer,
-                                       &PlatformOpRomSize
-                                       );
-      if (!EFI_ERROR (Status)) {
-        PciIoDevice->EmbeddedRom    = FALSE;
-        PciIoDevice->RomSize        = (UINT32) PlatformOpRomSize;
-        PciIoDevice->PciIo.RomSize  = PlatformOpRomSize;
-        PciIoDevice->PciIo.RomImage = PlatformOpRomBuffer;
-        //
-        // For OpROM read from gPciPlatformProtocol:
-        // Add the Rom Image to internal database for later PCI light enumeration
-        //
-        PciRomAddImageMapping (
+    Status = GetPlatformPciOptionRom ( Controller, PciIoDevice);
+    if (!EFI_ERROR (Status)) {
+      //
+      // For OpROM read from the PCI Platform Protocol:
+      // Add the Rom Image to internal database for later PCI light enumeration
+      //
+      PciRomAddImageMapping (
           NULL,
           PciIoDevice->PciRootBridgeIo->SegmentNumber,
           PciIoDevice->BusNumber,
@@ -268,34 +258,7 @@ RegisterPciDevice (
           PciIoDevice->FunctionNumber,
           PciIoDevice->PciIo.RomImage,
           PciIoDevice->PciIo.RomSize
-          );
-      }
-    } else if (gPciOverrideProtocol != NULL) {
-      Status = gPciOverrideProtocol->GetPciRom (
-                                       gPciOverrideProtocol,
-                                       PciIoDevice->Handle,
-                                       &PlatformOpRomBuffer,
-                                       &PlatformOpRomSize
-                                       );
-      if (!EFI_ERROR (Status)) {
-        PciIoDevice->EmbeddedRom    = FALSE;
-        PciIoDevice->RomSize        = (UINT32) PlatformOpRomSize;
-        PciIoDevice->PciIo.RomSize  = PlatformOpRomSize;
-        PciIoDevice->PciIo.RomImage = PlatformOpRomBuffer;
-        //
-        // For OpROM read from gPciOverrideProtocol:
-        // Add the Rom Image to internal database for later PCI light enumeration
-        //
-        PciRomAddImageMapping (
-          NULL,
-          PciIoDevice->PciRootBridgeIo->SegmentNumber,
-          PciIoDevice->BusNumber,
-          PciIoDevice->DeviceNumber,
-          PciIoDevice->FunctionNumber,
-          PciIoDevice->PciIo.RomImage,
-          PciIoDevice->PciIo.RomSize
-          );
-      }
+        );
     }
   }
 
@@ -597,7 +560,7 @@ DeRegisterPciDevice (
 }
 
 /**
-  Start to manage the PCI device on the specified root bridge or PCI-PCI Bridge.
+  Start the PCI root Ports or PCI-PCI Bridge only.
 
   @param Controller          The root bridge handle.
   @param RootBridge          A pointer to the PCI_IO_DEVICE.
@@ -612,7 +575,82 @@ DeRegisterPciDevice (
 
 **/
 EFI_STATUS
-StartPciDevicesOnBridge (
+StartPciRootPortsOnBridge (
+  IN EFI_HANDLE                          Controller,
+  IN PCI_IO_DEVICE                       *RootBridge
+  )
+
+{
+  PCI_IO_DEVICE             *PciIoDevice;
+  EFI_STATUS                Status;
+  LIST_ENTRY                *CurrentLink;
+  UINT64                    Supports;
+
+  PciIoDevice = NULL;
+  CurrentLink = RootBridge->ChildList.ForwardLink;
+
+  while (CurrentLink != NULL && CurrentLink != &RootBridge->ChildList) {
+
+    PciIoDevice = PCI_IO_DEVICE_FROM_LINK (CurrentLink);
+
+    //
+    // check if the device has been assigned with required resource
+    // and registered
+    //
+    if (!PciIoDevice->Registered && !PciIoDevice->Allocated) {
+      return EFI_NOT_READY;
+    }
+
+    if (IS_PCI_BRIDGE (&PciIoDevice->Pci)) {
+      Status = StartPciRootPortsOnBridge (
+                 Controller,
+                 PciIoDevice
+                 );
+
+      PciIoDevice->PciIo.Attributes (
+                           &(PciIoDevice->PciIo),
+                           EfiPciIoAttributeOperationSupported,
+                           0,
+                           &Supports
+                         );
+      Supports &= (UINT64)EFI_PCI_DEVICE_ENABLE;
+      PciIoDevice->PciIo.Attributes (
+                           &(PciIoDevice->PciIo),
+                           EfiPciIoAttributeOperationEnable,
+                           Supports,
+                           NULL
+                         );
+
+    }
+
+    CurrentLink = CurrentLink->ForwardLink;
+  }
+
+  if (PciIoDevice == NULL) {
+    return EFI_NOT_FOUND;
+  } else {
+    return EFI_SUCCESS;
+  }
+}
+
+
+/**
+  Register to manage the PCI device on the specified root bridge or PCI-PCI Bridge.
+
+  @param Controller          The root bridge handle.
+  @param RootBridge          A pointer to the PCI_IO_DEVICE.
+  @param RemainingDevicePath A pointer to the EFI_DEVICE_PATH_PROTOCOL.
+  @param NumberOfChildren    Children number.
+  @param ChildHandleBuffer   A pointer to the child handle buffer.
+
+  @retval EFI_NOT_READY   Device is not allocated.
+  @retval EFI_UNSUPPORTED Device only support PCI-PCI bridge.
+  @retval EFI_NOT_FOUND   Can not find the specific device.
+  @retval EFI_SUCCESS     Success to start Pci devices on bridge.
+
+**/
+EFI_STATUS
+RegisterPciDevicesOnBridge (
   IN EFI_HANDLE                          Controller,
   IN PCI_IO_DEVICE                       *RootBridge,
   IN EFI_DEVICE_PATH_PROTOCOL            *RemainingDevicePath,
@@ -626,7 +664,6 @@ StartPciDevicesOnBridge (
   EFI_DEVICE_PATH_PROTOCOL  *CurrentDevicePath;
   EFI_STATUS                Status;
   LIST_ENTRY                *CurrentLink;
-  UINT64                    Supports;
 
   PciIoDevice = NULL;
   CurrentLink = RootBridge->ChildList.ForwardLink;
@@ -681,27 +718,13 @@ StartPciDevicesOnBridge (
       // If it is a PPB
       //
       if (IS_PCI_BRIDGE (&PciIoDevice->Pci)) {
-        Status = StartPciDevicesOnBridge (
+        Status = RegisterPciDevicesOnBridge (
                    Controller,
                    PciIoDevice,
                    CurrentDevicePath,
                    NumberOfChildren,
                    ChildHandleBuffer
                    );
-
-        PciIoDevice->PciIo.Attributes (
-                             &(PciIoDevice->PciIo),
-                             EfiPciIoAttributeOperationSupported,
-                             0,
-                             &Supports
-                             );
-        Supports &= (UINT64)EFI_PCI_DEVICE_ENABLE;
-        PciIoDevice->PciIo.Attributes (
-                             &(PciIoDevice->PciIo),
-                             EfiPciIoAttributeOperationEnable,
-                             Supports,
-                             NULL
-                             );
 
         return Status;
       } else {
@@ -733,28 +756,13 @@ StartPciDevicesOnBridge (
       }
 
       if (IS_PCI_BRIDGE (&PciIoDevice->Pci)) {
-        Status = StartPciDevicesOnBridge (
+        Status = RegisterPciDevicesOnBridge (
                    Controller,
                    PciIoDevice,
                    RemainingDevicePath,
                    NumberOfChildren,
                    ChildHandleBuffer
                    );
-
-        PciIoDevice->PciIo.Attributes (
-                             &(PciIoDevice->PciIo),
-                             EfiPciIoAttributeOperationSupported,
-                             0,
-                             &Supports
-                             );
-        Supports &= (UINT64)EFI_PCI_DEVICE_ENABLE;
-        PciIoDevice->PciIo.Attributes (
-                             &(PciIoDevice->PciIo),
-                             EfiPciIoAttributeOperationEnable,
-                             Supports,
-                             NULL
-                             );
-
       }
 
       CurrentLink = CurrentLink->ForwardLink;
@@ -765,6 +773,65 @@ StartPciDevicesOnBridge (
     return EFI_NOT_FOUND;
   } else {
     return EFI_SUCCESS;
+  }
+}
+
+/**
+  Start to manage the PCI device on the specified root bridge or PCI-PCI Bridge.
+
+  @param Controller          The root bridge handle.
+  @param RootBridge          A pointer to the PCI_IO_DEVICE.
+  @param RemainingDevicePath A pointer to the EFI_DEVICE_PATH_PROTOCOL.
+  @param NumberOfChildren    Children number.
+  @param ChildHandleBuffer   A pointer to the child handle buffer.
+
+  @retval EFI_NOT_READY   Device is not allocated.
+  @retval EFI_UNSUPPORTED Device only support PCI-PCI bridge.
+  @retval EFI_NOT_FOUND   Can not find the specific device.
+  @retval EFI_SUCCESS     Success to start Pci devices on bridge.
+
+**/
+EFI_STATUS
+StartPciDevicesOnBridge (
+  IN EFI_HANDLE                          Controller,
+  IN PCI_IO_DEVICE                       *RootBridge,
+  IN EFI_DEVICE_PATH_PROTOCOL            *RemainingDevicePath,
+  IN OUT UINT8                           *NumberOfChildren,
+  IN OUT EFI_HANDLE                      *ChildHandleBuffer
+  )
+
+{
+  EFI_STATUS                Status;
+
+  //
+  // first register all the PCI devices
+  //
+  Status = RegisterPciDevicesOnBridge (
+             Controller,
+             RootBridge,
+             RemainingDevicePath,
+             NumberOfChildren,
+             ChildHandleBuffer
+             );
+
+  if (EFI_ERROR (Status) == EFI_NOT_FOUND) {
+    return Status;
+  } else {
+    if ( CheckOtherPciFeaturesPcd ()) {
+      //
+      // the late configuration of PCI features
+      //
+      Status = EnumerateOtherPciFeatures (
+                  RootBridge
+                );
+    }
+    //
+    // finally start those PCI bridge port devices only
+    //
+    return StartPciRootPortsOnBridge (
+            Controller,
+            RootBridge
+            );
   }
 }
 

@@ -1003,7 +1003,7 @@ PciHostBridgeAdjustAllocation (
     Status = RejectPciDevice (PciResNode->PciDev);
     if (Status == EFI_SUCCESS) {
       DEBUG ((
-        EFI_D_ERROR,
+        DEBUG_ERROR,
         "PciBus: [%02x|%02x|%02x] was rejected due to resource confliction.\n",
         PciResNode->PciDev->BusNumber, PciResNode->PciDev->DeviceNumber, PciResNode->PciDev->FunctionNumber
         ));
@@ -1746,7 +1746,7 @@ NotifyPhase (
 
   HostBridgeHandle  = NULL;
   RootBridgeHandle  = NULL;
-  if (gPciPlatformProtocol != NULL) {
+  if ( CheckPciPlatformProtocolInstall()) {
     //
     // Get Host Bridge Handle.
     //
@@ -1770,42 +1770,11 @@ NotifyPhase (
     //
     // Call PlatformPci::PlatformNotify() if the protocol is present.
     //
-    gPciPlatformProtocol->PlatformNotify (
-                            gPciPlatformProtocol,
-                            HostBridgeHandle,
-                            Phase,
-                            ChipsetEntry
-                            );
-  } else if (gPciOverrideProtocol != NULL){
-    //
-    // Get Host Bridge Handle.
-    //
-    PciResAlloc->GetNextRootBridge (PciResAlloc, &RootBridgeHandle);
-
-    //
-    // Get the rootbridge Io protocol to find the host bridge handle
-    //
-    Status = gBS->HandleProtocol (
-                    RootBridgeHandle,
-                    &gEfiPciRootBridgeIoProtocolGuid,
-                    (VOID **) &PciRootBridgeIo
-                    );
-
-    if (EFI_ERROR (Status)) {
-      return EFI_NOT_FOUND;
-    }
-
-    HostBridgeHandle = PciRootBridgeIo->ParentHandle;
-
-    //
-    // Call PlatformPci::PhaseNotify() if the protocol is present.
-    //
-    gPciOverrideProtocol->PlatformNotify (
-                            gPciOverrideProtocol,
-                            HostBridgeHandle,
-                            Phase,
-                            ChipsetEntry
-                            );
+    PciPlatformNotifyPhase (
+        HostBridgeHandle,
+        Phase,
+        ChipsetEntry
+        );
   }
 
   Status = PciResAlloc->NotifyPhase (
@@ -1813,27 +1782,15 @@ NotifyPhase (
                           Phase
                           );
 
-  if (gPciPlatformProtocol != NULL) {
+  if ( CheckPciPlatformProtocolInstall()) {
     //
     // Call PlatformPci::PlatformNotify() if the protocol is present.
     //
-    gPciPlatformProtocol->PlatformNotify (
-                            gPciPlatformProtocol,
-                            HostBridgeHandle,
-                            Phase,
-                            ChipsetExit
-                            );
-
-  } else if (gPciOverrideProtocol != NULL) {
-    //
-    // Call PlatformPci::PhaseNotify() if the protocol is present.
-    //
-    gPciOverrideProtocol->PlatformNotify (
-                            gPciOverrideProtocol,
-                            HostBridgeHandle,
-                            Phase,
-                            ChipsetExit
-                            );
+    PciPlatformNotifyPhase (
+        HostBridgeHandle,
+        Phase,
+        ChipsetExit
+        );
   }
 
   return Status;
@@ -1914,31 +1871,16 @@ PreprocessController (
   RootBridgePciAddress.Bus              = Bus;
   RootBridgePciAddress.ExtendedRegister = 0;
 
-  if (gPciPlatformProtocol != NULL) {
-    //
-    // Call PlatformPci::PrepController() if the protocol is present.
-    //
-    gPciPlatformProtocol->PlatformPrepController (
-                            gPciPlatformProtocol,
-                            HostBridgeHandle,
-                            RootBridgeHandle,
-                            RootBridgePciAddress,
-                            Phase,
-                            ChipsetEntry
-                            );
-  } else if (gPciOverrideProtocol != NULL) {
-    //
-    // Call PlatformPci::PrepController() if the protocol is present.
-    //
-    gPciOverrideProtocol->PlatformPrepController (
-                            gPciOverrideProtocol,
-                            HostBridgeHandle,
-                            RootBridgeHandle,
-                            RootBridgePciAddress,
-                            Phase,
-                            ChipsetEntry
-                            );
-  }
+  //
+  // Call PlatformPci::PrepController() if the protocol is present.
+  //
+  PciPlatformPreprocessController (
+      HostBridgeHandle,
+      RootBridgeHandle,
+      RootBridgePciAddress,
+      Phase,
+      ChipsetEntry
+    );
 
   Status = PciResAlloc->PreprocessController (
                           PciResAlloc,
@@ -1947,31 +1889,16 @@ PreprocessController (
                           Phase
                           );
 
-  if (gPciPlatformProtocol != NULL) {
-    //
-    // Call PlatformPci::PrepController() if the protocol is present.
-    //
-    gPciPlatformProtocol->PlatformPrepController (
-                            gPciPlatformProtocol,
-                            HostBridgeHandle,
-                            RootBridgeHandle,
-                            RootBridgePciAddress,
-                            Phase,
-                            ChipsetExit
-                            );
-  } else if (gPciOverrideProtocol != NULL) {
-    //
-    // Call PlatformPci::PrepController() if the protocol is present.
-    //
-    gPciOverrideProtocol->PlatformPrepController (
-                            gPciOverrideProtocol,
-                            HostBridgeHandle,
-                            RootBridgeHandle,
-                            RootBridgePciAddress,
-                            Phase,
-                            ChipsetExit
-                            );
-  }
+  //
+  // Call PlatformPci::PrepController() if the protocol is present.
+  //
+  PciPlatformPreprocessController (
+      HostBridgeHandle,
+      RootBridgeHandle,
+      RootBridgePciAddress,
+      Phase,
+      ChipsetExit
+    );
 
   return EFI_SUCCESS;
 }

@@ -198,20 +198,7 @@ CalculateApertureIo16 (
     //
     Status = EFI_NOT_FOUND;
     PciPolicy = 0;
-    if (gPciPlatformProtocol != NULL) {
-      Status = gPciPlatformProtocol->GetPlatformPolicy (
-                                       gPciPlatformProtocol,
-                                       &PciPolicy
-                                       );
-    }
-
-    if (EFI_ERROR (Status) && gPciOverrideProtocol != NULL) {
-      Status = gPciOverrideProtocol->GetPlatformPolicy (
-                                       gPciOverrideProtocol,
-                                       &PciPolicy
-                                       );
-    }
-
+    Status = PciGetPlatformPolicy ( &PciPolicy);
     if (!EFI_ERROR (Status)) {
       if ((PciPolicy & EFI_RESERVE_ISA_IO_ALIAS) != 0) {
         mReserveIsaAliases = TRUE;
