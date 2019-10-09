@@ -250,9 +250,11 @@ GetLowestSupportedVersion (
   //
   // Check the lowest supported version UEFI variable for this device
   //
-  VariableLowestSupportedVersion = GetLowestSupportedVersionFromVariable (Private);
-  if (VariableLowestSupportedVersion > ReturnLsv) {
-    ReturnLsv = VariableLowestSupportedVersion;
+  if (!FeaturePcdGet (PcdLsvPolicy)) {
+    VariableLowestSupportedVersion = GetLowestSupportedVersionFromVariable (Private);
+    if (VariableLowestSupportedVersion > ReturnLsv) {
+      ReturnLsv = VariableLowestSupportedVersion;
+    }
   }
 
   //
@@ -963,7 +965,7 @@ SetTheImage (
   VOID                              *FmpHeader;
   UINTN                             FmpPayloadSize;
   UINT32                            AllHeaderSize;
-  UINT32                            IncommingFwVersion;
+  UINT32                            IncomingFwVersion;
   UINT32                            LastAttemptStatus;
   UINT32                            Version;
   UINT32                            LowestSupportedVersion;
@@ -975,7 +977,7 @@ SetTheImage (
   FmpHeader          = NULL;
   FmpPayloadSize     = 0;
   AllHeaderSize      = 0;
-  IncommingFwVersion = 0;
+  IncomingFwVersion  = 0;
   LastAttemptStatus  = LAST_ATTEMPT_STATUS_ERROR_UNSUCCESSFUL;
 
   if (!FeaturePcdGet (PcdFmpDeviceStorageAccessEnable)) {
@@ -996,7 +998,7 @@ SetTheImage (
   //
   // Set to 0 to clear any previous results.
   //
-  SetLastAttemptVersionInVariable (Private, IncommingFwVersion);
+  SetLastAttemptVersionInVariable (Private, IncomingFwVersion);
 
   //
   // if we have locked the device, then skip the set operation.
@@ -1030,12 +1032,12 @@ SetTheImage (
     Status = EFI_ABORTED;
     goto cleanup;
   }
-  Status = GetFmpPayloadHeaderVersion (FmpHeader, FmpPayloadSize, &IncommingFwVersion);
+  Status = GetFmpPayloadHeaderVersion (FmpHeader, FmpPayloadSize, &IncomingFwVersion);
   if (!EFI_ERROR (Status)) {
     //
     // Set to actual value
     //
-    SetLastAttemptVersionInVariable (Private, IncommingFwVersion);
+    SetLastAttemptVersionInVariable (Private, IncomingFwVersion);
   }
 
 
@@ -1153,14 +1155,31 @@ SetTheImage (
   //
   //Copy the requested image to the firmware using the FmpDeviceLib
   //
-  Status = FmpDeviceSetImage (
-             (((UINT8 *)Image) + AllHeaderSize),
-             ImageSize - AllHeaderSize,
-             VendorCode,
-             FmpDxeProgress,
-             IncommingFwVersion,
-             AbortReason
-             );
+  if (FixedPcdGetBool(PcdLsvPolicy) == 0) {
+    Status = FmpDeviceSetImage (
+               (((UINT8 *)Image) + AllHeaderSize),
+               ImageSize - AllHeaderSize,
+               VendorCode,
+               FmpDxeProgress,
+               IncomingFwVersion,
+               AbortReason
+               );
+  } else {
+    Status = GetFmpPayloadHeaderLowestSupportedVersion (FmpHeader, FmpPayloadSize, &LowestSupportedVersion);
+    if (EFI_ERROR(Status)) {
+      goto cleanup;
+    }
+    Status = FmpDeviceSetImageDeferredLsvCommit (
+               (((UINT8 *)Image) + AllHeaderSize),
+               ImageSize - AllHeaderSize,
+               VendorCode,
+               FmpDxeProgress,
+               IncomingFwVersion,
+               LowestSupportedVersion, 
+               AbortReason
+               );
+  }
+
   if (EFI_ERROR (Status)) {
     DEBUG ((DEBUG_ERROR, "FmpDxe(%s): SetTheImage() SetImage from FmpDeviceLib failed. Status =  %r.\n", mImageIdName, Status));
     goto cleanup;
@@ -1185,9 +1204,11 @@ SetTheImage (
   //
   // Update lowest supported variable
   //
-  LowestSupportedVersion = DEFAULT_LOWESTSUPPORTEDVERSION;
-  GetFmpPayloadHeaderLowestSupportedVersion (FmpHeader, FmpPayloadSize, &LowestSupportedVersion);
-  SetLowestSupportedVersionInVariable (Private, LowestSupportedVersion);
+  if (!FeaturePcdGet (PcdLsvPolicy)) {
+    LowestSupportedVersion = DEFAULT_LOWESTSUPPORTEDVERSION;
+    GetFmpPayloadHeaderLowestSupportedVersion (FmpHeader, FmpPayloadSize, &LowestSupportedVersion);
+    SetLowestSupportedVersionInVariable (Private, LowestSupportedVersion);
+  }
 
   LastAttemptStatus = LAST_ATTEMPT_STATUS_SUCCESS;
 

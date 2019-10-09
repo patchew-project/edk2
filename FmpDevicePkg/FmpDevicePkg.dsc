@@ -104,6 +104,10 @@
       #
       gFmpDevicePkgTokenSpaceGuid.PcdFmpDeviceImageIdName|L"Sample Firmware Device"
       #
+      # Deferred SVN commit to support Resiliency FW update
+      #
+      gFmpDevicePkgTokenSpaceGuid.PcdLsvPolicy|FALSE
+      #
       # Certificates used to authenticate capsule update image
       #
       !include BaseTools/Source/Python/Pkcs7Sign/TestRoot.cer.gFmpDevicePkgTokenSpaceGuid.PcdFmpDevicePkcs7CertBufferXdr.inc

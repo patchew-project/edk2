@@ -411,6 +411,84 @@ FmpDeviceCheckImage (
 }
 
 /**
+  Updates the firmware image of the device.
+
+  This function updates the hardware with the new firmware image.  This function
+  returns EFI_UNSUPPORTED if the firmware image is not updatable.  If the
+  firmware image is updatable, the function should perform the following minimal
+  validations before proceeding to do the firmware image update.
+    - Validate the image is a supported image for this device.  The function
+      returns EFI_ABORTED if the image is unsupported.  The function can
+      optionally provide more detailed information on why the image is not a
+      supported image.
+    - Validate the data from VendorCode if not null.  Image validation must be
+      performed before VendorCode data validation.  VendorCode data is ignored
+      or considered invalid if image validation failed.  The function returns
+      EFI_ABORTED if the data is invalid.
+
+  VendorCode enables vendor to implement vendor-specific firmware image update
+  policy.  Null if the caller did not specify the policy or use the default
+  policy.  As an example, vendor can implement a policy to allow an option to
+  force a firmware image update when the abort reason is due to the new firmware
+  image version is older than the current firmware image version or bad image
+  checksum.  Sensitive operations such as those wiping the entire firmware image
+  and render the device to be non-functional should be encoded in the image
+  itself rather than passed with the VendorCode.  AbortReason enables vendor to
+  have the option to provide a more detailed description of the abort reason to
+  the caller.
+
+  @param[in]  Image             Points to the new image.
+  @param[in]  ImageSize         Size of the new image in bytes.
+  @param[in]  VendorCode        This enables vendor to implement vendor-specific
+                                firmware image update policy. Null indicates the
+                                caller did not specify the policy or use the
+                                default policy.
+  @param[in]  Progress          A function used by the driver to report the
+                                progress of the firmware update.
+  @param[in]  CapsuleFwVersion  FMP Payload Header version of the image.
+  @param[in]  LsvUpdate         The Lowest Supported Version of the new firmware
+                                image from the update capsule that provided the
+                                new firmware image.
+  @param[out] AbortReason       A pointer to a pointer to a null-terminated
+                                string providing more details for the aborted
+                                operation. The buffer is allocated by this
+                                function with AllocatePool(), and it is the
+                                caller's responsibility to free it with a call
+                                to FreePool().
+
+  @retval EFI_SUCCESS            The device was successfully updated with the
+                                 new image.
+  @retval EFI_ABORTED            The operation is aborted.
+  @retval EFI_INVALID_PARAMETER  The Image was NULL.
+  @retval EFI_UNSUPPORTED        The operation is not supported.
+
+**/
+EFI_STATUS
+EFIAPI
+FmpDeviceSetImageDeferredLsvCommit (
+  IN  CONST VOID                                     *Image,
+  IN  UINTN                                          ImageSize,
+  IN  CONST VOID                                     *VendorCode,
+  IN  EFI_FIRMWARE_MANAGEMENT_UPDATE_IMAGE_PROGRESS  Progress,
+  IN  UINT32                                         CapsuleFwVersion,
+  IN  UINT32                                         LsvUpdate,
+  OUT CHAR16                                         **AbortReason
+  )
+{
+  EFI_STATUS Status;
+
+  Status = FmpDeviceSetImage (
+             Image,
+             ImageSize,
+             VendorCode,
+             Progress,
+             CapsuleFwVersion,
+             AbortReason
+             );
+  return Status;
+}
+
+/**
   Updates a firmware device with a new firmware image.  This function returns
   EFI_UNSUPPORTED if the firmware image is not updatable.  If the firmware image
   is updatable, the function should perform the following minimal validations
