@@ -157,6 +157,10 @@ def get_modified_files(repo, args):
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(
         description='Retrieves information on who to cc for review on a given commit')
+    PARSER.add_argument('-q', '--quiet',
+                        action="store_true",
+                        help='Quiet mode, useful when piping the output to a script',
+                        required=False)
     PARSER.add_argument('commit',
                         action="store",
                         help='git revision to examine (default: HEAD)',
@@ -181,10 +185,11 @@ if __name__ == '__main__':
     ADDRESSES = []
 
     for file in FILES:
-        print(file)
+        if not ARGS.quiet:
+            print(file)
         addresslist = get_maintainers(file, SECTIONS)
         if addresslist:
             ADDRESSES += addresslist
 
     for address in list(OrderedDict.fromkeys(ADDRESSES)):
-        print('  %s' % address)
+        print('%s%s' % ("" if ARGS.quiet else "  ", address))
