@@ -14,6 +14,7 @@ Albecki Mateusz <mateusz.albecki@intel.com> </o=Intel/ou=Exchange Administrative
 Alex Gu <xgu3@users.sourceforge.net> <xgu3@6f19259b-4bc3-4df7-8a09-765794883524>
 Andrew Fish <afish@apple.com> <ajfish@6f19259b-4bc3-4df7-8a09-765794883524>
 Andrew Fish <afish@apple.com> <andrewfish@6f19259b-4bc3-4df7-8a09-765794883524>
+Bruce Maynard <Bruce.Maynard@Emulex.Com> <darylm503@Edk2>
 Chao Zhang <chao.b.zhang@intel.com> <czhang46>
 Chao Zhang <chao.b.zhang@intel.com> <czhang46@6f19259b-4bc3-4df7-8a09-765794883524>
 Dandan Bi <dandan.bi@intel.com> <C:/Program Files (x86)/Git/o=Intel/ou=Exchange Administrative Group (FYDIBOHF23SPDLT)/cn=Recipients/cn=Bi, Dandan08b>
@@ -32,12 +33,14 @@ Fu Siyuan <siyuan.fu@intel.com> <C:/Program Files (x86)/Git/o=Intel/ou=Exchange 
 GregX Yeh <gregx.yeh@intel.com> GregX Yeh <devel@edk2.groups.io>
 Guo Dong <guo.dong@intel.com> <gdong1>
 Guo Dong <guo.dong@intel.com> <gdong1@6f19259b-4bc3-4df7-8a09-765794883524>
+Harry Liebel <Harry.Liebel@arm.com> NetBSD project <NetBSD project>
 Hess Chen <hesheng.chen@intel.com> <hchen30@6f19259b-4bc3-4df7-8a09-765794883524>
 Hot Tian <hot.tian@intel.com> <hhtian@6f19259b-4bc3-4df7-8a09-765794883524>
 Jaben Carsey <jaben.carsey@intel.com> <jcarsey>
 Jaben Carsey <jaben.carsey@intel.com> <jcarsey@6f19259b-4bc3-4df7-8a09-765794883524>
 Jaben Carsey <jaben.carsey@intel.com> <jcarsey@Edk2>
 Jaben Carsey <jaben.carsey@intel.com> </o=Intel/ou=Americas01/cn=Workers/cn=Carsey, Jaben>
+Jeff Bobzin <jeff.bobzin@insyde.com> <Jeff Bobzin (jeff.bobzin@insyde.com)>
 Jeff Fan <jeff.fan@intel.com> <vanjeff@6f19259b-4bc3-4df7-8a09-765794883524>
 Jian J Wang <jian.j.wang@intel.com> Jian J Wang <devel@edk2.groups.io>
 Jiewen Yao <jiewen.yao@intel.com> <jyao1@6f19259b-4bc3-4df7-8a09-765794883524>
@@ -54,6 +57,7 @@ Lee Leahy <leroy.p.leahy@intel.com> <lpleahy@6f19259b-4bc3-4df7-8a09-76579488352
 Lee Rosenbaum <leegrosenbaum@users.sourceforge.net> <leegrosenbaum@6f19259b-4bc3-4df7-8a09-765794883524>
 Lei Jin <ljin6@users.sourceforge.net> <ljin6@6f19259b-4bc3-4df7-8a09-765794883524>
 Leon Li <leon.li@intel.com> <xli24@6f19259b-4bc3-4df7-8a09-765794883524>
+Liming Gao <liming.gao@intel.com> <Gao, Liming liming.gao@intel.com>
 Liming Gao <liming.gao@intel.com> <lgao4@6f19259b-4bc3-4df7-8a09-765794883524>
 Maggie Chu <maggie.chu@intel.com> </o=Intel/ou=External (FYDIBOHF25SPDLT)/cn=Recipients/cn=fe425ca7e5f4401abed22b904fe5d964>
 Marvin Häuser <Marvin.Haeuser@outlook.com> edk2-devel <edk2-devel-bounces@lists.01.org>
@@ -61,10 +65,12 @@ Michael Kinney <michael.d.kinney@intel.com> <mdkinney@6f19259b-4bc3-4df7-8a09-76
 Michael Kinney <michael.d.kinney@intel.com> </o=Intel/ou=Americas01/cn=Workers/cn=Kinney, Michael D>
 Michael Krau <michaelx_krau@users.sourceforge.net> <michaelx_krau@6f19259b-4bc3-4df7-8a09-765794883524>
 Michael Kubacki <michael.a.kubacki@intel.com> </o=Intel/ou=External (FYDIBOHF25SPDLT)/cn=Recipients/cn=3c8b0226e75f4ab08d20c151cb7a8a72>
+Michael Zimmermann <sigmaepsilon92@gmail.com> <[mailto:sigmaepsilon92@gmail.com]>
 Mike Wu <mike.wu@intel.com> <mikewuping@6f19259b-4bc3-4df7-8a09-765794883524>
 Myron Porter <myronporter@users.sourceforge.net> <MyronPorter@6f19259b-4bc3-4df7-8a09-765794883524>
 Olivier Martin <olivier.martin@arm.com> <oliviermartin>
 Olivier Martin <olivier.martin@arm.com> <oliviermartin@6f19259b-4bc3-4df7-8a09-765794883524>
+Olivier Martin <olivier.martin@arm.com> <Olivier Martin olivier.martin@arm.com>
 Penny Gao <pgao2@users.sourceforge.net> <pgao2@6f19259b-4bc3-4df7-8a09-765794883524>
 Qian Ouyang <qian.ouyang@intel.com> <qianouyang@6f19259b-4bc3-4df7-8a09-765794883524>
 Qian Ouyang <qian.ouyang@intel.com> <qouyang@6f19259b-4bc3-4df7-8a09-765794883524>
@@ -78,6 +84,7 @@ Richard Thomaiyar <richard.marian.thomaiyar@intel.com> edk2-devel On Behalf Of r
 Rui Sun <rsun3@users.sourceforge.net> <rsun3@6f19259b-4bc3-4df7-8a09-765794883524>
 Ruiyu Ni <ruiyu.ni@intel.com> <C:/Program Files (x86)/Git/O=Intel/OU=Pacifica02/cn=Recipients/cn=rni2>
 Ruiyu Ni <ruiyu.ni@intel.com> <niruiyu@6f19259b-4bc3-4df7-8a09-765794883524>
+Samer El-Haj-Mahmoud <elhaj@hpe.com> <Samer El-Haj-Mahmoud elhaj@hp.com>
 Scott Wang <qwang12@users.sourceforge.net> <qwang12@6f19259b-4bc3-4df7-8a09-765794883524>
 Siyuan Fu <siyuan.fu@intel.com> <sfu5@6f19259b-4bc3-4df7-8a09-765794883524>
 Stanely Chen <jchen20@users.sourceforge.net> <jchen20@6f19259b-4bc3-4df7-8a09-765794883524>
