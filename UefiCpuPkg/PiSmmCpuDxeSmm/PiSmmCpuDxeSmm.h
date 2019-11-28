@@ -198,6 +198,7 @@ typedef UINT32                              SMM_CPU_ARRIVAL_EXCEPTIONS;
 #define ARRIVAL_EXCEPTION_DELAYED           0x2
 #define ARRIVAL_EXCEPTION_SMI_DISABLED      0x4
 
+#define MAX_PRE_RESERVE_TOKEN_COUNT                     0x512
 //
 // Wrapper used to convert EFI_AP_PROCEDURE2 and EFI_AP_PROCEDURE.
 //
@@ -216,6 +217,17 @@ typedef struct {
 } PROCEDURE_TOKEN;
 
 #define PROCEDURE_TOKEN_FROM_LINK(a)  CR (a, PROCEDURE_TOKEN, Link, PROCEDURE_TOKEN_SIGNATURE)
+
+#define TOKEN_BUFFER_SIGNATURE  SIGNATURE_32 ('T', 'K', 'B', 'S')
+
+typedef struct {
+  UINTN                   Signature;
+  LIST_ENTRY              Link;
+
+  UINT8                   *Buffer;
+} TOKEN_BUFFER;
+
+#define TOKEN_BUFFER_FROM_LINK(a)  CR (a, TOKEN_BUFFER, Link, TOKEN_BUFFER_SIGNATURE)
 
 //
 // Private structure for the SMM CPU module that is stored in DXE Runtime memory
@@ -243,6 +255,10 @@ typedef struct {
   PROCEDURE_WRAPPER               *ApWrapperFunc;
   LIST_ENTRY                      TokenList;
 
+  LIST_ENTRY                      OldTokenBufList;
+
+  UINT8                           *CurrentTokenBuf;
+  UINTN                           UsedTokenNum;     // Only record tokens used in CurrentTokenBuf.
 } SMM_CPU_PRIVATE_DATA;
 
 extern SMM_CPU_PRIVATE_DATA  *gSmmCpuPrivate;
