@@ -492,6 +492,24 @@ FreeTokens (
 {
   LIST_ENTRY            *Link;
   PROCEDURE_TOKEN       *ProcToken;
+  TOKEN_BUFFER          *TokenBuf;
+
+  //
+  // Only reset current used Token buffer, not free this buffer.
+  //
+  gSmmCpuPrivate->UsedTokenNum = 0;
+
+  Link = GetFirstNode (&gSmmCpuPrivate->OldTokenBufList);
+  while (!IsNull (&gSmmCpuPrivate->OldTokenBufList, Link)) {
+    TokenBuf = TOKEN_BUFFER_FROM_LINK (Link);
+
+    Link = GetNextNode (&gSmmCpuPrivate->OldTokenBufList, Link);
+
+    RemoveEntryList (&TokenBuf->Link);
+    
+    FreePool (TokenBuf->Buffer);
+    FreePool (TokenBuf);
+  }
 
   while (!IsListEmpty (&gSmmCpuPrivate->TokenList)) {
     Link = GetFirstNode (&gSmmCpuPrivate->TokenList);
@@ -499,7 +517,6 @@ FreeTokens (
 
     RemoveEntryList (&ProcToken->Link);
 
-    FreePool ((VOID *)ProcToken->ProcedureToken);
     FreePool (ProcToken);
   }
 }
@@ -1115,13 +1132,32 @@ CreateToken (
   VOID
   )
 {
-  PROCEDURE_TOKEN    *ProcToken;
+  PROCEDURE_TOKEN     *ProcToken;
   SPIN_LOCK           *CpuToken;
-  UINTN               SpinLockSize;
+  TOKEN_BUFFER        *TokenBuf;
 
-  SpinLockSize = GetSpinLockProperties ();
-  CpuToken = AllocatePool (SpinLockSize);
-  ASSERT (CpuToken != NULL);
+  if (gSmmCpuPrivate->UsedTokenNum >= MAX_TOKEN_COUND_NUMBER - 1) {
+    DEBUG((DEBUG_INFO, "Token buffer not enough, allocate new buffer[TokenNum=0x%x]!\n", gSmmCpuPrivate->UsedTokenNum));
+
+    //
+    // Save Current Token Buffer to the list.
+    //
+    TokenBuf = AllocatePool (sizeof (TOKEN_BUFFER));
+    ASSERT (TokenBuf != NULL);
+    TokenBuf->Signature = TOKEN_BUFFER_SIGNATURE;
+    TokenBuf->Buffer  = gSmmCpuPrivate->CurrentTokenBuf;
+
+    InsertTailList (&gSmmCpuPrivate->OldTokenBufList, &TokenBuf->Link);
+
+    gSmmCpuPrivate->CurrentTokenBuf   = AllocateZeroPool (gSmmCpuPrivate->TokenSize * MAX_TOKEN_COUND_NUMBER);
+    ASSERT (gSmmCpuPrivate->CurrentTokenBuf != NULL);
+    gSmmCpuPrivate->UsedTokenNum = 0;
+  }
+
+  CpuToken = (SPIN_LOCK *)(gSmmCpuPrivate->CurrentTokenBuf + gSmmCpuPrivate->TokenSize * gSmmCpuPrivate->UsedTokenNum);
+  gSmmCpuPrivate->UsedTokenNum++;
+  //DEBUG((DEBUG_INFO, "Token Address = 0x%x, Token Number = 0x%x\n", CpuToken, gSmmCpuPrivate->UsedTokenNum));
+
   InitializeSpinLock (CpuToken);
   AcquireSpinLock (CpuToken);
 
@@ -1732,10 +1768,18 @@ InitializeDataForMmMp (
   VOID
   )
 {
+  gSmmCpuPrivate->TokenSize = (UINT32)GetSpinLockProperties ();
+  DEBUG((DEBUG_INFO, "gSmmCpuPrivate->TokenSize = 0x%x\n", gSmmCpuPrivate->TokenSize));
+
+  gSmmCpuPrivate->CurrentTokenBuf   = AllocateZeroPool (gSmmCpuPrivate->TokenSize * MAX_TOKEN_COUND_NUMBER);
+  ASSERT (gSmmCpuPrivate->CurrentTokenBuf != NULL);
+  gSmmCpuPrivate->UsedTokenNum = 0;
+
   gSmmCpuPrivate->ApWrapperFunc = AllocatePool (sizeof (PROCEDURE_WRAPPER) * gSmmCpuPrivate->SmmCoreEntryContext.NumberOfCpus);
   ASSERT (gSmmCpuPrivate->ApWrapperFunc != NULL);
 
   InitializeListHead (&gSmmCpuPrivate->TokenList);
+  InitializeListHead (&gSmmCpuPrivate->OldTokenBufList);
 }
 
 /**
