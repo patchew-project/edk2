@@ -140,6 +140,9 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdHeapGuardPropertyMask               ## CONSUMES
   gEfiMdePkgTokenSpaceGuid.PcdControlFlowEnforcementPropertyMask        ## CONSUMES
 
+[FixedPcd]
+  gUefiCpuPkgTokenSpaceGuid.PcdTokenCountPerChunk                       ## CONSUMES
+
 [Pcd.X64]
   gUefiCpuPkgTokenSpaceGuid.PcdCpuSmmRestrictedMemoryAccess        ## CONSUMES
 
