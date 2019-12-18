@@ -88,6 +88,53 @@ HashAndExtend (
   );
 
 /**
+  Init hash sequence.
+
+  @param HashHandle Hash handle.
+
+  @retval EFI_SUCCESS          Hash start and HashHandle returned.
+  @retval EFI_UNSUPPORTED      System has no HASH library registered.
+**/
+EFI_STATUS
+EFIAPI
+HashApiInit (
+  OUT  HASH_HANDLE   *HashHandle
+);
+
+/**
+  Update hash data.
+
+  @param HashHandle    Hash handle.
+  @param DataToHash    Data to be hashed.
+  @param DataToHashLen Data size.
+
+  @retval EFI_SUCCESS          Hash updated.
+  @retval EFI_UNSUPPORTED      System has no HASH library registered.
+**/
+EFI_STATUS
+EFIAPI
+HashApiUpdate (
+  IN HASH_HANDLE    HashHandle,
+  IN VOID           *DataToHash,
+  IN UINTN          DataToHashLen
+);
+
+/**
+  Hash complete.
+
+  @param HashHandle    Hash handle.
+  @param Digest        Hash Digest.
+
+  @retval EFI_SUCCESS     Hash complete and Digest is returned.
+**/
+EFI_STATUS
+EFIAPI
+HashApiFinal (
+  IN  HASH_HANDLE HashHandle,
+  OUT UINT8       *Digest
+);
+
+/**
   Start hash sequence.
 
   @param HashHandle Hash handle.
@@ -133,6 +180,21 @@ EFI_STATUS
   OUT TPML_DIGEST_VALUES *DigestList
   );
 
+/**
+  Hash complete.
+
+  @param HashHandle    Hash handle.
+  @param Digest        Hash Digest.
+
+  @retval EFI_SUCCESS     Hash complete and Digest is returned.
+**/
+typedef
+EFI_STATUS
+(EFIAPI *HASH_FINAL_EX) (
+  IN  HASH_HANDLE      HashHandle,
+  OUT UINT8            **Digest
+  );
+
 #define HASH_ALGORITHM_SHA1_GUID    EFI_HASH_ALGORITHM_SHA1_GUID
 #define HASH_ALGORITHM_SHA256_GUID  EFI_HASH_ALGORITHM_SHA256_GUID
 #define HASH_ALGORITHM_SHA384_GUID  EFI_HASH_ALGORITHM_SHA384_GUID
@@ -149,6 +211,13 @@ typedef struct {
   HASH_FINAL                         HashFinal;
 } HASH_INTERFACE;
 
+typedef struct {
+  EFI_GUID                           HashGuid;
+  HASH_INIT                          HashInit;
+  HASH_UPDATE                        HashUpdate;
+  HASH_FINAL_EX                      HashFinal;
+} HASH_INTERFACE_UNIFIED_API;
+
 /**
   This service register Hash.
 
@@ -164,4 +233,18 @@ RegisterHashInterfaceLib (
   IN HASH_INTERFACE   *HashInterface
   );
 
+/**
+  This service registers Hash Interface.
+
+  @param HashInterface  Hash interface
+
+  @retval EFI_SUCCESS          This hash interface is registered successfully.
+  @retval EFI_UNSUPPORTED      System does not support register this interface.
+  @retval EFI_ALREADY_STARTED  System already register this interface.
+**/
+EFI_STATUS
+EFIAPI
+RegisterHashApiLib (
+  IN HASH_INTERFACE_UNIFIED_API *HashInterface
+);
 #endif
