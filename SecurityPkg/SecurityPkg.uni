@@ -309,12 +309,3 @@
                                                                                         "0x00000003  -  SHA384.<BR>\n"
                                                                                         "0x00000004  -  SHA512.<BR>\n"
                                                                                         "0x00000005  -  SM3.<BR>"
-
-#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdHashAlgorithmBitmap_PROMPT  #language en-US "Hash Algorithm bitmap for Base Hash API."
-
-#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdHashAlgorithmBitmap_HELP  #language en-US "This PCD indicated final BIOS supported Hash mask for Base Hash API.\n"
-                                                                                        "Bios may choose to register a subset of PcdTpm2HashMask.<BR>\n"
-                                                                                        "This PCD is final value of how many hash algo are registered with\n"
-                                                                                        "Base Hash API.<BR>\n"
-                                                                                        "This PCD will start with value 0 by the Base Hash API constructor and\n"
-                                                                                        "the value will be updated as Hash Algo are registered.<BR>\n"

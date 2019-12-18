@@ -515,14 +515,5 @@
   # @ValidRange 0x80000001 | 0x00000000 - 0x00000005
   gEfiSecurityPkgTokenSpaceGuid.PcdSystemHashPolicy|0x02|UINT32|0x00010024
 
-  ## This PCD indicated final BIOS supported Hash mask for Base Hash API.
-  #    Bios may choose to register a subset of PcdTpm2HashMask.
-  #    This PCD is final value of how many hash algo are registered with
-  #    Base Hash API.
-  # This PCD will start with value 0 by the Base Hash API constructor and
-  # the value will be updated as Hash Algo are registered.
-  # @Prompt Hash Algorithm bitmap for Base Hash API.
-  gEfiSecurityPkgTokenSpaceGuid.PcdHashAlgorithmBitmap|0xFFFFFFFF|UINT32|0x00010025
-
 [UserExtensions.TianoCore."ExtraFiles"]
   SecurityPkgExtra.uni

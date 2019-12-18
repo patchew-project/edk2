@@ -13,7 +13,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/DebugLib.h>
 #include <Library/BaseCryptLib.h>
 #include <Library/MemoryAllocationLib.h>
-#include <Library/HashLib.h>
+#include <Library/BaseHashLib.h>
 
 /**
   Start hash sequence.
