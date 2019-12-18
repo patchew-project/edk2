@@ -246,6 +246,7 @@
   #
   SecurityPkg/Library/HashApiInstanceSha1/HashApiInstanceSha1.inf
   SecurityPkg/Library/HashApiInstanceSha256/HashApiInstanceSha256.inf
+  SecurityPkg/Library/HashApiInstanceSha384/HashApiInstanceSha384.inf
 
   #
   # TPM
