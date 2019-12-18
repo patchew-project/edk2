@@ -295,3 +295,26 @@
 
 #string STR_gEfiSecurityPkgTokenSpaceGuid_PcdTpm2AcpiTableLasa_HELP  #language en-US "This PCD defines LASA of TPM2 ACPI table\n\n"
                                                                                      "0 means this field is unsupported\n"
+
+#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdSystemHashPolicy_PROMPT  #language en-US "HASH algorithm to verify unsigned PE/COFF image"
+
+#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdSystemHashPolicy_HELP  #language en-US "This PCD indicates the HASH algorithm to verify unsigned PE/COFF image.<BR><BR>\n"
+                                                                                        "Based on the value set, the required algorithm is chosen to verify\n"
+                                                                                        "the unsigned image during Secure Boot.<BR>\n"
+                                                                                        "The hashing algorithm selected must match the hashing algorithm used to\n"
+                                                                                        "hash the image to be added to DB using tools such as KeyEnroll.<BR>\n"
+                                                                                        "0x00000000  -  SHA1.<BR>\n"
+                                                                                        "0x00000001  -  SHA224.<BR>"
+                                                                                        "0x00000002  -  SHA256.<BR>\n"
+                                                                                        "0x00000003  -  SHA384.<BR>\n"
+                                                                                        "0x00000004  -  SHA512.<BR>\n"
+                                                                                        "0x00000005  -  SM3.<BR>"
+
+#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdHashAlgorithmBitmap_PROMPT  #language en-US "Hash Algorithm bitmap for Base Hash API."
+
+#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdHashAlgorithmBitmap_HELP  #language en-US "This PCD indicated final BIOS supported Hash mask for Base Hash API.\n"
+                                                                                        "Bios may choose to register a subset of PcdTpm2HashMask.<BR>\n"
+                                                                                        "This PCD is final value of how many hash algo are registered with\n"
+                                                                                        "Base Hash API.<BR>\n"
+                                                                                        "This PCD will start with value 0 by the Base Hash API constructor and\n"
+                                                                                        "the value will be updated as Hash Algo are registered.<BR>\n"

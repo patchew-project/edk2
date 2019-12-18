@@ -27,6 +27,10 @@
   #
   HashLib|Include/Library/HashLib.h
 
+  ##  @libraryclass  Provides hash interfaces from different implementations.
+  #
+  BaseHashLib|Include/Library/HashLib.h
+
   ##  @libraryclass  Provides a platform specific interface to detect physically present user.
   #
   PlatformSecureLib|Include/Library/PlatformSecureLib.h
@@ -495,6 +499,30 @@
   ## This PCD records LASA field in TPM2 ACPI table.
   # @Prompt Tpm2AcpiTableLasa LASA field in TPM2 ACPI table.
   gEfiSecurityPkgTokenSpaceGuid.PcdTpm2AcpiTableLasa|0|UINT64|0x00010023
+
+  [PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+  ## This PCD indicates the HASH algorithm to verify unsigned PE/COFF image
+  #  Based on the value set, the required algorithm is chosen to verify
+  #  the unsigned image during Secure Boot.<BR>
+  #  The hashing algorithm selected must match the hashing algorithm used to
+  #  hash the image to be added to DB using tools such as KeyEnroll.<BR>
+  #     0x00000001    - SHA1.<BR>
+  #     0x00000002    - SHA256.<BR>
+  #     0x00000004    - SHA384.<BR>
+  #     0x00000008    - SHA512.<BR>
+  #     0x00000010    - SM3_256.<BR>
+  # @Prompt Set policy for hashing unsigned image for Secure Boot.
+  # @ValidRange 0x80000001 | 0x00000000 - 0x00000005
+  gEfiSecurityPkgTokenSpaceGuid.PcdSystemHashPolicy|0x02|UINT32|0x00010024
+
+  ## This PCD indicated final BIOS supported Hash mask for Base Hash API.
+  #    Bios may choose to register a subset of PcdTpm2HashMask.
+  #    This PCD is final value of how many hash algo are registered with
+  #    Base Hash API.
+  # This PCD will start with value 0 by the Base Hash API constructor and
+  # the value will be updated as Hash Algo are registered.
+  # @Prompt Hash Algorithm bitmap for Base Hash API.
+  gEfiSecurityPkgTokenSpaceGuid.PcdHashAlgorithmBitmap|0xFFFFFFFF|UINT32|0x00010025
 
 [UserExtensions.TianoCore."ExtraFiles"]
   SecurityPkgExtra.uni
