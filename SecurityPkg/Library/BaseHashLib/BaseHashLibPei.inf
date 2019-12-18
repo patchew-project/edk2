@@ -44,7 +44,5 @@
   PcdLib
 
 [Pcd]
-  gEfiSecurityPkgTokenSpaceGuid.PcdTpm2HashMask             ## CONSUMES
-  gEfiSecurityPkgTokenSpaceGuid.PcdHashAlgorithmBitmap    ## CONSUMES
-  gEfiSecurityPkgTokenSpaceGuid.PcdSystemHashPolicy    ## CONSUMES
+ gEfiSecurityPkgTokenSpaceGuid.PcdSystemHashPolicy    ## CONSUMES
 
