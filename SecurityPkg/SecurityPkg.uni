@@ -5,7 +5,7 @@
 // It also provides the definitions(including PPIs/PROTOCOLs/GUIDs and library classes)
 // and libraries instances, which are used for those features.
 //
-// Copyright (c) 2009 - 2018, Intel Corporation. All rights reserved.<BR>
+// Copyright (c) 2009 - 2020, Intel Corporation. All rights reserved.<BR>
 //
 // SPDX-License-Identifier: BSD-2-Clause-Patent
 //
@@ -295,3 +295,16 @@
 
 #string STR_gEfiSecurityPkgTokenSpaceGuid_PcdTpm2AcpiTableLasa_HELP  #language en-US "This PCD defines LASA of TPM2 ACPI table\n\n"
                                                                                      "0 means this field is unsupported\n"
+										     
+										     #string STR_gEfiSecurityPkgTokenSpaceGuid_PcdSystemHashPolicy_PROMPT  #language en-US "HASH algorithm to verify unsigned PE/COFF image"
+
+#string STR_gEfiSecurityPkgTokenSpaceGuid_PcdSystemHashPolicy_HELP  #language en-US "This PCD indicates the HASH algorithm used by Unified Hash API.<BR><BR>\n"
+                                                                                        "Based on the value set, the required algorithm is chosen to calculate\n"
+                                                                                        "the hash desired.<BR>\n"
+                                                                                        "0x00000001  -  MD4.<BR>\n"
+                                                                                        "0x00000002  -  MD5.<BR>\n"
+                                                                                        "0x00000003  -  SHA1.<BR>\n"
+                                                                                        "0x00000004  -  SHA256.<BR>\n"
+                                                                                        "0x00000005  -  SHA384.<BR>\n"
+                                                                                        "0x00000006  -  SHA512.<BR>\n"
+                                                                                        "0x00000007  -  SM3.<BR>"
