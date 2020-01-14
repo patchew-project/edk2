@@ -5,7 +5,7 @@
 #  It also provides the definitions(including PPIs/PROTOCOLs/GUIDs and library classes)
 #  and libraries instances, which are used for those features.
 #
-# Copyright (c) 2009 - 2019, Intel Corporation. All rights reserved.<BR>
+# Copyright (c) 2009 - 2020, Intel Corporation. All rights reserved.<BR>
 # (C) Copyright 2015 Hewlett Packard Enterprise Development LP <BR>
 # Copyright (c) 2017, Microsoft Corporation.  All rights reserved. <BR>
 # SPDX-License-Identifier: BSD-2-Clause-Patent
@@ -26,6 +26,10 @@
   ##  @libraryclass  Provides hash interfaces from different implementations.
   #
   HashLib|Include/Library/HashLib.h
+
+  ##  @libraryclass  Provides hash interfaces from different implementations.
+  #
+  BaseHashLib|Include/Library/HashLib.h
 
   ##  @libraryclass  Provides a platform specific interface to detect physically present user.
   #
@@ -499,6 +503,23 @@
   ## This PCD records LASA field in TPM2 ACPI table.
   # @Prompt Tpm2AcpiTableLasa LASA field in TPM2 ACPI table.
   gEfiSecurityPkgTokenSpaceGuid.PcdTpm2AcpiTableLasa|0|UINT64|0x00010023
+
+[PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
+  ## This PCD indicates the HASH algorithm to verify unsigned PE/COFF image
+  #  Based on the value set, the required algorithm is chosen to verify
+  #  the unsigned image during Secure Boot.<BR>
+  #  The hashing algorithm selected must match the hashing algorithm used to
+  #  hash the image to be added to DB using tools such as KeyEnroll.<BR>
+  #     0x00000001    - MD4.<BR>
+  #     0x00000002    - MD5.<BR>
+  #     0x00000003    - SHA1.<BR>
+  #     0x00000004    - SHA256.<BR>
+  #     0x00000005    - SHA384.<BR>
+  #     0x00000006    - SHA512.<BR>
+  #     0x00000007    - SM3_256.<BR>
+  # @Prompt Set policy for hashing unsigned image for Secure Boot.
+  # @ValidRange 0x80000001 | 0x00000001 - 0x00000007
+  gEfiSecurityPkgTokenSpaceGuid.PcdSystemHashPolicy|0x04|UINT8|0x00010024
 
 [UserExtensions.TianoCore."ExtraFiles"]
   SecurityPkgExtra.uni
