@@ -636,7 +636,7 @@ ApWakeupFunction (
       //   to initialize AP in InitConfig path.
       // NOTE: IDTR.BASE stored in CpuMpData->CpuData[0].VolatileRegisters points to a different IDT shared by all APs.
       //
-      RestoreVolatileRegisters (&CpuMpData->CpuData[0].VolatileRegisters, FALSE);
+      RestoreVolatileRegisters (&CpuMpData->CpuData[CpuMpData->BspNumber].VolatileRegisters, FALSE);
       InitializeApData (CpuMpData, ProcessorNumber, BistData, ApTopOfStack);
       ApStartupSignalBuffer = CpuMpData->CpuData[ProcessorNumber].StartupApSignal;
 
@@ -1615,6 +1615,7 @@ MpInitLibInitialize (
   UINTN                    ApResetVectorSize;
   UINTN                    BackupBufferAddr;
   UINTN                    ApIdtBase;
+  UINT64                   BspTopOfStack;
 
   OldCpuMpData = GetCpuMpDataFromGuidedHob ();
   if (OldCpuMpData == NULL) {
@@ -1677,7 +1678,7 @@ MpInitLibInitialize (
   CpuMpData->BackupBufferSize = ApResetVectorSize;
   CpuMpData->WakeupBuffer     = (UINTN) -1;
   CpuMpData->CpuCount         = 1;
-  CpuMpData->BspNumber        = 0;
+  CpuMpData->BspNumber        = OldCpuMpData != NULL ? OldCpuMpData->BspNumber : 0;
   CpuMpData->WaitEvent        = NULL;
   CpuMpData->SwitchBspFlag    = FALSE;
   CpuMpData->CpuData          = (CPU_AP_DATA *) (CpuMpData + 1);
@@ -1704,11 +1705,12 @@ MpInitLibInitialize (
   // Don't pass BSP's TR to APs to avoid AP init failure.
   //
   VolatileRegisters.Tr = 0;
-  CopyMem (&CpuMpData->CpuData[0].VolatileRegisters, &VolatileRegisters, sizeof (VolatileRegisters));
+  CopyMem (&CpuMpData->CpuData[CpuMpData->BspNumber].VolatileRegisters, &VolatileRegisters, sizeof (VolatileRegisters));
   //
   // Set BSP basic information
   //
-  InitializeApData (CpuMpData, 0, 0, CpuMpData->Buffer + ApStackSize);
+  BspTopOfStack = CpuMpData->Buffer + (CpuMpData->BspNumber + 1) * CpuMpData->CpuApStackSize;
+  InitializeApData (CpuMpData, CpuMpData->BspNumber, 0, BspTopOfStack);
   //
   // Save assembly code information
   //
