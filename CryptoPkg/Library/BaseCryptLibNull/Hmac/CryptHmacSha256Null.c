@@ -9,26 +9,6 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include "InternalCryptLib.h"
 
 /**
-  Retrieves the size, in bytes, of the context buffer required for HMAC-SHA256 operations.
-  (NOTE: This API is deprecated.
-         Use HmacSha256New() / HmacSha256Free() for HMAC-SHA256 Context operations.)
-
-  Return zero to indicate this interface is not supported.
-
-  @retval  0   This interface is not supported.
-
-**/
-UINTN
-EFIAPI
-HmacSha256GetContextSize (
-  VOID
-  )
-{
-  ASSERT (FALSE);
-  return 0;
-}
-
-/**
   Allocates and initializes one HMAC_CTX context for subsequent HMAC-SHA256 use.
 
   Return NULL to indicate this interface is not supported.

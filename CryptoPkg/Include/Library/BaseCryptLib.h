@@ -1026,23 +1026,6 @@ Sm3HashAll (
 //=====================================================================================
 
 /**
-  Retrieves the size, in bytes, of the context buffer required for HMAC-MD5 operations.
-  (NOTE: This API is deprecated.
-         Use HmacMd5New() / HmacMd5Free() for HMAC-MD5 Context operations.)
-
-  If this interface is not supported, then return zero.
-
-  @return  The size, in bytes, of the context buffer required for HMAC-MD5 operations.
-  @retval  0   This interface is not supported.
-
-**/
-UINTN
-EFIAPI
-HmacMd5GetContextSize (
-  VOID
-  );
-
-/**
   Allocates and initializes one HMAC_CTX context for subsequent HMAC-MD5 use.
 
   If this interface is not supported, then return NULL.
