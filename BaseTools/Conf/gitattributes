@@ -17,3 +17,5 @@
 *.fdf     diff=ini
 *.fdf.inc diff=ini
 *.inf     diff=ini
+*.h       diff=cpp
+*.c       diff=cpp
