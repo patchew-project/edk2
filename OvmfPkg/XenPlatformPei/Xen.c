@@ -504,6 +504,10 @@ CalibrateLapicTimer (
     / (TscTick2 - TscTick);
   DEBUG ((DEBUG_INFO, "APIC Freq % 8lu Hz\n", Freq));
 
+  ASSERT (Freq <= MAX_UINT32);
+  Status = PcdSet32S (PcdFSBClock, Freq);
+  ASSERT_RETURN_ERROR (Status);
+
   UnmapXenPage (SharedInfo);
 
 Exit:
