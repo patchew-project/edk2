@@ -52,6 +52,7 @@
   DebugLib
   HobLib
   IoLib
+  LocalApicLib
   PciLib
   ResourcePublicationLib
   PeiServicesLib

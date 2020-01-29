@@ -19,6 +19,7 @@
 //
 #include <Library/DebugLib.h>
 #include <Library/HobLib.h>
+#include <Library/LocalApicLib.h>
 #include <Library/MemoryAllocationLib.h>
 #include <Library/PcdLib.h>
 #include <Guid/XenInfo.h>
@@ -385,4 +386,126 @@ InitializeXen (
   ASSERT_RETURN_ERROR (PcdStatus);
 
   return EFI_SUCCESS;
+}
+
+
+EFI_STATUS
+MapSharedInfoPage (
+  IN VOID *PagePtr
+  )
+{
+  xen_add_to_physmap_t  Parameters;
+  INTN                  ReturnCode;
+
+  Parameters.domid = DOMID_SELF;
+  Parameters.space = XENMAPSPACE_shared_info;
+  Parameters.idx = 0;
+  Parameters.gpfn = (UINTN) PagePtr >> EFI_PAGE_SHIFT;
+  ReturnCode = XenHypercallMemoryOp (XENMEM_add_to_physmap, &Parameters);
+  if (ReturnCode != 0) {
+    return EFI_NO_MAPPING;
+  }
+  return EFI_SUCCESS;
+}
+
+VOID
+UnmapXenPage (
+  IN VOID *PagePtr
+  )
+{
+  xen_remove_from_physmap_t Parameters;
+  INTN                      ReturnCode;
+
+  Parameters.domid = DOMID_SELF;
+  Parameters.gpfn = (UINTN) PagePtr >> EFI_PAGE_SHIFT;
+  ReturnCode = XenHypercallMemoryOp (XENMEM_remove_from_physmap, &Parameters);
+  ASSERT (ReturnCode == 0);
+}
+
+
+STATIC
+UINT64
+GetCPUFreq (
+  IN XEN_VCPU_TIME_INFO *VcpuTime
+  )
+{
+  UINT32 Version;
+  UINT32 TSCToSystemMultiplier;
+  INT8   TSCShift;
+  UINT64 CPUFreq;
+
+  do {
+    Version = VcpuTime->Version;
+    MemoryFence ();
+    TSCToSystemMultiplier = VcpuTime->TSCToSystemMultiplier;
+    TSCShift = VcpuTime->TSCShift;
+    MemoryFence ();
+  } while (((Version & 1) != 0) && (Version != VcpuTime->Version));
+
+  CPUFreq = (1000000000ULL << 32) / TSCToSystemMultiplier;
+  if (TSCShift >= 0) {
+      CPUFreq >>= VcpuTime->TSCShift;
+  } else {
+      CPUFreq <<= -VcpuTime->TSCShift;
+  }
+  return CPUFreq;
+}
+
+VOID
+XenDelay (
+  IN XEN_VCPU_TIME_INFO *VcpuTimeInfo,
+  IN UINT64             DelayNs
+  )
+{
+  UINT64 Tick;
+
+  Tick = AsmReadTsc ();
+  Tick += (DelayNs * GetCPUFreq (VcpuTimeInfo)) / 1000000000ULL;
+  while (AsmReadTsc() <= Tick) {
+    CpuPause();
+  }
+}
+
+
+/**
+  Calculate the frequency of the Local Apic Timer
+**/
+VOID
+CalibrateLapicTimer (
+  VOID
+  )
+{
+  XEN_SHARED_INFO       *SharedInfo;
+  XEN_VCPU_TIME_INFO    *VcpuTimeInfo;
+  UINT32                TimerTick, TimerTick2;
+  UINT64                TscTick, TscTick2;
+  UINT64                Freq;
+  EFI_STATUS            Status;
+
+  SharedInfo = AllocatePages (1);
+  Status = MapSharedInfoPage (SharedInfo);
+  ASSERT_EFI_ERROR (Status);
+  if (EFI_ERROR (Status)) {
+    goto Exit;
+  }
+
+  VcpuTimeInfo = &SharedInfo->VcpuInfo[0].Time;
+
+  InitializeApicTimer (1, MAX_UINT32, TRUE, 0);
+  DisableApicTimerInterrupt ();
+
+  TimerTick = GetApicTimerCurrentCount ();
+  TscTick = AsmReadTsc ();
+  XenDelay (VcpuTimeInfo, 1000000ULL);
+  TimerTick2 = GetApicTimerCurrentCount ();
+  TscTick2 = AsmReadTsc ();
+
+  Freq = (GetCPUFreq (VcpuTimeInfo) * (TimerTick - TimerTick2))
+    / (TscTick2 - TscTick);
+  DEBUG ((DEBUG_INFO, "APIC Freq % 8lu Hz\n", Freq));
+
+  UnmapXenPage (SharedInfo);
+
+Exit:
+  FreePages (SharedInfo, 1);
 }

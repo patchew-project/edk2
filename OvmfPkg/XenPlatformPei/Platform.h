@@ -127,6 +127,11 @@ XenGetE820Map (
   UINT32 *Count
   );
 
+VOID
+CalibrateLapicTimer (
+  VOID
+  );
+
 extern EFI_BOOT_MODE mBootMode;
 
 extern UINT8 mPhysMemAddressWidth;
