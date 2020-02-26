@@ -950,4 +950,10 @@
     <LibraryClasses>
       Tpm12DeviceLib|SecurityPkg/Library/Tpm12DeviceLibDTpm/Tpm12DeviceLibDTpm.inf
   }
+!if $(TPM_CONFIG_ENABLE) == TRUE
+  SecurityPkg/Tcg/TcgConfigDxe/TcgConfigDxe.inf {
+    <LibraryClasses>
+      PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
+  }
+!endif
 !endif
