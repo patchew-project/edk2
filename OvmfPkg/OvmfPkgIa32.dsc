@@ -31,8 +31,8 @@
   DEFINE SECURE_BOOT_ENABLE      = FALSE
   DEFINE SMM_REQUIRE             = FALSE
   DEFINE SOURCE_DEBUG_ENABLE     = FALSE
-  DEFINE TPM2_ENABLE             = FALSE
-  DEFINE TPM2_CONFIG_ENABLE      = FALSE
+  DEFINE TPM_ENABLE              = FALSE
+  DEFINE TPM_CONFIG_ENABLE       = FALSE
 
   #
   # Network definition
@@ -205,7 +205,7 @@
   XenHypercallLib|OvmfPkg/Library/XenHypercallLib/XenHypercallLib.inf
   XenPlatformLib|OvmfPkg/Library/XenPlatformLib/XenPlatformLib.inf
 
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
   Tpm2CommandLib|SecurityPkg/Library/Tpm2CommandLib/Tpm2CommandLib.inf
   Tcg2PhysicalPresenceLib|OvmfPkg/Library/Tcg2PhysicalPresenceLibQemu/DxeTcg2PhysicalPresenceLib.inf
   Tcg2PpVendorLib|SecurityPkg/Library/Tcg2PpVendorLibNull/Tcg2PpVendorLibNull.inf
@@ -279,7 +279,7 @@
   PcdLib|MdePkg/Library/PeiPcdLib/PeiPcdLib.inf
   QemuFwCfgLib|OvmfPkg/Library/QemuFwCfgLib/QemuFwCfgPeiLib.inf
 
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/PeiCryptLib.inf
   Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibDTpm/Tpm2DeviceLibDTpm.inf
 !endif
@@ -360,7 +360,7 @@
   PciLib|OvmfPkg/Library/DxePciLibI440FxQ35/DxePciLibI440FxQ35.inf
   MpInitLib|UefiCpuPkg/Library/MpInitLib/DxeMpInitLib.inf
   QemuFwCfgS3Lib|OvmfPkg/Library/QemuFwCfgS3Lib/DxeQemuFwCfgS3LibFwCfg.inf
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
   Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibTcg2/Tpm2DeviceLibTcg2.inf
 !endif
 
@@ -575,12 +575,12 @@
 
   gEfiSecurityPkgTokenSpaceGuid.PcdOptionRomImageVerificationPolicy|0x00
 
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
   gEfiSecurityPkgTokenSpaceGuid.PcdTpmInstanceGuid|{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}
 !endif
 
 [PcdsDynamicHii]
-!if $(TPM2_ENABLE) == TRUE && $(TPM2_CONFIG_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE && $(TPM_CONFIG_ENABLE) == TRUE
   gEfiSecurityPkgTokenSpaceGuid.PcdTcgPhysicalPresenceInterfaceVer|L"TCG2_VERSION"|gTcg2ConfigFormSetGuid|0x0|"1.3"|NV,BS
   gEfiSecurityPkgTokenSpaceGuid.PcdTpm2AcpiTableRev|L"TCG2_VERSION"|gTcg2ConfigFormSetGuid|0x8|3|NV,BS
 !endif
@@ -631,7 +631,7 @@
 !endif
   UefiCpuPkg/CpuMpPei/CpuMpPei.inf
 
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
   OvmfPkg/Tcg/Tcg2Config/Tcg2ConfigPei.inf
   SecurityPkg/Tcg/Tcg2Pei/Tcg2Pei.inf {
     <LibraryClasses>
@@ -667,7 +667,7 @@
 !if $(SECURE_BOOT_ENABLE) == TRUE
       NULL|SecurityPkg/Library/DxeImageVerificationLib/DxeImageVerificationLib.inf
 !endif
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
       NULL|SecurityPkg/Library/DxeTpm2MeasureBootLib/DxeTpm2MeasureBootLib.inf
 !endif
   }
@@ -910,9 +910,9 @@
 !endif
 
   #
-  # TPM2 support
+  # TPM support
   #
-!if $(TPM2_ENABLE) == TRUE
+!if $(TPM_ENABLE) == TRUE
   SecurityPkg/Tcg/Tcg2Dxe/Tcg2Dxe.inf {
     <LibraryClasses>
       Tpm2DeviceLib|SecurityPkg/Library/Tpm2DeviceLibRouter/Tpm2DeviceLibRouterDxe.inf
@@ -924,7 +924,7 @@
       NULL|SecurityPkg/Library/HashInstanceLibSha512/HashInstanceLibSha512.inf
       NULL|SecurityPkg/Library/HashInstanceLibSm3/HashInstanceLibSm3.inf
   }
-!if $(TPM2_CONFIG_ENABLE) == TRUE
+!if $(TPM_CONFIG_ENABLE) == TRUE
   SecurityPkg/Tcg/Tcg2Config/Tcg2ConfigDxe.inf
 !endif
 !endif
