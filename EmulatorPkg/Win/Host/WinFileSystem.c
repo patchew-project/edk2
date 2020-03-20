@@ -1159,6 +1159,12 @@ WinNtFileRead (
       }
     }
 
+    if (FileSize > *BufferSize) {
+      Status = EFI_BUFFER_TOO_SMALL;
+      *BufferSize = FileSize;
+      goto Done;
+    }
+
     Status = ReadFile (
       PrivateFile->LHandle,
       Buffer,
