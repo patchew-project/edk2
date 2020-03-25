@@ -37,4 +37,11 @@
 //
 #define ACPI_TIMER_OFFSET 0x8
 
+//
+// bhyve definitions
+//
+#define BHYVE_PCI_DEVICE_ID 0x1275 // NetApp vendor ID
+
+#define BHYVE_ACPI_TIMER_IO_ADDR 0x408
+
 #endif
