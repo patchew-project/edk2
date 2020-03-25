@@ -39,6 +39,8 @@ AcpiTimerLibConstructor (
   //
   HostBridgeDevId = PciRead16 (OVMF_HOSTBRIDGE_DID);
   switch (HostBridgeDevId) {
+    case BHYVE_PCI_DEVICE_ID:
+      return RETURN_SUCCESS;
     case INTEL_82441_DEVICE_ID:
       Pmba       = POWER_MGMT_REGISTER_PIIX4 (PIIX4_PMBA);
       PmbaAndVal = ~(UINT32)PIIX4_PMBA_MASK;
@@ -101,6 +103,8 @@ InternalAcpiGetTimerTick (
   //
   HostBridgeDevId = PciRead16 (OVMF_HOSTBRIDGE_DID);
   switch (HostBridgeDevId) {
+    case BHYVE_PCI_DEVICE_ID:
+      return IoRead32(BHYVE_ACPI_TIMER_IO_ADDR);
     case INTEL_82441_DEVICE_ID:
       Pmba = POWER_MGMT_REGISTER_PIIX4 (PIIX4_PMBA);
       break;
