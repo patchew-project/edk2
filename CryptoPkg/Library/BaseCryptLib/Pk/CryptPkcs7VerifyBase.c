@@ -14,6 +14,63 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <openssl/pkcs7.h>
 
 /**
+  Check the contents of PKCS7 is not data.
+
+  It is copied from PKCS7_type_is_other() in pk7_doit.c.
+
+  @param p7 Pointer to the location which the PKCS7 is located at.
+
+  @return int The content type.
+**/
+static
+int
+Pkcs7TypeIsOther (
+  PKCS7 *p7
+  )
+{
+  int isOthers = 1;
+  int nid = OBJ_obj2nid(p7->type);
+
+  switch (nid) {
+    case NID_pkcs7_data:
+    case NID_pkcs7_signed:
+    case NID_pkcs7_enveloped:
+    case NID_pkcs7_signedAndEnveloped:
+    case NID_pkcs7_encrypted:
+      isOthers = 0;
+      break;
+    default:
+      isOthers = 1;
+  }
+
+  return isOthers;
+}
+
+/**
+  Get the ASN.1 string for the PKCS7.
+
+  It is copied from PKCS7_get_octet_string() in pk7_doit.c.
+  @param p7 Pointer to the location which the PKCS7 is located at.
+
+  @return ASN1_OCTET_STRING ASN.1 string.
+**/
+static
+ASN1_OCTET_STRING*
+Pkcs7GetOctetString (
+  PKCS7 *p7
+  )
+{
+  if (PKCS7_type_is_data(p7)) {
+    return p7->d.data;
+  }
+  if (Pkcs7TypeIsOther(p7) && p7->d.other &&
+      (p7->d.other->type == V_ASN1_OCTET_STRING)) {
+    return p7->d.other->value.octet_string;
+  }
+  return NULL;
+}
+
+/**
   Extracts the attached content from a PKCS#7 signed data if existed. The input signed
   data could be wrapped in a ContentInfo structure.
 
@@ -98,7 +155,7 @@ Pkcs7GetAttachedContent (
     //
     // Retrieve the attached content in PKCS7 signedData
     //
-    OctStr = Pkcs7->d.sign->contents->d.data;
+    OctStr = Pkcs7GetOctetString (Pkcs7->d.sign->contents);
     if ((OctStr->length > 0) && (OctStr->data != NULL)) {
       *ContentSize = OctStr->length;
       *Content     = AllocatePool (*ContentSize);
