@@ -78,6 +78,7 @@
   DebugLib
   OpensslLib
   IntrinsicLib
+  FltUsedLib
 
 #
 # Remove these [BuildOptions] after this library is cleaned up

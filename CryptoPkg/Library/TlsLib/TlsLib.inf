@@ -37,6 +37,7 @@
   BaseMemoryLib
   DebugLib
   IntrinsicLib
+  FltUsedLib
   MemoryAllocationLib
   OpensslLib
   SafeIntLib
