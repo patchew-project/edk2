@@ -435,13 +435,6 @@ DxeTpm2MeasureBootHandler (
   EFI_PHYSICAL_ADDRESS                FvAddress;
   UINT32                              Index;
 
-  //
-  // Check for invalid parameters.
-  //
-  if (File == NULL) {
-    return EFI_ACCESS_DENIED;
-  }
-
   Status = gBS->LocateProtocol (&gEfiTcg2ProtocolGuid, NULL, (VOID **) &Tcg2Protocol);
   if (EFI_ERROR (Status)) {
     //
@@ -615,6 +608,13 @@ DxeTpm2MeasureBootHandler (
   //
   Status = PeCoffLoaderGetImageInfo (&ImageContext);
   if (EFI_ERROR (Status)) {
+    //
+    // Check for invalid parameters.
+    //
+    if (File == NULL) {
+      Status = EFI_ACCESS_DENIED;
+    }
+
     //
     // The information can't be got from the invalid PeImage
     //
