@@ -785,9 +785,6 @@ SerializeState (
 
   Generally called from within a test case prior to quitting or rebooting.
 
-  @param[in]  FrameworkHandle    A handle to the current running framework that
-                                 dispatched the test.  Necessary for recording
-                                 certain test events with the framework.
   @param[in]  ContextToSave      A buffer of test case-specific data to be saved
                                  along with framework state.  Will be passed as
                                  "Context" to the test case upon resume.  This
@@ -808,21 +805,21 @@ SerializeState (
 EFI_STATUS
 EFIAPI
 SaveFrameworkState (
-  IN UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle,
   IN UNIT_TEST_CONTEXT           ContextToSave     OPTIONAL,
   IN UINTN                       ContextToSaveSize
   )
 {
-  EFI_STATUS             Status;
-  UNIT_TEST_SAVE_HEADER  *Header;
+  EFI_STATUS                  Status;
+  UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle;
+  UNIT_TEST_SAVE_HEADER       *Header;
 
   Header = NULL;
+  FrameworkHandle = GetActiveFrameworkHandle();
 
   //
   // First, let's not make assumptions about the parameters.
   //
-  if (FrameworkHandle == NULL ||
-      (ContextToSave != NULL && ContextToSaveSize == 0) ||
+  if ((ContextToSave != NULL && ContextToSaveSize == 0) ||
       ContextToSaveSize > MAX_UINT32) {
     return EFI_INVALID_PARAMETER;
   }

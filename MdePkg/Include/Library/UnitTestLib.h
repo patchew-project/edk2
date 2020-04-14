@@ -315,9 +315,6 @@ FreeUnitTestFramework (
 
   Generally called from within a test case prior to quitting or rebooting.
 
-  @param[in]  FrameworkHandle    A handle to the current running framework that
-                                 dispatched the test.  Necessary for recording
-                                 certain test events with the framework.
   @param[in]  ContextToSave      A buffer of test case-specific data to be saved
                                  along with framework state.  Will be passed as
                                  "Context" to the test case upon resume.  This
@@ -338,7 +335,6 @@ FreeUnitTestFramework (
 EFI_STATUS
 EFIAPI
 SaveFrameworkState (
-  IN UNIT_TEST_FRAMEWORK_HANDLE  FrameworkHandle,
   IN UNIT_TEST_CONTEXT           ContextToSave     OPTIONAL,
   IN UINTN                       ContextToSaveSize
   );
