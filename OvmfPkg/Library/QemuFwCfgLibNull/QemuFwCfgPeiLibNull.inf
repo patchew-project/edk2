@@ -1,0 +1,36 @@
+## @file
+#
+#  Stateful, implicitly initialized fw_cfg library.
+#
+#  Copyright (C) 2013, Red Hat, Inc.
+#  Copyright (c) 2008 - 2012, Intel Corporation. All rights reserved.<BR>
+#  Copyright (c) 2017, AMD Incorporated. All rights reserved.<BR>
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = QemuFwCfgPeiLibNull
+  FILE_GUID                      = 404DEFA4-548D-4535-9D6B-915B14D98BC2
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = QemuFwCfgLib|PEIM
+
+  CONSTRUCTOR                    = QemuFwCfgInitialize
+
+#
+# The following information is for reference only and not required by the build tools.
+#
+#  VALID_ARCHITECTURES           = IA32 X64
+#
+
+[Sources]
+  QemuFwCfgLibInternal.h
+  QemuFwCfgLibNull.c
+  QemuFwCfgPeiNull.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  OvmfPkg/OvmfPkg.dec
