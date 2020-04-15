@@ -42,4 +42,5 @@
   DebugLib
   IoLib
   MemoryAllocationLib
+  IntrinsicLib
 
