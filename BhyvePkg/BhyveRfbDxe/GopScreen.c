@@ -184,7 +184,7 @@ EmuGopSetMode (
   This->Mode->FrameBufferSize = Private->FbSize;
   DEBUG ((DEBUG_INFO, "BHYVE GOP FrameBufferBase: 0x%x, FrameBufferSize: 0x%x\n", This->Mode->FrameBufferBase, This->Mode->FrameBufferSize));
 
-  BhyveSetGraphicsMode(Private, ModeData->HorizontalResolution, ModeData->VerticalResolution, ModeData->ColorDepth);
+  BhyveSetGraphicsMode(Private, (UINT16)ModeData->HorizontalResolution, (UINT16)ModeData->VerticalResolution, (UINT16)ModeData->ColorDepth);
 
   RETURN_STATUS ret = FrameBufferBltConfigure (
     (VOID*)(UINTN) This->Mode->FrameBufferBase,
