@@ -28,6 +28,12 @@ AcpiPmControl (
   AcpiPmBaseAddress = 0;
   HostBridgeDevId = PciRead16 (OVMF_HOSTBRIDGE_DID);
   switch (HostBridgeDevId) {
+  case BHYVE_PCI_DEVICE_ID:
+    AcpiPmBaseAddress = BHYVE_PMBASE_VALUE;
+    // Bhyve needs a value of 5 to enter S5 (power off)
+    if (SuspendType == 0)
+      SuspendType = 5;
+    break;
   case INTEL_82441_DEVICE_ID:
     AcpiPmBaseAddress = PIIX4_PMBA_VALUE;
     break;

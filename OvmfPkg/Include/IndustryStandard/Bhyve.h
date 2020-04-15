@@ -18,4 +18,8 @@
 
 #define BHYVE_ACPI_TIMER_IO_ADDR 0x408
 
+#define BHYVE_PMBASE_VALUE 0x400
+
+#define BHYVE_PCI_DEVICE_ID 0x1275 // NetApp vendor ID
+
 #endif // __BHYVE_H__
