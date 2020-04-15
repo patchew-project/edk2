@@ -1,15 +1,21 @@
 ## @file
 #  OVMF ACPI Platform Driver
 #
-#  Copyright (c) 2008 - 2019, Intel Corporation. All rights reserved.<BR>
-#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#  Copyright (c) 2008 - 2018, Intel Corporation. All rights reserved.<BR>
+#  This program and the accompanying materials
+#  are licensed and made available under the terms and conditions of the BSD License
+#  which accompanies this distribution.  The full text of the license may be found at
+#  http://opensource.org/licenses/bsd-license.php
+#
+#  THE PROGRAM IS DISTRIBUTED UNDER THE BSD LICENSE ON AN "AS IS" BASIS,
+#  WITHOUT WARRANTIES OR REPRESENTATIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED.
 #
 ##
 
 [Defines]
   INF_VERSION                    = 0x00010005
-  BASE_NAME                      = AcpiPlatform
-  FILE_GUID                      = 49970331-E3FA-4637-9ABC-3B7868676970
+  BASE_NAME                      = AcpiPlatformBhyve
+  FILE_GUID                      = D5F92408-BAB5-44CA-8A60-C212F01D7E9D
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
   ENTRY_POINT                    = AcpiPlatformEntryPoint
@@ -35,9 +41,9 @@
 [Packages]
   MdePkg/MdePkg.dec
   MdeModulePkg/MdeModulePkg.dec
-  OvmfPkg/OvmfPkg.dec
   BhyvePkg/BhyvePkg.dec
   UefiCpuPkg/UefiCpuPkg.dec
+  PcAtChipsetPkg/PcAtChipsetPkg.dec
 
 [LibraryClasses]
   UefiLib
@@ -46,9 +52,10 @@
   DebugLib
   UefiBootServicesTableLib
   UefiDriverEntryPoint
+  HobLib
+  BhyveFwCtlLib
   QemuFwCfgLib
   QemuFwCfgS3Lib
-  BhyveFwCtlLib
   MemoryAllocationLib
   BaseLib
   DxeServicesTableLib

@@ -157,8 +157,10 @@ InstallOvmfFvTables (
 
   if (QemuDetected ()) {
     TableInstallFunction = QemuInstallAcpiTable;
-  } else {
+  } else if (XenDetected()) {
     TableInstallFunction = InstallAcpiTable;
+  } else {
+    TableInstallFunction = BhyveInstallAcpiTable;
   }
 
   //
@@ -245,11 +247,11 @@ InstallAcpiTables (
   IN   EFI_ACPI_TABLE_PROTOCOL       *AcpiTable
   )
 {
-  EFI_STATUS                         Status;
+  EFI_STATUS                         Status = EFI_UNSUPPORTED;
 
   if (XenDetected ()) {
     Status = InstallXenTables (AcpiTable);
-  } else {
+  } else if (QemuDetected()) {
     Status = InstallQemuFwCfgTables (AcpiTable);
   }
 
