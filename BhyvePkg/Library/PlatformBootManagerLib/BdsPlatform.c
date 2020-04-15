@@ -1358,7 +1358,9 @@ PlatformBdsConnectSequence (
   Note that DxeSmmReadyToLock must be signaled after this function returns;
   otherwise the script wouldn't be saved actually.
 **/
+#if defined(__GNUC__)
 __attribute__((unused))
+#endif
 STATIC
 VOID
 SaveS3BootScript (
