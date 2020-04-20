@@ -205,14 +205,22 @@
   Tcg2PhysicalPresenceLib|OvmfPkg/Library/Tcg2PhysicalPresenceLibNull/DxeTcg2PhysicalPresenceLib.inf
   TpmMeasurementLib|MdeModulePkg/Library/TpmMeasurementLibNull/TpmMeasurementLibNull.inf
   RealTimeClockLib|OvmfPkg/Library/XenRealTimeClockLib/XenRealTimeClockLib.inf
+!ifdef $(DEBUG_ON_HYPERVISOR_CONSOLE)
+  DebugLib|OvmfPkg/Library/XenDebugLibIoPort/PlatformDebugLibIoPort.inf
+!else
   DebugLib|OvmfPkg/Library/PlatformDebugLibIoPort/PlatformDebugLibIoPort.inf
+!endif
 
 [LibraryClasses.common]
   BaseCryptLib|CryptoPkg/Library/BaseCryptLib/BaseCryptLib.inf
 
 [LibraryClasses.common.SEC]
   QemuFwCfgLib|OvmfPkg/Library/QemuFwCfgLib/QemuFwCfgSecLib.inf
+!ifdef $(DEBUG_ON_HYPERVISOR_CONSOLE)
+  DebugLib|OvmfPkg/Library/XenDebugLibIoPort/PlatformDebugLibIoPort.inf
+!else
   DebugLib|OvmfPkg/Library/PlatformDebugLibIoPort/PlatformRomDebugLibIoPort.inf
+!endif
   ReportStatusCodeLib|MdeModulePkg/Library/PeiReportStatusCodeLib/PeiReportStatusCodeLib.inf
   ExtractGuidedSectionLib|MdePkg/Library/BaseExtractGuidedSectionLib/BaseExtractGuidedSectionLib.inf
 !if $(SOURCE_DEBUG_ENABLE) == TRUE
@@ -404,6 +412,11 @@
   # Network Pcds
   #
 !include NetworkPkg/NetworkPcds.dsc.inc
+
+!ifdef $(DEBUG_ON_HYPERVISOR_CONSOLE)
+  ## This flag is used to control the destination port for PlatformDebugLibIoPort
+  gUefiOvmfPkgTokenSpaceGuid.PcdDebugIoPort|0xe9
+!endif
 
   # IRQs 5, 9, 10, 11 are level-triggered
   gUefiOvmfPkgTokenSpaceGuid.Pcd8259LegacyModeEdgeLevel|0x0E20
