@@ -664,8 +664,9 @@ ApWakeupFunction (
       BistData = *(UINT32 *) ((UINTN) ApTopOfStack - sizeof (UINTN));
       //
       // CpuMpData->CpuData[0].VolatileRegisters is initialized based on BSP environment,
-      //   to initialize AP in InitConfig path.
-      // NOTE: IDTR.BASE stored in CpuMpData->CpuData[0].VolatileRegisters points to a different IDT shared by all APs.
+      //   to initialize AP in InitConfig/ApInitReconfig path.
+      // NOTE: IDTR.BASE stored in CpuMpData->CpuData[0].VolatileRegisters points to a
+      //  different IDT shared by all APs.
       //
       RestoreVolatileRegisters (&CpuMpData->CpuData[0].VolatileRegisters, FALSE);
       InitializeApData (CpuMpData, ProcessorNumber, BistData, ApTopOfStack);
@@ -673,6 +674,16 @@ ApWakeupFunction (
 
       InterlockedDecrement ((UINT32 *) &CpuMpData->MpCpuExchangeInfo->NumApsExecuting);
     } else {
+      if ((CpuMpData->InitFlag == ApInitReconfig) && (CpuMpData->ApLoopMode != ApInHltLoop)) {
+        //
+        // CpuMpData->CpuData[0].VolatileRegisters is initialized based on BSP environment,
+        //   to initialize AP in InitConfig/ApInitReconfig path.
+        // NOTE: IDTR.BASE stored in CpuMpData->CpuData[0].VolatileRegisters points to a
+        //   different IDT shared by all APs.
+        //
+        RestoreVolatileRegisters (&CpuMpData->CpuData[0].VolatileRegisters, FALSE);
+      }
+
       //
       // Execute AP function if AP is ready
       //
