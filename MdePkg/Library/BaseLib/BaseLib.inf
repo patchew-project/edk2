@@ -1,7 +1,7 @@
 ## @file
 #  Base Library implementation.
 #
-#  Copyright (c) 2007 - 2019, Intel Corporation. All rights reserved.<BR>
+#  Copyright (c) 2007 - 2020, Intel Corporation. All rights reserved.<BR>
 #  Portions copyright (c) 2008 - 2009, Apple Inc. All rights reserved.<BR>
 #  Portions copyright (c) 2011 - 2013, ARM Ltd. All rights reserved.<BR>
 #
@@ -60,6 +60,7 @@
   String.c
   FilePaths.c
   BaseLibInternals.h
+  FltUsed.c               | MSFT
 
 [Sources.Ia32]
   Ia32/WriteTr.nasm
