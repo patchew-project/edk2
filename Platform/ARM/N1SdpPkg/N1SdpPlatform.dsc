@@ -35,6 +35,9 @@
   HobLib|MdePkg/Library/DxeHobLib/DxeHobLib.inf
   TimerLib|ArmPkg/Library/ArmArchTimerLib/ArmArchTimerLib.inf
 
+  #USB Requirement
+  UefiUsbLib|MdePkg/Library/UefiUsbLib/UefiUsbLib.inf
+
 [LibraryClasses.common.SEC]
   HobLib|MdePkg/Library/PeiHobLib/PeiHobLib.inf
   MemoryAllocationLib|MdePkg/Library/PeiMemoryAllocationLib/PeiMemoryAllocationLib.inf
@@ -86,6 +89,9 @@
 #
 ################################################################################
 
+[PcdsFeatureFlag.common]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdTurnOffUsbLegacySupport|TRUE
+
 [PcdsFixedAtBuild.common]
   gArmTokenSpaceGuid.PcdVFPEnabled|1
 
@@ -108,6 +114,10 @@
   gArmTokenSpaceGuid.PcdGicInterruptInterfaceBase|0x2C000000
   gArmTokenSpaceGuid.PcdGicDistributorBase|0x30000000
   gArmTokenSpaceGuid.PcdGicRedistributorsBase|0x300C0000
+
+  # PCIe
+  gEmbeddedTokenSpaceGuid.PcdPrePiCpuIoSize|24
+  gEfiMdeModulePkgTokenSpaceGuid.PcdSrIovSupport|FALSE
 
   # PL011 - Serial Terminal
   gEfiMdeModulePkgTokenSpaceGuid.PcdSerialRegisterBase|0x2A400000
@@ -202,6 +212,9 @@
       BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
   }
 
+  # Human Interface Support
+  MdeModulePkg/Universal/HiiDatabaseDxe/HiiDatabaseDxe.inf
+
   # FAT filesystem + GPT/MBR partitioning
   MdeModulePkg/Universal/Disk/DiskIoDxe/DiskIoDxe.inf
   MdeModulePkg/Universal/Disk/PartitionDxe/PartitionDxe.inf
@@ -221,6 +234,28 @@
       PcdLib|MdePkg/Library/DxePcdLib/DxePcdLib.inf
   }
 
+  # Required by PCI
+  ArmPkg/Drivers/ArmPciCpuIo2Dxe/ArmPciCpuIo2Dxe.inf
+
+  # PCI Support
+  MdeModulePkg/Bus/Pci/PciBusDxe/PciBusDxe.inf
+  MdeModulePkg/Bus/Pci/PciHostBridgeDxe/PciHostBridgeDxe.inf {
+    <PcdsFixedAtBuild>
+      gEfiMdePkgTokenSpaceGuid.PcdDebugPrintErrorLevel|0x8010004F
+  }
+
   # AHCI Support
   MdeModulePkg/Bus/Ata/AtaAtapiPassThru/AtaAtapiPassThru.inf
   MdeModulePkg/Bus/Ata/AtaBusDxe/AtaBusDxe.inf
+
+  # SATA Controller
+  MdeModulePkg/Bus/Pci/SataControllerDxe/SataControllerDxe.inf
+
+  # Usb Support
+  MdeModulePkg/Bus/Pci/UhciDxe/UhciDxe.inf
+  MdeModulePkg/Bus/Pci/EhciDxe/EhciDxe.inf
+  MdeModulePkg/Bus/Pci/XhciDxe/XhciDxe.inf
+  MdeModulePkg/Bus/Usb/UsbBusDxe/UsbBusDxe.inf
+  MdeModulePkg/Bus/Usb/UsbKbDxe/UsbKbDxe.inf
+  MdeModulePkg/Bus/Usb/UsbMassStorageDxe/UsbMassStorageDxe.inf
+  MdeModulePkg/Bus/Pci/NonDiscoverablePciDeviceDxe/NonDiscoverablePciDeviceDxe.inf
