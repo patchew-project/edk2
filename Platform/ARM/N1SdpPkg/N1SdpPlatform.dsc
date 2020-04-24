@@ -65,6 +65,10 @@
 
 [LibraryClasses.common.DXE_DRIVER]
   FdtLib|EmbeddedPkg/Library/FdtLib/FdtLib.inf
+  PciHostBridgeLib|Platform/ARM/N1SdpPkg/Library/PciHostBridgeLib/PciHostBridgeLib.inf
+  PciSegmentLib|MdePkg/Library/BasePciSegmentLibPci/BasePciSegmentLibPci.inf
+  PciLib|MdePkg/Library/BasePciLibPciExpress/BasePciLibPciExpress.inf
+  PciExpressLib|Platform/ARM/N1SdpPkg/Library/PciExpressLib/PciExpressLib.inf
 
 [LibraryClasses.common.DXE_RUNTIME_DRIVER]
   BaseMemoryLib|MdePkg/Library/BaseMemoryLib/BaseMemoryLib.inf
