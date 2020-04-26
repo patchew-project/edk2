@@ -869,6 +869,18 @@ UsbIoPortReset (
 
   DEBUG (( EFI_D_INFO, "UsbIoPortReset: device is now ADDRESSED at %d\n", Dev->Address));
 
+  Status = UsbGetMaxPacketSize0 (Dev);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "UsbIoPortRest: Fail to get max packet size - %r\n", Status));
+    goto ON_EXIT;
+  }
+
+  Status = UsbBuildDescTable (Dev);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "UsbIoPortRest: Fail to build description table - %r\n", Status));
+    goto ON_EXIT;
+  }
+
   //
   // Reset the current active configure, after this device
   // is in CONFIGURED state.
