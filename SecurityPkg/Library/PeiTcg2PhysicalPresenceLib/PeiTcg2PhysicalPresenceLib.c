@@ -47,7 +47,7 @@ Tcg2PhysicalPresenceLibGetManagementFlags (
                           &PpiFlags
                           );
   if (EFI_ERROR (Status)) {
-    PpiFlags.PPFlags = TCG2_BIOS_TPM_MANAGEMENT_FLAG_DEFAULT | TCG2_BIOS_STORAGE_MANAGEMENT_FLAG_DEFAULT;
+    PpiFlags.PPFlags = PcdGet32(PcdTcg2PhysicalPresenceFlags);
   }
   return PpiFlags.PPFlags;
 }
