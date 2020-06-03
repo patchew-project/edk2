@@ -458,6 +458,12 @@ F: SecurityPkg/Tcg/
 R: Qi Zhang <qi1.zhang@intel.com>
 R: Rahul Kumar <rahul1.kumar@intel.com>
 
+SecurityPkg: Secure boot related modules
+F: SecurityPkg/Library/DxeImageVerificationLib/
+F: SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/
+F: SecurityPkg/Library/AuthVariableLib/
+R: Min Xu <min.m.xu@intel.com>
+
 ShellPkg
 F: ShellPkg/
 W: https://github.com/tianocore/tianocore.github.io/wiki/ShellPkg
