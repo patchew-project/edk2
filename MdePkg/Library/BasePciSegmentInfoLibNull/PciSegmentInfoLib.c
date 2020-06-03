@@ -21,6 +21,7 @@
   @retval A callee owned array holding the segment information.
 **/
 PCI_SEGMENT_INFO *
+EFIAPI
 GetPciSegmentInfo (
   UINTN  *Count
   )
