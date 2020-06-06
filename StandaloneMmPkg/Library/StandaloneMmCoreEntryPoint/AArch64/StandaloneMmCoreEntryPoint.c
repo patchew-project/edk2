@@ -22,6 +22,7 @@ SPDX-License-Identifier: BSD-2-Clause-Patent
 #include <Library/HobLib.h>
 #include <Library/BaseLib.h>
 #include <Library/BaseMemoryLib.h>
+#include <Library/PcdLib.h>
 #include <Library/SerialPortLib.h>
 
 #include <IndustryStandard/ArmStdSmc.h>
@@ -209,7 +210,7 @@ GetSpmVersion (VOID)
 **/
 VOID
 EFIAPI
-_ModuleEntryPoint (
+ModuleEntryPoint (
   IN VOID    *SharedBufAddress,
   IN UINT64  SharedBufSize,
   IN UINT64  cookie1,
@@ -238,6 +239,9 @@ _ModuleEntryPoint (
     goto finish;
   }
 
+  if (FeaturePcdGet (PcdStMMReloc)) {
+    goto skip_remap;
+  }
   // Locate PE/COFF File information for the Standalone MM core module
   Status = LocateStandaloneMmCorePeCoffData (
              (EFI_FIRMWARE_VOLUME_HEADER *) PayloadBootInfo->SpImageBase,
@@ -276,6 +280,7 @@ _ModuleEntryPoint (
     goto finish;
   }
 
+skip_remap:
   //
   // Create Hoblist based upon boot information passed by privileged software
   //
