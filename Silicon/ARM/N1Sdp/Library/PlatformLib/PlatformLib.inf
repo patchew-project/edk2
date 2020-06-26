@@ -29,12 +29,25 @@
   AArch64/Helper.S | GCC
 
 [FixedPcd]
+  gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress
+
   gArmTokenSpaceGuid.PcdSystemMemoryBase
   gArmTokenSpaceGuid.PcdSystemMemorySize
+  gArmTokenSpaceGuid.PcdFvBaseAddress
   gArmTokenSpaceGuid.PcdArmPrimaryCore
   gArmTokenSpaceGuid.PcdArmPrimaryCoreMask
 
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusMax
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusMin
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Base
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Size
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Base
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Size
+  gArmN1SdpTokenSpaceGuid.PcdPcieRootPortConfigBaseAddress
+  gArmN1SdpTokenSpaceGuid.PcdPcieRootPortConfigBaseSize
+
   gArmN1SdpTokenSpaceGuid.PcdDramBlock2Base
+  gArmN1SdpTokenSpaceGuid.PcdExtMemorySpace
 
 [Guids]
   gEfiHobListGuid          ## CONSUMES  ## SystemTable

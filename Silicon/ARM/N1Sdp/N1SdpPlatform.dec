@@ -23,6 +23,25 @@
   gArmN1SdpTokenSpaceGuid = { 0xab93eb78, 0x60d7, 0x4099, { 0xac, 0xeb, 0x6d, 0xb5, 0x02, 0x58, 0x7c, 0x24 } }
 
 [PcdsFixedAtBuild]
+  # PCIe
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusCount|18|UINT32|0x00000003
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusMax|17|UINT32|0x00000004
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusMin|0|UINT32|0x00000005
+  gArmN1SdpTokenSpaceGuid.PcdPcieIoBase|0x0|UINT32|0x00000006
+  gArmN1SdpTokenSpaceGuid.PcdPcieIoMaxBase|0x00FFFFFF|UINT32|0x00000007
+  gArmN1SdpTokenSpaceGuid.PcdPcieIoSize|0x01000000|UINT32|0x00000008
+  gArmN1SdpTokenSpaceGuid.PcdPcieIoTranslation|0x75200000|UINT32|0x00000009
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Base|0x71200000|UINT32|0x0000000A
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32MaxBase|0x751FFFFF|UINT32|0x0000000B
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Size|0x04000000|UINT32|0x0000000C
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Translation|0x0|UINT32|0x0000000D
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Base|0x0900000000|UINT64|0x0000000E
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64MaxBase|0x28FFFFFFFF|UINT64|0x0000000F
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Size|0x2000000000|UINT64|0x00000010
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Translation|0x0|UINT64|0x00000011
+  gArmN1SdpTokenSpaceGuid.PcdPcieRootPortConfigBaseAddress|0x60000000|UINT32|0x00000012
+  gArmN1SdpTokenSpaceGuid.PcdPcieRootPortConfigBaseSize|0x00001000|UINT32|0x00000013
+
   # Secondary DDR memory
   gArmN1SdpTokenSpaceGuid.PcdDramBlock2Base|0|UINT64|0x00000001
 

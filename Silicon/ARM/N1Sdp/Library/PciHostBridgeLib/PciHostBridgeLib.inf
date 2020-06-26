@@ -1,0 +1,49 @@
+## @file
+#  PCI Host Bridge Library instance for ARM N1SDP platform.
+#
+#  Copyright (c) 2019 - 2020, ARM Limited. All rights reserved.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x0001001A
+  BASE_NAME                      = PciHostBridgeLib
+  FILE_GUID                      = daa340e1-89dd-4bd2-b645-ebe75e541f8b
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = PciHostBridgeLib|DXE_DRIVER
+
+[Sources]
+  PciHostBridgeLib.c
+
+[Packages]
+  ArmPkg/ArmPkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  MdePkg/MdePkg.dec
+  Silicon/ARM/N1Sdp/N1SdpPlatform.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  DevicePathLib
+  IoLib
+  MemoryAllocationLib
+  UefiBootServicesTableLib
+
+[FixedPcd]
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusMin
+  gArmN1SdpTokenSpaceGuid.PcdPcieBusMax
+  gArmN1SdpTokenSpaceGuid.PcdPcieIoBase
+  gArmN1SdpTokenSpaceGuid.PcdPcieIoSize
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Base
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio32Size
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Base
+  gArmN1SdpTokenSpaceGuid.PcdPcieMmio64Size
+
+[Protocols]
+  gEfiCpuIo2ProtocolGuid
+
+[Depex]
+  gEfiCpuIo2ProtocolGuid
