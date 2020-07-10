@@ -465,8 +465,8 @@ CollectProcessorCount (
   )
 {
   UINTN                  Index;
-  CPU_INFO_IN_HOB        *CpuInfoInHob;
   BOOLEAN                X2Apic;
+  CPUID_VERSION_INFO_ECX VersionInfoEcx;
 
   //
   // Send 1st broadcast IPI to APs to wakeup APs
@@ -482,26 +482,13 @@ CollectProcessorCount (
     CpuPause ();
   }
 
-
-  //
-  // Enable x2APIC mode if
-  //  1. Number of CPU is greater than 255; or
-  //  2. There are any logical processors reporting an Initial APIC ID of 255 or greater.
-  //
   X2Apic = FALSE;
-  if (CpuMpData->CpuCount > 255) {
+  AsmCpuid (CPUID_VERSION_INFO, NULL, NULL, &VersionInfoEcx.Uint32, NULL);
+  if (VersionInfoEcx.Bits.x2APIC == 1) {
     //
-    // If there are more than 255 processor found, force to enable X2APIC
+    // Enable x2APIC mode if capable
     //
     X2Apic = TRUE;
-  } else {
-    CpuInfoInHob = (CPU_INFO_IN_HOB *) (UINTN) CpuMpData->CpuInfoInHob;
-    for (Index = 0; Index < CpuMpData->CpuCount; Index++) {
-      if (CpuInfoInHob[Index].InitialApicId >= 0xFF) {
-        X2Apic = TRUE;
-        break;
-      }
-    }
   }
 
   if (X2Apic) {
