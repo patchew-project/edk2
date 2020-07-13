@@ -109,6 +109,10 @@ class WorkspaceAutoGen(AutoGen):
         # Mark now build in AutoGen Phase
         #
         GlobalData.gAutoGenPhase = True
+        #
+        # Collect Platform Guids to support Guid name in Fdfparser.
+        #
+        self.CollectPlatformGuids()
         self.ProcessModuleFromPdf()
         self.ProcessPcdType()
         self.ProcessMixedPcd()
@@ -153,6 +157,26 @@ class WorkspaceAutoGen(AutoGen):
             EdkLogger.error("build", PARAMETER_INVALID,
                             ExtraData="Build target [%s] is not supported by the platform. [Valid target: %s]"
                                       % (self.BuildTarget, " ".join(self.Platform.BuildTargets)))
+
+    def CollectPlatformGuids(self):
+        oriInfList = []
+        oriPkgSet = set()
+        PlatformPkg = set()
+        for Arch in self.ArchList:
+            Platform = self.BuildDatabase[self.MetaFile, Arch, self.BuildTarget, self.ToolChain]
+            oriInfList = Platform.Modules
+            for ModuleFile in oriInfList:
+                ModuleData = self.BuildDatabase[ModuleFile, Platform._Arch, Platform._Target, Platform._Toolchain]
+                oriPkgSet.update(ModuleData.Packages)
+                for Pkg in oriPkgSet:
+                    Guids = Pkg.Guids
+                    GlobalData.gGuidDict.update(Guids)
+            if Platform.Packages:
+                PlatformPkg.update(Platform.Packages)
+                for Pkg in PlatformPkg:
+                    Guids = Pkg.Guids
+                    GlobalData.gGuidDict.update(Guids)
+
     @cached_property
     def FdfProfile(self):
         if not self.FdfFile:
