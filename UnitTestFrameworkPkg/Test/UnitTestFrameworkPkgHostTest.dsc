@@ -33,4 +33,5 @@
   UnitTestFrameworkPkg/Library/CmockaLib/CmockaLib.inf
   UnitTestFrameworkPkg/Library/Posix/DebugLibPosix/DebugLibPosix.inf
   UnitTestFrameworkPkg/Library/Posix/MemoryAllocationLibPosix/MemoryAllocationLibPosix.inf
+  UnitTestFrameworkPkg/Library/Posix/BaseTimerLibPosix/BaseTimerLibPosix.inf
   UnitTestFrameworkPkg/Library/UnitTestLib/UnitTestLibCmocka.inf
