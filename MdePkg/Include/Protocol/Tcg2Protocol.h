@@ -98,6 +98,10 @@ typedef struct tdEFI_TCG2_BOOT_SERVICE_CAPABILITY {
 //
 #define EFI_TCG2_EXTEND_ONLY  0x0000000000000001
 //
+// This bit is shall be set when HashData is the pre-hash digest.
+//
+#define EFI_TCG2_PRE_HASH  0x0000000000000010
+//
 // This bit shall be set when the intent is to measure a PE/COFF image.
 //
 #define PE_COFF_IMAGE     0x0000000000000010
