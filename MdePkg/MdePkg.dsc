@@ -120,6 +120,8 @@
   MdePkg/Library/SmmLibNull/SmmLibNull.inf
   MdePkg/Library/BaseExtractGuidedSectionLib/BaseExtractGuidedSectionLib.inf
 
+  MdePkg/Library/TimerRngLib/TimerRngLib.inf
+
   MdePkg/Library/StandaloneMmDriverEntryPoint/StandaloneMmDriverEntryPoint.inf
   MdePkg/Library/StandaloneMmServicesTableLib/StandaloneMmServicesTableLib.inf
 
