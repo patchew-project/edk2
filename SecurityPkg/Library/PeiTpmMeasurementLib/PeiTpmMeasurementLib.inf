@@ -26,6 +26,7 @@
 
 [Sources]
   PeiTpmMeasurementLib.c
+  EventLogRecord.c
 
 [Packages]
   MdePkg/MdePkg.dec
@@ -41,9 +42,13 @@
   PrintLib
   PeiServicesLib
   PeiServicesTablePointerLib
+  HashLib
 
 [Ppis]
   gEdkiiTcgPpiGuid                                                     ## CONSUMES
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdTcgPfpMeasurementRevision          ## CONSUMES
 
 [Depex]
   gEfiPeiMasterBootModePpiGuid AND
