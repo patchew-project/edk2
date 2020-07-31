@@ -212,6 +212,54 @@ HashUpdate (
   Hash sequence complete and extend to PCR.
 
   @param HashHandle    Hash handle.
+  @param DigestList    Digest list.
+
+  @retval EFI_SUCCESS     Hash sequence complete and DigestList is returned.
+**/
+EFI_STATUS
+EFIAPI
+HashFinal (
+  IN HASH_HANDLE         HashHandle,
+  OUT TPML_DIGEST_VALUES *DigestList
+  )
+{
+  TPML_DIGEST_VALUES Digest;
+  HASH_INTERFACE_HOB *HashInterfaceHob;
+  HASH_HANDLE        *HashCtx;
+  UINTN              Index;
+  UINT32             HashMask;
+
+  HashInterfaceHob = InternalGetHashInterfaceHob (&gEfiCallerIdGuid);
+  if (HashInterfaceHob == NULL) {
+    return EFI_UNSUPPORTED;
+  }
+
+  if (HashInterfaceHob->HashInterfaceCount == 0) {
+    return EFI_UNSUPPORTED;
+  }
+
+  CheckSupportedHashMaskMismatch (HashInterfaceHob);
+
+  HashCtx = (HASH_HANDLE *)HashHandle;
+  ZeroMem (DigestList, sizeof(*DigestList));
+
+  for (Index = 0; Index < HashInterfaceHob->HashInterfaceCount; Index++) {
+    HashMask = Tpm2GetHashMaskFromAlgo (&HashInterfaceHob->HashInterface[Index].HashGuid);
+    if ((HashMask & PcdGet32 (PcdTpm2HashMask)) != 0) {
+      HashInterfaceHob->HashInterface[Index].HashFinal (HashCtx[Index], &Digest);
+      Tpm2SetHashToDigestList (DigestList, &Digest);
+    }
+  }
+
+  FreePool (HashCtx);
+
+  return EFI_SUCCESS;
+}
+
+/**
+  Hash sequence complete and extend to PCR.
+
+  @param HashHandle    Hash handle.
   @param PcrIndex      PCR to be extended.
   @param DataToHash    Data to be hashed.
   @param DataToHashLen Data size.

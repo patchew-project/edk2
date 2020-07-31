@@ -51,6 +51,21 @@ HashUpdate (
   Hash sequence complete and extend to PCR.
 
   @param HashHandle    Hash handle.
+  @param DigestList    Digest list.
+
+  @retval EFI_SUCCESS     Hash sequence complete and DigestList is returned.
+**/
+EFI_STATUS
+EFIAPI
+HashFinal (
+  IN HASH_HANDLE         HashHandle,
+  OUT TPML_DIGEST_VALUES *DigestList
+  );
+
+/**
+  Hash sequence complete and extend to PCR.
+
+  @param HashHandle    Hash handle.
   @param PcrIndex      PCR to be extended.
   @param DataToHash    Data to be hashed.
   @param DataToHashLen Data size.
