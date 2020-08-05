@@ -54,6 +54,8 @@ class CompilerPlugin(ICiBuildPlugin):
     #   - output_stream the StringIO output stream from this plugin via logging
     def RunBuildPlugin(self, packagename, Edk2pathObj, pkgconfig, environment, PLM, PLMHelper, tc, output_stream=None):
         self._env = environment
+        environment.SetValue("BUILDREPORTING", "TRUE", "Set in CompilerPlugin")
+        environment.SetValue("BUILDREPORT_TYPES", "PCD DEPEX LIBRARY BUILD_FLAGS", "Set in CompilerPlugin")
 
         # Parse the config for required DscPath element
         if "DscPath" not in pkgconfig:
