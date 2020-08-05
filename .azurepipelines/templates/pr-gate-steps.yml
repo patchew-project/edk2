@@ -119,6 +119,7 @@ steps:
       TestSuites.xml
       **/BUILD_TOOLS_REPORT.html
       **/OVERRIDELOG.TXT
+      **/BUILD_REPORT.TXT
     flattenFolders: true
   condition: succeededOrFailed()
 
