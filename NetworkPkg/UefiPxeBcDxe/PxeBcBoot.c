@@ -499,12 +499,16 @@ PxeBcDhcp4BootInfo (
 
   //
   // Parse the boot server address.
-  // If prompt/discover is disabled, get the first boot server from the boot servers list.
-  // Otherwise, parse the boot server Ipv4 address from next server address field in DHCP header.
+  // If prompt/discover is disabled, server list should be used and is present (DHCP option 43),
+  // get the first boot server from the boot servers list.
+  // Otherwise, parse the boot server IPv4 address from next server address field in DHCP header.
   // If all these fields are not available, use option 54 instead.
   //
   VendorOpt = &Cache4->VendorOpt;
-  if (IS_DISABLE_PROMPT_MENU (VendorOpt->DiscoverCtrl) && IS_VALID_BOOT_SERVERS (VendorOpt->BitMap)) {
+  if (IS_DISABLE_PROMPT_MENU (VendorOpt->DiscoverCtrl) &&
+      IS_VALID_BOOT_SERVERS (VendorOpt->BitMap) &&
+      IS_ENABLE_USE_SERVER_LIST (VendorOpt->DiscoverCtrl))
+  {
     Entry = VendorOpt->BootSvr;
     if (VendorOpt->BootSvrLen >= sizeof (PXEBC_BOOT_SVR_ENTRY) && Entry->IpCnt > 0) {
       CopyMem (
