@@ -1,0 +1,1 @@
+The files in this archive (UEFI_SCTII_Case_Spec_2_6_A_Word) were created from the Adobe Framemaker source files for this release. Each file is a separate chapter of the specification. 
