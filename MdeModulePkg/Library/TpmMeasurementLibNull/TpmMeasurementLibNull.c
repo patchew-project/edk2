@@ -1,10 +1,12 @@
 /** @file
   This library is used by other modules to measure data to TPM.
 
-Copyright (c) 2015, Intel Corporation. All rights reserved. <BR>
+Copyright (c) 2015-2020, Intel Corporation. All rights reserved. <BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
+
+#include <Uefi/UefiBaseType.h>
 
 /**
   Tpm measure and log data, and extend the measurement result into a specific PCR.
