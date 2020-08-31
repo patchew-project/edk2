@@ -449,6 +449,7 @@ HashLogExtendEvent (
   EFI_STATUS                        Status;
   TPML_DIGEST_VALUES                DigestList;
 
+  Status = EFI_SUCCESS;
   if (GetFirstGuidHob (&gTpmErrorHobGuid) != NULL) {
     return EFI_DEVICE_ERROR;
   }
