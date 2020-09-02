@@ -393,13 +393,19 @@ MpInitChangeApLoopCallback (
   )
 {
   CPU_MP_DATA               *CpuMpData;
+  EFI_STATUS                Status;
 
   CpuMpData = GetCpuMpData ();
   CpuMpData->PmCodeSegment = GetProtectedModeCS ();
   CpuMpData->Pm16CodeSegment = GetProtectedMode16CS ();
   CpuMpData->ApLoopMode = PcdGet8 (PcdCpuApLoopMode);
   mNumberToFinish = CpuMpData->CpuCount - 1;
-  WakeUpAP (CpuMpData, TRUE, 0, RelocateApLoop, NULL, TRUE);
+  Status = WakeUpAP (CpuMpData, TRUE, 0, RelocateApLoop, NULL, TRUE);
+  if (EFI_ERROR (Status)) {
+    DEBUG ((DEBUG_ERROR, "ERROR :: %a() Change Ap Loop Mode failed!\n", __FUNCTION__));
+    return;
+  }
+
   while (mNumberToFinish > 0) {
     CpuPause ();
   }

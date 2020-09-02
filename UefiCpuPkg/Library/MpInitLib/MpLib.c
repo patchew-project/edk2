@@ -470,7 +470,7 @@ GetProcessorNumber (
 
   @return  CPU count detected
 **/
-UINTN
+EFI_STATUS
 CollectProcessorCount (
   IN CPU_MP_DATA         *CpuMpData
   )
@@ -478,12 +478,17 @@ CollectProcessorCount (
   UINTN                  Index;
   CPU_INFO_IN_HOB        *CpuInfoInHob;
   BOOLEAN                X2Apic;
+  EFI_STATUS             Status;
 
   //
   // Send 1st broadcast IPI to APs to wakeup APs
   //
   CpuMpData->InitFlag = ApInitConfig;
-  WakeUpAP (CpuMpData, TRUE, 0, NULL, NULL, TRUE);
+  Status = WakeUpAP (CpuMpData, TRUE, 0, NULL, NULL, TRUE);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
+
   CpuMpData->InitFlag = ApInitDone;
   ASSERT (CpuMpData->CpuCount <= PcdGet32 (PcdCpuMaxLogicalProcessorNumber));
   //
@@ -520,7 +525,11 @@ CollectProcessorCount (
     //
     // Wakeup all APs to enable x2APIC mode
     //
-    WakeUpAP (CpuMpData, TRUE, 0, ApFuncEnableX2Apic, NULL, TRUE);
+    Status = WakeUpAP (CpuMpData, TRUE, 0, ApFuncEnableX2Apic, NULL, TRUE);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
+
     //
     // Wait for all known APs finished
     //
@@ -546,7 +555,7 @@ CollectProcessorCount (
 
   DEBUG ((DEBUG_INFO, "MpInitLib: Find %d processors in system.\n", CpuMpData->CpuCount));
 
-  return CpuMpData->CpuCount;
+  return EFI_SUCCESS;
 }
 
 /**
@@ -990,7 +999,7 @@ WaitApWakeup (
   @param[in] CpuMpData          Pointer to CPU MP Data
 
 **/
-VOID
+EFI_STATUS
 FillExchangeInfoData (
   IN CPU_MP_DATA               *CpuMpData
   )
@@ -1001,6 +1010,35 @@ FillExchangeInfoData (
   IA32_CR4                         Cr4;
 
   ExchangeInfo                  = CpuMpData->MpCpuExchangeInfo;
+  ExchangeInfo->Cr3             = AsmReadCr3 ();
+  if (ExchangeInfo->Cr3 > 0xFFFFFFFF) {
+    //
+    // AP needs to run from real mode to 32bit mode to LONG mode. Page table
+    // (pointed by CR3) and GDT are necessary to set up to correct value when
+    // CPU execution mode is switched to LONG mode.
+    // AP uses the same location page table (CR3) and GDT as what BSP uses.
+    // But when the page table or GDT is above 4GB, it's impossible for CPU
+    // to use because GDTR.base and CR3 are 32bits before switching to LONG
+    // mode.
+    // Here add check for the CR3, GDT.Base and IDT.Base to not above 32 bits
+    // limitation.
+    //
+    return EFI_UNSUPPORTED;
+  }
+
+  //
+  // Get the BSP's data of GDT and IDT
+  //
+  AsmReadGdtr ((IA32_DESCRIPTOR *) &ExchangeInfo->GdtrProfile);
+  if (ExchangeInfo->GdtrProfile.Base > 0xFFFFFFFF) {
+    return EFI_UNSUPPORTED;
+  }
+
+  AsmReadIdtr ((IA32_DESCRIPTOR *) &ExchangeInfo->IdtrProfile);
+  if (ExchangeInfo->IdtrProfile.Base > 0xFFFFFFFF) {
+    return EFI_UNSUPPORTED;
+  }
+
   ExchangeInfo->Lock            = 0;
   ExchangeInfo->StackStart      = CpuMpData->Buffer;
   ExchangeInfo->StackSize       = CpuMpData->CpuApStackSize;
@@ -1009,9 +1047,6 @@ FillExchangeInfoData (
 
   ExchangeInfo->CodeSegment     = AsmReadCs ();
   ExchangeInfo->DataSegment     = AsmReadDs ();
-
-  ExchangeInfo->Cr3             = AsmReadCr3 ();
-
   ExchangeInfo->CFunction       = (UINTN) ApWakeupFunction;
   ExchangeInfo->ApIndex         = 0;
   ExchangeInfo->NumApsExecuting = 0;
@@ -1037,13 +1072,6 @@ FillExchangeInfoData (
 
   ExchangeInfo->SevEsIsEnabled  = CpuMpData->SevEsIsEnabled;
   ExchangeInfo->GhcbBase        = (UINTN) CpuMpData->GhcbBase;
-
-  //
-  // Get the BSP's data of GDT and IDT
-  //
-  AsmReadGdtr ((IA32_DESCRIPTOR *) &ExchangeInfo->GdtrProfile);
-  AsmReadIdtr ((IA32_DESCRIPTOR *) &ExchangeInfo->IdtrProfile);
-
   //
   // Find a 32-bit code segment
   //
@@ -1084,6 +1112,8 @@ FillExchangeInfoData (
                          (UINT32)ExchangeInfo->ModeOffset -
                          (UINT32)CpuMpData->AddressMap.ModeTransitionOffset;
   ExchangeInfo->ModeHighSegment = (UINT16)ExchangeInfo->CodeSegment;
+
+  return EFI_SUCCESS;
 }
 
 /**
@@ -1308,8 +1338,12 @@ SetSevEsJumpTable (
   @param[in] Procedure          The function to be invoked by AP
   @param[in] ProcedureArgument  The argument to be passed into AP function
   @param[in] WakeUpDisabledAps  Whether need to wake up disabled APs in broadcast mode.
+
+  @retval EFI_SUCCESS           Wake up the AP success.
+  @retval EFI_UNSUPPORTED       Invalid CR3, IDT, GDT value caused fail to wake up AP.
+
 **/
-VOID
+EFI_STATUS
 WakeUpAP (
   IN CPU_MP_DATA               *CpuMpData,
   IN BOOLEAN                   Broadcast,
@@ -1324,6 +1358,7 @@ WakeUpAP (
   CPU_AP_DATA                      *CpuData;
   BOOLEAN                          ResetVectorRequired;
   CPU_INFO_IN_HOB                  *CpuInfoInHob;
+  EFI_STATUS                       Status;
 
   CpuMpData->FinishedCount = 0;
   ResetVectorRequired = FALSE;
@@ -1333,7 +1368,10 @@ WakeUpAP (
     ResetVectorRequired = TRUE;
     AllocateResetVector (CpuMpData);
     AllocateSevEsAPMemory (CpuMpData);
-    FillExchangeInfoData (CpuMpData);
+    Status = FillExchangeInfoData (CpuMpData);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
     SaveLocalApicTimerSetting (CpuMpData);
   }
 
@@ -1500,6 +1538,8 @@ WakeUpAP (
   // S3SmmInitDone Ppi.
   //
   CpuMpData->WakeUpByInitSipiSipi = (CpuMpData->ApLoopMode == ApInHltLoop);
+
+  return EFI_SUCCESS;
 }
 
 /**
@@ -1945,6 +1985,7 @@ MpInitLibInitialize (
   UINTN                    ApResetVectorSize;
   UINTN                    BackupBufferAddr;
   UINTN                    ApIdtBase;
+  EFI_STATUS               Status;
 
   OldCpuMpData = GetCpuMpDataFromGuidedHob ();
   if (OldCpuMpData == NULL) {
@@ -2067,7 +2108,10 @@ MpInitLibInitialize (
       //
       // Wakeup all APs and calculate the processor count in system
       //
-      CollectProcessorCount (CpuMpData);
+      Status = CollectProcessorCount (CpuMpData);
+      if (EFI_ERROR (Status)) {
+        return Status;
+      }
     }
   } else {
     //
@@ -2118,7 +2162,11 @@ MpInitLibInitialize (
       //
       CpuMpData->InitFlag = ApInitReconfig;
     }
-    WakeUpAP (CpuMpData, TRUE, 0, ApInitializeSync, CpuMpData, TRUE);
+    Status = WakeUpAP (CpuMpData, TRUE, 0, ApInitializeSync, CpuMpData, TRUE);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
+
     //
     // Wait for all APs finished initialization
     //
@@ -2262,6 +2310,7 @@ SwitchBSPWorker (
   MSR_IA32_APIC_BASE_REGISTER  ApicBaseMsr;
   BOOLEAN                      OldInterruptState;
   BOOLEAN                      OldTimerInterruptState;
+  EFI_STATUS                   Status;
 
   //
   // Save and Disable Local APIC timer interrupt
@@ -2333,7 +2382,10 @@ SwitchBSPWorker (
   //
   // Need to wakeUp AP (future BSP).
   //
-  WakeUpAP (CpuMpData, FALSE, ProcessorNumber, FutureBSPProc, CpuMpData, TRUE);
+  Status = WakeUpAP (CpuMpData, FALSE, ProcessorNumber, FutureBSPProc, CpuMpData, TRUE);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
 
   AsmExchangeRole (&CpuMpData->BSPInfo, &CpuMpData->APInfo);
 
@@ -2669,14 +2721,21 @@ StartupAllCPUsWorker (
   CpuMpData->WaitEvent     = WaitEvent;
 
   if (!SingleThread) {
-    WakeUpAP (CpuMpData, TRUE, 0, Procedure, ProcedureArgument, FALSE);
+    Status = WakeUpAP (CpuMpData, TRUE, 0, Procedure, ProcedureArgument, FALSE);
+    if (EFI_ERROR (Status)) {
+      return Status;
+    }
   } else {
     for (ProcessorNumber = 0; ProcessorNumber < ProcessorCount; ProcessorNumber++) {
       if (ProcessorNumber == CallerNumber) {
         continue;
       }
       if (CpuMpData->CpuData[ProcessorNumber].Waiting) {
-        WakeUpAP (CpuMpData, FALSE, ProcessorNumber, Procedure, ProcedureArgument, TRUE);
+        Status = WakeUpAP (CpuMpData, FALSE, ProcessorNumber, Procedure, ProcedureArgument, TRUE);
+        if (EFI_ERROR (Status)) {
+          return Status;
+        }
+
         break;
       }
     }
@@ -2795,7 +2854,10 @@ StartupThisAPWorker (
   CpuData->ExpectedTime = CalculateTimeout (TimeoutInMicroseconds, &CpuData->CurrentTime);
   CpuData->TotalTime    = 0;
 
-  WakeUpAP (CpuMpData, FALSE, ProcessorNumber, Procedure, ProcedureArgument, TRUE);
+  Status = WakeUpAP (CpuMpData, FALSE, ProcessorNumber, Procedure, ProcedureArgument, TRUE);
+  if (EFI_ERROR (Status)) {
+    return Status;
+  }
 
   //
   // If WaitEvent is NULL, execute in blocking mode.

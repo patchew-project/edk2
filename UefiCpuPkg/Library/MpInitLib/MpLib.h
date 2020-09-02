@@ -459,8 +459,12 @@ GetSevEsAPMemory (
   @param[in] Procedure          The function to be invoked by AP
   @param[in] ProcedureArgument  The argument to be passed into AP function
   @param[in] WakeUpDisabledAps  Whether need to wake up disabled APs in broadcast mode.
+
+  @retval EFI_SUCCESS           Wake up the AP success.
+  @retval EFI_UNSUPPORTED       Invalid CR3, IDT, GDT value caused fail to wake up AP.
+
 **/
-VOID
+EFI_STATUS
 WakeUpAP (
   IN CPU_MP_DATA               *CpuMpData,
   IN BOOLEAN                   Broadcast,
