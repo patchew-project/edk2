@@ -394,6 +394,15 @@ MpInitChangeApLoopCallback (
 {
   CPU_MP_DATA               *CpuMpData;
 
+  //
+  // Check the CR3/GDT/IDT before waking up AP.
+  // If the check return fail, it will block later
+  // OS boot, so halt the system here.
+  //
+  if (!ValidCR3GdtIdtCheck()) {
+    CpuDeadLoop ();
+  }
+
   CpuMpData = GetCpuMpData ();
   CpuMpData->PmCodeSegment = GetProtectedModeCS ();
   CpuMpData->Pm16CodeSegment = GetProtectedMode16CS ();

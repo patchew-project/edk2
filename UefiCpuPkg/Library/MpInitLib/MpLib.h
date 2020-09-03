@@ -740,5 +740,17 @@ PlatformShadowMicrocode (
   IN OUT CPU_MP_DATA             *CpuMpData
   );
 
+/**
+  Check whether CR3/GDT/IDT value valid for AP.
+
+  @retval  TRUE          Pass the check.
+  @retval  FALSE         Fail the check.
+
+**/
+BOOLEAN
+ValidCR3GdtIdtCheck (
+  VOID
+  );
+
 #endif
 

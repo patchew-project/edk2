@@ -187,6 +187,10 @@
   # @Prompt Configure stack size for Application Processor (AP)
   gUefiCpuPkgTokenSpaceGuid.PcdCpuApStackSize|0x8000|UINT32|0x00000003
 
+  ## This value specifies whether need to check the CR3/GDT/IDT value for AP.
+  # @Prompt Whether need to check the CR3/GDT/IDT value for AP
+  gUefiCpuPkgTokenSpaceGuid.PcdEnableCpuApCr3GdtIdtCheck|FALSE|BOOLEAN|0x30000044
+
   ## Specifies stack size in the temporary RAM. 0 means half of TemporaryRamSize.
   # @Prompt Stack size in the temporary RAM.
   gUefiCpuPkgTokenSpaceGuid.PcdPeiTemporaryRamStackSize|0|UINT32|0x10001003

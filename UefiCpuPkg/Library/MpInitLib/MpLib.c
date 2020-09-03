@@ -1910,6 +1910,54 @@ CheckAllAPs (
 }
 
 /**
+  Check whether CR3/GDT/IDT value valid for AP.
+
+  @retval  TRUE          Pass the check.
+  @retval  FALSE         Fail the check.
+
+**/
+BOOLEAN
+ValidCR3GdtIdtCheck (
+  VOID
+  )
+{
+  IA32_DESCRIPTOR   Gdtr;
+  IA32_DESCRIPTOR   Idtr;
+
+  if (!PcdGetBool (PcdEnableCpuApCr3GdtIdtCheck)) {
+    return TRUE;
+  }
+
+  //
+  // AP needs to run from real mode to 32bit mode to LONG mode. Page table
+  // (pointed by CR3) and GDT are necessary to set up to correct value when
+  // CPU execution mode is switched to LONG mode. IDT also necessary if the
+  // exception happened.
+  // AP uses the same location page table (CR3) and GDT/IDT as what BSP uses.
+  // But when the page table or GDT is above 4GB, it's impossible for CPU
+  // to use because GDTR.base and CR3 are 32bits before switching to LONG
+  // mode.
+  // Here add check for the CR3, GDT.Base and range, IDT.Base and range are
+  // not above 32 bits limitation.
+  //
+  if (AsmReadCr3 () >= BASE_4GB) {
+    return FALSE;
+  }
+
+  AsmReadGdtr ((IA32_DESCRIPTOR *) &Gdtr);
+  if ((Gdtr.Base >= BASE_4GB) || (Gdtr.Base + Gdtr.Limit >= BASE_4GB)) {
+    return FALSE;
+  }
+
+  AsmReadIdtr ((IA32_DESCRIPTOR *) &Idtr);
+  if ((Idtr.Base >= BASE_4GB) || (Idtr.Base + Idtr.Limit >= BASE_4GB)) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
   MP Initialize Library initialization.
 
   This service will allocate AP reset vector and wakeup all APs to do APs
@@ -2318,6 +2366,13 @@ SwitchBSPWorker (
     return EFI_NOT_READY;
   }
 
+  //
+  // Check whether CR3/GDT/IDT valid for AP.
+  //
+  if (!ValidCR3GdtIdtCheck()) {
+    return EFI_INVALID_PARAMETER;
+  }
+
   CpuMpData->BSPInfo.State = CPU_SWITCH_STATE_IDLE;
   CpuMpData->APInfo.State  = CPU_SWITCH_STATE_IDLE;
   CpuMpData->SwitchBspFlag = TRUE;
@@ -2418,6 +2473,13 @@ EnableDisableApWorker (
 
   if (ProcessorNumber >= CpuMpData->CpuCount) {
     return EFI_NOT_FOUND;
+  }
+
+  //
+  // Check whether CR3/GDT/IDT valid for AP.
+  //
+  if (!ValidCR3GdtIdtCheck()) {
+    return EFI_INVALID_PARAMETER;
   }
 
   if (!EnableAP) {
@@ -2608,6 +2670,13 @@ StartupAllCPUsWorker (
   }
 
   //
+  // Check whether CR3/GDT/IDT valid for AP.
+  //
+  if (!ValidCR3GdtIdtCheck()) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
   // Update AP state
   //
   CheckAndUpdateApsStatus ();
@@ -2769,6 +2838,13 @@ StartupThisAPWorker (
   // Check parameter Procedure
   //
   if (Procedure == NULL) {
+    return EFI_INVALID_PARAMETER;
+  }
+
+  //
+  // Check whether CR3/GDT/IDT valid for AP.
+  //
+  if (!ValidCR3GdtIdtCheck()) {
     return EFI_INVALID_PARAMETER;
   }
 
