@@ -148,6 +148,10 @@
   # @Prompt Lock SMM Feature Control MSR.
   gUefiCpuPkgTokenSpaceGuid.PcdCpuSmmFeatureControlMsrLock|TRUE|BOOLEAN|0x3213210B
 
+  ## This value specifies whether need to check the Cr3/GDT/IDT value for the APs.
+  # @Prompt Enable Cr3/GDT/IDT value check for the APs.
+  gUefiCpuPkgTokenSpaceGuid.PcdEnableCpuApCr3GdtIdtCheck|FALSE|BOOLEAN|0x30000044
+
 [PcdsFixedAtBuild]
   ## List of exception vectors which need switching stack.
   #  This PCD will only take into effect if PcdCpuStackGuard is enabled.

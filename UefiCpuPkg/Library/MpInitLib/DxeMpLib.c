@@ -30,6 +30,66 @@ UINTN            mReservedTopOfApStack;
 volatile UINT32  mNumberToFinish = 0;
 
 /**
+  Check whether Cr3/GDT/IDT value valid for the APs.
+
+  @retval  TRUE          Pass the check.
+  @retval  FALSE         Fail the check.
+
+**/
+BOOLEAN
+ValidCr3GdtIdtCheck (
+  VOID
+  )
+{
+  IA32_DESCRIPTOR   Gdtr;
+  IA32_DESCRIPTOR   Idtr;
+
+  if (!PcdGetBool (PcdEnableCpuApCr3GdtIdtCheck)) {
+    return TRUE;
+  }
+
+  //
+  // AP needs to run from real mode to 32bit mode to LONG mode. Page table
+  // (pointed by Cr3) and GDT are necessary to set up to correct value when
+  // CPU execution mode is switched to LONG mode. IDT also necessary if the
+  // exception happened.
+  // AP uses the same location page table (Cr3) and GDT/IDT as what BSP uses.
+  // But when the page table or GDT is above 4GB, it's impossible for CPU
+  // to use because GDTR.base and Cr3 are 32bits before switching to LONG
+  // mode.
+  // Here add check for the Cr3, GDT.Base and range, IDT.Base and range are
+  // not above 32 bits limitation.
+  //
+  if (AsmReadCr3 () >= BASE_4GB) {
+    return FALSE;
+  }
+
+  AsmReadGdtr (&Gdtr);
+  //
+  // Here code needs to check both Gdtr.Base and Gdtr.Base + Gdtr.Limit
+  // below BASE_4GB, but Gdtr.Base + Gdtr.Limit below BASE_4GB also means
+  // Gdtr.Base below BASE_4GB. so here just add Gdtr.Base + Gdtr.Limit
+  // check.
+  //
+  if (Gdtr.Base + Gdtr.Limit >= BASE_4GB) {
+    return FALSE;
+  }
+
+  AsmReadIdtr (&Idtr);
+  //
+  // Here code needs to check both Idtr.Base and Idtr.Base + Idtr.Limit
+  // below BASE_4GB, but Idtr.Base + Idtr.Limit below BASE_4GB also means
+  // Idtr.Base below BASE_4GB. so here just add Idtr.Base + Idtr.Limit
+  // check.
+  //
+  if (Idtr.Base + Idtr.Limit >= BASE_4GB) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
   Enable Debug Agent to support source debugging on AP function.
 
 **/
@@ -394,6 +454,15 @@ MpInitChangeApLoopCallback (
 {
   CPU_MP_DATA               *CpuMpData;
 
+  //
+  // Check the Cr3/GDT/IDT before waking up AP.
+  // If the check return fail, it will block later
+  // OS boot, so halt the system here.
+  //
+  if (!ValidCr3GdtIdtCheck ()) {
+    CpuDeadLoop ();
+  }
+
   CpuMpData = GetCpuMpData ();
   CpuMpData->PmCodeSegment = GetProtectedModeCS ();
   CpuMpData->Pm16CodeSegment = GetProtectedMode16CS ();
@@ -677,6 +746,13 @@ MpInitLibStartupAllAPs (
   EFI_STATUS              Status;
 
   //
+  // Check whether Cr3/GDT/IDT valid for AP.
+  //
+  if (!ValidCr3GdtIdtCheck()) {
+    return EFI_UNSUPPORTED;
+  }
+
+  //
   // Temporarily stop checkAllApsStatus for avoid resource dead-lock.
   //
   mStopCheckAllApsStatus = TRUE;
@@ -784,6 +860,13 @@ MpInitLibStartupThisAP (
   EFI_STATUS              Status;
 
   //
+  // Check whether Cr3/GDT/IDT valid for AP.
+  //
+  if (!ValidCr3GdtIdtCheck()) {
+    return EFI_UNSUPPORTED;
+  }
+
+  //
   // temporarily stop checkAllApsStatus for avoid resource dead-lock.
   //
   mStopCheckAllApsStatus = TRUE;
@@ -838,6 +921,13 @@ MpInitLibSwitchBSP (
   EFI_STATUS                   Status;
   EFI_TIMER_ARCH_PROTOCOL      *Timer;
   UINT64                       TimerPeriod;
+
+  //
+  // Check whether Cr3/GDT/IDT valid for AP.
+  //
+  if (!ValidCr3GdtIdtCheck()) {
+    return EFI_UNSUPPORTED;
+  }
 
   TimerPeriod = 0;
   //
@@ -911,6 +1001,13 @@ MpInitLibEnableDisableAP (
 {
   EFI_STATUS     Status;
   BOOLEAN        TempStopCheckState;
+
+  //
+  // Check whether Cr3/GDT/IDT valid for AP.
+  //
+  if (!ValidCr3GdtIdtCheck()) {
+    return EFI_UNSUPPORTED;
+  }
 
   TempStopCheckState = FALSE;
   //

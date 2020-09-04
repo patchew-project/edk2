@@ -96,6 +96,8 @@
 
 #string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuSmmFeatureControlMsrLock_PROMPT  #language en-US "Lock SMM Feature Control MSR"
 
+#string STR_gUefiCpuPkgTokenSpaceGuid_PcdEnableCpuApCr3GdtIdtCheck_PROMPT  #language en-US "Enable Cr3/GDT/IDT value check for the APs"
+
 #string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuSmmFeatureControlMsrLock_HELP  #language en-US "Lock SMM Feature Control MSR?<BR><BR>\n"
                                                                                            "TRUE  - locked.<BR>\n"
                                                                                            "FALSE - unlocked.<BR>"
