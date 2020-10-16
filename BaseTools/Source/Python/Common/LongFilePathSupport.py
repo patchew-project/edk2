@@ -30,7 +30,8 @@ def LongFilePath(FileName):
 # wrap open to support opening a long file path
 #
 def OpenLongFilePath(FileName, Mode='r', Buffer= -1):
-    return open(LongFilePath(FileName), Mode, Buffer)
+    Encoding = None if 'b' in Mode else 'latin-1'
+    return open(LongFilePath(FileName), Mode, Buffer, Encoding)
 
 def CodecOpenLongFilePath(Filename, Mode='rb', Encoding=None, Errors='strict', Buffering=1):
     return codecs.open(LongFilePath(Filename), Mode, Encoding, Errors, Buffering)
