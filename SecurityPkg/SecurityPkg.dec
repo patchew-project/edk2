@@ -290,6 +290,11 @@
   gEfiSecurityPkgTokenSpaceGuid.PcdStatusCodeFvVerificationPass|0x0303100A|UINT32|0x00010030
   gEfiSecurityPkgTokenSpaceGuid.PcdStatusCodeFvVerificationFail|0x0303100B|UINT32|0x00010031
 
+  ## Progress Code for variable integrity check result.<BR><BR>
+  #  DEFAULT<pass>: (EFI_PERIPHERAL_FIXED_MEDIA | 0)
+  # @Prompt Status Code for variable integiry check result
+  gEfiSecurityPkgTokenSpaceGuid.PcdStatusCodeVariableIntegrity|0x01070000|UINT32|0x00010032
+
 [PcdsFixedAtBuild, PcdsPatchableInModule, PcdsDynamic, PcdsDynamicEx]
   ## Image verification policy for OptionRom. Only following values are valid:<BR><BR>
   #  NOTE: Do NOT use 0x5 and 0x2 since it violates the UEFI specification and has been removed.<BR>
