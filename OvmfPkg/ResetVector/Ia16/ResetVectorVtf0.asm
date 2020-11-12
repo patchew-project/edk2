@@ -35,6 +35,8 @@ ALIGN   16
 ;   the build time RIP value. The GUID must always be 48 bytes from the
 ;   end of the firmware.
 ;
+;   0xffffffc2 (-0x3e) - Base Location of the SEV Launch Secret
+;   0xffffffc6 (-0x3a) - Size of SEV Launch Secret
 ;   0xffffffca (-0x36) - IP value
 ;   0xffffffcc (-0x34) - CS segment base [31:16]
 ;   0xffffffce (-0x32) - Size of the SEV-ES reset block
@@ -51,6 +53,8 @@ ALIGN   16
 TIMES (32 - (sevEsResetBlockEnd - sevEsResetBlockStart)) DB 0
 
 sevEsResetBlockStart:
+    DD      SEV_LAUNCH_SECRET_BASE
+    DD      SEV_LAUNCH_SECRET_SIZE
     DD      SEV_ES_AP_RESET_IP
     DW      sevEsResetBlockEnd - sevEsResetBlockStart
     DB      0xDE, 0x71, 0xF7, 0x00, 0x7E, 0x1A, 0xCB, 0x4F
