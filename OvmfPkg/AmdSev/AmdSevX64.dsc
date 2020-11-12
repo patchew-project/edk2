@@ -698,6 +698,7 @@
   OvmfPkg/SmmAccess/SmmAccessPei.inf
 !endif
   UefiCpuPkg/CpuMpPei/CpuMpPei.inf
+  OvmfPkg/AmdSev/SevLaunchSecret/SecretPei/SecretPei.inf
 
 !if $(TPM_ENABLE) == TRUE
   OvmfPkg/Tcg/Tcg2Config/Tcg2ConfigPei.inf
@@ -1006,6 +1007,8 @@
       NULL|MdeModulePkg/Library/VarCheckUefiLib/VarCheckUefiLib.inf
   }
 !endif
+
+  OvmfPkg/AmdSev/SevLaunchSecret/SecretDxe/SecretDxe.inf
 
   #
   # TPM support

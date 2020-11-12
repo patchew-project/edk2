@@ -146,6 +146,7 @@ INF  MdeModulePkg/Universal/Variable/Pei/VariablePei.inf
 INF  OvmfPkg/SmmAccess/SmmAccessPei.inf
 !endif
 INF  UefiCpuPkg/CpuMpPei/CpuMpPei.inf
+INF  OvmfPkg/AmdSev/SevLaunchSecret/SecretPei/SecretPei.inf
 
 !if $(TPM_ENABLE) == TRUE
 INF  OvmfPkg/Tcg/Tcg2Config/Tcg2ConfigPei.inf
@@ -289,6 +290,8 @@ INF  ShellPkg/Application/Shell/Shell.inf
 !endif
 
 INF MdeModulePkg/Logo/LogoDxe.inf
+
+INF OvmfPkg/AmdSev/SevLaunchSecret/SecretDxe/SecretDxe.inf
 
 #
 # Network modules
