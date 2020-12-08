@@ -182,6 +182,84 @@ Fatal:
 }
 
 /**
+  CPU Hot-unplug handler function.
+
+  @param[in] mUnplugApicIds      List of APIC IDs to be plugged.
+
+  @param[in] ToUnplugCount       Count of APIC IDs to be plugged.
+
+  @retval EFI_SUCCESS	         Some of the requested APIC IDs were hot-unplugged.
+
+  @retval EFI_INTERRUPT_PENDING  Fatal error while hot-plugging.
+
+**/
+STATIC
+EFI_STATUS
+EFIAPI
+UnplugCpus(
+  IN APIC_ID                      *mUnplugApicIds,
+  IN UINT32                       ToUnplugCount
+  )
+{
+  EFI_STATUS Status = EFI_SUCCESS;
+  UINT32     ToUnplugIdx;
+
+    //
+    // Remove the CPU with EFI_SMM_CPU_SERVICE_PROTOCOL.
+    //
+
+  ToUnplugIdx = 0;
+  while (ToUnplugIdx < ToUnplugCount) {
+    APIC_ID    RemoveApicId;
+    UINT32     ProcessorNum;
+
+    RemoveApicId = mUnplugApicIds[ToUnplugIdx];
+
+    for (ProcessorNum = 0;
+         ProcessorNum < mCpuHotPlugData->ArrayLength;
+         ProcessorNum++) {
+      if (mCpuHotPlugData->ApicId[ProcessorNum] == RemoveApicId) {
+        break;
+      }
+    }
+
+      //
+      // Ignore the unplug if APIC ID not found
+      //
+    if (ProcessorNum == mCpuHotPlugData->ArrayLength) {
+      DEBUG ((DEBUG_VERBOSE, "%a: did not find APIC ID " FMT_APIC_ID " to unplug\n",
+        __FUNCTION__, RemoveApicId));
+      ToUnplugIdx++;
+      continue;
+    }
+
+    Status = mMmCpuService->RemoveProcessor (mMmCpuService, ProcessorNum);
+
+    if (EFI_ERROR(Status)) {
+      DEBUG ((DEBUG_ERROR, "%a: RemoveProcessor(" FMT_APIC_ID "): %r\n",
+        __FUNCTION__, RemoveApicId, Status));
+      goto Fatal;
+    }
+
+      //
+      // Tell the host that the firmware is done.
+      //
+    QemuCpuhpWriteCpuSelector (mMmCpuIo, RemoveApicId);
+    QemuCpuhpWriteCpuStatus (mMmCpuIo, QEMU_CPUHP_STAT_EJECTED);
+
+    ToUnplugIdx++;
+  }
+
+  //
+  // We've handled this unplug.
+  //
+  return EFI_SUCCESS;
+
+Fatal:
+  return EFI_INTERRUPT_PENDING;
+}
+
+/**
   CPU Hotplug MMI handler function.
 
   This is a root MMI handler.
@@ -297,6 +375,8 @@ CpuHotplugMmi (
 
   if (PluggedCount > 0) {
     Status = PlugCpus(mPluggedApicIds, PluggedCount);
+  } else if (ToUnplugCount > 0) {
+    Status = UnplugCpus(mToUnplugApicIds, ToUnplugCount);
   }
 
   if (EFI_ERROR(Status)) {
