@@ -629,6 +629,18 @@ HttpBootConfigFormInit (
       NULL
       );
 
+    OldMenuString = HiiGetString (
+                          CallbackInfo->RegisteredHandle, 
+                          STRING_TOKEN (STR_HTTP_BOOT_CONFIG_FORM_TITLE), 
+                          NULL
+                          );
+        UnicodeSPrint (MenuString, 128, L"MAC:%s-%s", MacString,OldMenuString);      
+        HiiSetString (
+          CallbackInfo->RegisteredHandle, 
+          STRING_TOKEN (STR_HTTP_BOOT_CONFIG_FORM_TITLE), 
+          MenuString, 
+          NULL
+          );
     FreePool (MacString);
     FreePool (OldMenuString);
 
