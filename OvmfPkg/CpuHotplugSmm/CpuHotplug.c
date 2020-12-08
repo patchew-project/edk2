@@ -367,11 +367,6 @@ CpuHotplugMmi (
   if (EFI_ERROR (Status)) {
     goto Fatal;
   }
-  if (ToUnplugCount > 0) {
-    DEBUG ((DEBUG_ERROR, "%a: hot-unplug is not supported yet\n",
-      __FUNCTION__));
-    goto Fatal;
-  }
 
   if (PluggedCount > 0) {
     Status = PlugCpus(mPluggedApicIds, PluggedCount);
