@@ -17,16 +17,11 @@ EFI_RSC_HANDLER_PROTOCOL  *mRscHandlerProtocol       = NULL;
   Unregister status code callback functions only available at boot time from
   report status code router when exiting boot services.
 
-  @param  Event         Event whose notification function is being invoked.
-  @param  Context       Pointer to the notification function's context, which is
-                        always zero in current implementation.
-
 **/
 VOID
 EFIAPI
 UnregisterBootTimeHandlers (
-  IN EFI_EVENT        Event,
-  IN VOID             *Context
+  VOID
   )
 {
   if (PcdGetBool (PcdStatusCodeUseSerial)) {
@@ -177,15 +172,6 @@ StatusCodeHandlerRuntimeDxeEntry (
   if (PcdGetBool (PcdStatusCodeUseMemory)) {
     mRscHandlerProtocol->Register (RtMemoryStatusCodeReportWorker, TPL_HIGH_LEVEL);
   }
-
-  Status = gBS->CreateEventEx (
-                  EVT_NOTIFY_SIGNAL,
-                  TPL_NOTIFY,
-                  UnregisterBootTimeHandlers,
-                  NULL,
-                  &gEfiEventExitBootServicesGuid,
-                  &mExitBootServicesEvent
-                  );
 
   Status = gBS->CreateEventEx (
                   EVT_NOTIFY_SIGNAL,
