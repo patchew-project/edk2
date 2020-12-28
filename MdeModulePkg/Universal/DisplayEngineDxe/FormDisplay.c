@@ -3061,6 +3061,15 @@ UiDisplayMenu (
       //
       if (!MultiHelpPage) {
         for (Index = 0; Index < HelpLine; Index++) {
+          //
+          // Clear whole line first, Clear the last displayed information.
+          //
+          PrintStringAtWithWidth (
+            gStatementDimensions.RightColumn - gHelpBlockWidth,
+            Index + TopRow,
+            gEmptyString,
+            gHelpBlockWidth
+            );
           PrintStringAtWithWidth (
             gStatementDimensions.RightColumn - gHelpBlockWidth,
             Index + TopRow,
@@ -3080,6 +3089,15 @@ UiDisplayMenu (
       } else  {
         if (HelpPageIndex == 0) {
           for (Index = 0; Index < RowCount - HelpBottomLine; Index++) {
+            //
+            // Clear whole line first, Clear the last displayed information.
+            //
+            PrintStringAtWithWidth (
+              gStatementDimensions.RightColumn - gHelpBlockWidth,
+              Index + TopRow,
+              gEmptyString,
+              gHelpBlockWidth
+              );
             PrintStringAtWithWidth (
               gStatementDimensions.RightColumn - gHelpBlockWidth,
               Index + TopRow,
@@ -3090,6 +3108,15 @@ UiDisplayMenu (
         } else {
           for (Index = 0; (Index < RowCount - HelpBottomLine - HelpHeaderLine) &&
               (Index + HelpPageIndex * (RowCount - 2) + 1 < HelpLine); Index++) {
+            //
+            // Clear whole line first, Clear the last displayed information.
+            //
+            PrintStringAtWithWidth (
+              gStatementDimensions.RightColumn - gHelpBlockWidth,
+              Index + TopRow + HelpHeaderLine,
+              gEmptyString,
+              gHelpBlockWidth
+              );
             PrintStringAtWithWidth (
               gStatementDimensions.RightColumn - gHelpBlockWidth,
               Index + TopRow + HelpHeaderLine,
