@@ -266,6 +266,20 @@ UnplugCpus(
     ToUnplugIdx++;
   }
 
+  if (EjectCount) {
+    UINTN  Worker;
+    Status = mMmCpuService->WhoAmI(mMmCpuService, &Worker);
+    ASSERT_EFI_ERROR(Status);
+    //
+    // UnplugCpus() is called via the root MMI handler and thus we are in the
+    // BSP context. Accordingly, mark ourselves as the ejecting CPU.
+    // Note that, the QEMU eject protocol does not specify that only the BSP
+    // can do the ejection, so this should be safe on any CPU (that is not itself
+    // being unplugged.)
+    //
+    mCpuHotEjectData->ApicIdMap[Worker] = CPU_EJECT_WORKER;
+  }
+
   //
   // We've handled this unplug.
   //
@@ -383,11 +397,6 @@ CpuHotplugMmi (
   if (EFI_ERROR (Status)) {
     goto Fatal;
   }
-  if (ToUnplugCount > 0) {
-    DEBUG ((DEBUG_ERROR, "%a: hot-unplug is not supported yet\n",
-      __FUNCTION__));
-    goto Fatal;
-  }
 
   if (PluggedCount > 0) {
     Status = PlugCpus(mPluggedApicIds, PluggedCount);
@@ -429,6 +438,48 @@ CpuEject(
   if (ApicId == CPU_EJECT_INVALID) {
     return;
   }
+
+  if (ApicId == CPU_EJECT_WORKER) {
+    UINT32 CpuIndex;
+    for (CpuIndex = 0; CpuIndex < mCpuHotEjectData->ArrayLength; CpuIndex++) {
+      UINT64 RemoveApicId = mCpuHotEjectData->ApicIdMap[CpuIndex];
+
+      if ((RemoveApicId != CPU_EJECT_INVALID && RemoveApicId != CPU_EJECT_WORKER)) {
+
+        //
+        // The CPUs to be unplugged have received the BSP's signal to exit the
+        // SMI and either will execute SmmCpuFeaturesSmiRendezvousExit()
+        // followed by this callback or are already waiting in the CpuDeadLoop()
+        // below.
+        //
+        // Tell QEMU to put them out of their misery.
+        //
+         QemuCpuhpWriteCpuSelector (mMmCpuIo, RemoveApicId);
+         QemuCpuhpWriteCpuStatus (mMmCpuIo, QEMU_CPUHP_STAT_EJECTED);
+
+         //
+         // Compiler memory barrier to ensure the next store isn't reordered
+         //
+         MemoryFence();
+
+        // Clear the unplug status for CpuIndex to ensure that an invalid SMI
+        // later does not end up trying to unplug it or the newly hotplugged
+        // CpuIndex does not go into the dead loop.
+        //
+        mCpuHotEjectData->ApicIdMap[CpuIndex] = CPU_EJECT_INVALID;
+
+        DEBUG ((DEBUG_INFO, "%a: Unplugged CPU " FMT_APIC_ID "\n",
+               __FUNCTION__, RemoveApicId));
+       }
+     }
+
+    //
+    // Clear our own CPU status to ensure that we don't needlessly enter
+    // the this loop on the next SMI.
+    //
+    mCpuHotEjectData->ApicIdMap[ProcessorNum] = CPU_EJECT_INVALID;
+    return;
+   }
 
   //
   // CPU(s) being unplugged get here from SmmCpuFeaturesSmiRendezvousExit()
