@@ -140,6 +140,10 @@
 
 #string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuHotPlugDataAddress_HELP  #language en-US "Contains the pointer to a CPU Hot Plug Data structure if CPU hot-plug is supported."
 
+#string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuHotEjectDataAddress_PROMPT  #language en-US "The pointer to CPU Hot Eject Data"
+
+#string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuHotEjectDataAddress_HELP  #language en-US "Contains the pointer to a CPU Hot Eject Data structure if CPU hot-plug is supported."
+
 #string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuNumberOfReservedVariableMtrrs_PROMPT  #language en-US "Number of reserved variable MTRRs"
 
 #string STR_gUefiCpuPkgTokenSpaceGuid_PcdCpuNumberOfReservedVariableMtrrs_HELP  #language en-US "Specifies the number of variable MTRRs reserved for OS use."
