@@ -36,3 +36,6 @@
 
 [Pcd]
   gUefiOvmfPkgTokenSpaceGuid.PcdQ35SmramAtDefaultSmbase
+  gUefiCpuPkgTokenSpaceGuid.PcdCpuHotPlugSupport
+  gUefiCpuPkgTokenSpaceGuid.PcdCpuMaxLogicalProcessorNumber
+  gUefiCpuPkgTokenSpaceGuid.PcdCpuHotEjectDataAddress
