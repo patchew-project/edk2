@@ -32,11 +32,12 @@ STATIC EFI_MM_CPU_IO_PROTOCOL *mMmCpuIo;
 //
 STATIC EFI_SMM_CPU_SERVICE_PROTOCOL *mMmCpuService;
 //
-// This structure is a communication side-channel between the
+// These structures are communication side-channels between the
 // EFI_SMM_CPU_SERVICE_PROTOCOL consumer (i.e., this driver) and provider
 // (i.e., PiSmmCpuDxeSmm).
 //
 STATIC CPU_HOT_PLUG_DATA *mCpuHotPlugData;
+STATIC CPU_HOT_EJECT_DATA *mCpuHotEjectData;
 //
 // SMRAM arrays for fetching the APIC IDs of processors with pending events (of
 // known event types), for the time of just one MMI.
@@ -317,6 +318,23 @@ Fatal:
   return EFI_INTERRUPT_PENDING;
 }
 
+VOID
+EFIAPI
+CpuEject(
+  IN UINTN ProcessorNum
+   )
+{
+  //
+  // APIC ID is UINT32, but mCpuHotEjectData->ApicIdMap[] is UINT64
+  // so use UINT64 throughout.
+  //
+  UINT64 ApicId;
+
+  ApicId = mCpuHotEjectData->ApicIdMap[ProcessorNum];
+  if (ApicId == CPU_EJECT_INVALID) {
+    return;
+  }
+}
 
 //
 // Entry point function of this driver.
@@ -368,8 +386,14 @@ CpuHotplugEntry (
   // Our DEPEX on EFI_SMM_CPU_SERVICE_PROTOCOL guarantees that PiSmmCpuDxeSmm
   // has pointed PcdCpuHotPlugDataAddress to CPU_HOT_PLUG_DATA in SMRAM.
   //
+  // Additionally, CPU HotUnplug is available only if CPU HotPlug is, so the
+  // same DEPEX also guarantees that PcdCpuHotEjectDataAddress points
+  // to CPU_HOT_EJECT_DATA in SMRAM.
+  //
   mCpuHotPlugData = (VOID *)(UINTN)PcdGet64 (PcdCpuHotPlugDataAddress);
-  if (mCpuHotPlugData == NULL) {
+  mCpuHotEjectData = (VOID *)(UINTN)PcdGet64 (PcdCpuHotEjectDataAddress);
+
+  if (mCpuHotPlugData == NULL)  {
     Status = EFI_NOT_FOUND;
     DEBUG ((DEBUG_ERROR, "%a: CPU_HOT_PLUG_DATA: %r\n", __FUNCTION__, Status));
     goto Fatal;
@@ -380,6 +404,9 @@ CpuHotplugEntry (
   if (mCpuHotPlugData->ArrayLength == 1) {
     return EFI_UNSUPPORTED;
   }
+  ASSERT (mCpuHotEjectData &&
+          (mCpuHotPlugData->ArrayLength == mCpuHotEjectData->ArrayLength));
+
   //
   // Allocate the data structures that depend on the possible CPU count.
   //
@@ -461,6 +488,24 @@ CpuHotplugEntry (
   // Install the handler for the hot-added CPUs' first SMI.
   //
   SmbaseInstallFirstSmiHandler ();
+
+  if (mCpuHotEjectData) {
+  UINT32     Idx;
+    //
+    // To do CPU eject we need to map ProcessorNum -> APIC_ID. However, by the
+    // time CpuEject() is called (via SmmCpuFeaturesRendezvousExit()), we've
+    // already called RemoveProcessor() and so the APIC ID cannot be looked up
+    // from SMM data structures.
+    //
+    // So use mCpuHotEjectData->ApicIdMap to map from ProcessorNum -> APIC_ID.
+    //
+    // Initialize to known invalid values before installing the handler.
+    //
+    for (Idx = 0; Idx < mCpuHotEjectData->ArrayLength; Idx++) {
+      mCpuHotEjectData->ApicIdMap[Idx] = CPU_EJECT_INVALID;
+    }
+    mCpuHotEjectData->Handler = CpuEject;
+  }
 
   return EFI_SUCCESS;
 
