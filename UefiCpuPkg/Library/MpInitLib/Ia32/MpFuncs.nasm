@@ -122,23 +122,12 @@ SkipEnableExecuteDisable:
 
     ; AP init
     mov        edi, esi
-    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET
-    mov        eax, NotVacantFlag
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ApIndex
+    mov        ebx, 1
+    lock xadd  [edi], ebx                       ; EBX = ApIndex++
+    inc        ebx                              ; EBX is CpuNumber
 
-TestLock:
-    xchg       [edi], eax
-    cmp        eax, NotVacantFlag
-    jz         TestLock
-
-    mov        ecx, esi
-    add        ecx, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ApIndex
-    inc        dword [ecx]
-    mov        ebx, [ecx]
-
-Releaselock:
-    mov        eax, VacantFlag
-    xchg       [edi], eax
-
+    ; program stack
     mov        edi, esi
     add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.StackSize
     mov        eax, [edi]

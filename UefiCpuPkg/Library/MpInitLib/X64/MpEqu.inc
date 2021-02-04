@@ -12,16 +12,12 @@
 ;
 ;-------------------------------------------------------------------------------
 
-VacantFlag                    equ        00h
-NotVacantFlag                 equ        0ffh
-
 CPU_SWITCH_STATE_IDLE         equ        0
 CPU_SWITCH_STATE_STORED       equ        1
 CPU_SWITCH_STATE_LOADED       equ        2
 
 MP_CPU_EXCHANGE_INFO_OFFSET equ (SwitchToRealProcEnd - RendezvousFunnelProcStart)
 struc MP_CPU_EXCHANGE_INFO
-  .Lock:                 resq 1
   .StackStart:           resq 1
   .StackSize:            resq 1
   .CFunction:            resq 1
