@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------ ;
-; Copyright (c) 2015 - 2019, Intel Corporation. All rights reserved.<BR>
+; Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
 ; SPDX-License-Identifier: BSD-2-Clause-Patent
 ;
 ; Module Name:
@@ -39,21 +39,21 @@ BITS 16
     mov        fs, ax
     mov        gs, ax
 
-    mov        si,  BufferStartLocation
+    mov        si,  MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.BufferStart
     mov        ebx, [si]
 
-    mov        si,  DataSegmentLocation
+    mov        si,  MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.DataSegment
     mov        edx, [si]
 
     ;
     ; Get start address of 32-bit code in low memory (<1MB)
     ;
-    mov        edi, ModeTransitionMemoryLocation
+    mov        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ModeTransitionMemory
 
-    mov        si, GdtrLocation
+    mov        si, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.GdtrProfile
 o32 lgdt       [cs:si]
 
-    mov        si, IdtrLocation
+    mov        si, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.IdtrProfile
 o32 lidt       [cs:si]
 
     ;
@@ -82,7 +82,7 @@ Flat32Start:                                   ; protected mode entry point
     mov        esi, ebx
 
     mov         edi, esi
-    add         edi, EnableExecuteDisableLocation
+    add         edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.EnableExecuteDisable
     cmp         byte [edi], 0
     jz          SkipEnableExecuteDisable
 
@@ -96,7 +96,7 @@ Flat32Start:                                   ; protected mode entry point
     wrmsr
 
     mov         edi, esi
-    add         edi, Cr3Location
+    add         edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.Cr3
     mov         eax, dword [edi]
     mov         cr3, eax
 
@@ -110,19 +110,19 @@ Flat32Start:                                   ; protected mode entry point
 
 SkipEnableExecuteDisable:
     mov        edi, esi
-    add        edi, InitFlagLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.InitFlag
     cmp        dword [edi], 1       ; 1 == ApInitConfig
     jnz        GetApicId
 
     ; Increment the number of APs executing here as early as possible
     ; This is decremented in C code when AP is finished executing
     mov        edi, esi
-    add        edi, NumApsExecutingLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.NumApsExecuting
     lock inc   dword [edi]
 
     ; AP init
     mov        edi, esi
-    add        edi, LockLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET
     mov        eax, NotVacantFlag
 
 TestLock:
@@ -131,7 +131,7 @@ TestLock:
     jz         TestLock
 
     mov        ecx, esi
-    add        ecx, ApIndexLocation
+    add        ecx, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ApIndex
     inc        dword [ecx]
     mov        ebx, [ecx]
 
@@ -140,13 +140,13 @@ Releaselock:
     xchg       [edi], eax
 
     mov        edi, esi
-    add        edi, StackSizeLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.StackSize
     mov        eax, [edi]
     mov        ecx, ebx
     inc        ecx
     mul        ecx                               ; EAX = StackSize * (CpuNumber + 1)
     mov        edi, esi
-    add        edi, StackStartAddressLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.StackStart
     add        eax, [edi]
     mov        esp, eax
     jmp        CProcedureInvoke
@@ -179,7 +179,7 @@ GetProcessorNumber:
     ; Note that BSP may become an AP due to SwitchBsp()
     ;
     xor         ebx, ebx
-    lea         eax, [esi + CpuInfoLocation]
+    lea         eax, [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.CpuInfo]
     mov         edi, [eax]
 
 GetNextProcNumber:
@@ -203,13 +203,12 @@ CProcedureInvoke:
 
     push       ebx               ; Push ApIndex
     mov        eax, esi
-    add        eax, LockLocation
+    add        eax, MP_CPU_EXCHANGE_INFO_OFFSET
     push       eax               ; push address of exchange info data buffer
 
     mov        edi, esi
-    add        edi, ApProcedureLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.CFunction
     mov        eax, [edi]
-
     call       eax               ; Invoke C function
 
     jmp        $                 ; Never reach here

@@ -1,5 +1,5 @@
 ;------------------------------------------------------------------------------ ;
-; Copyright (c) 2015 - 2019, Intel Corporation. All rights reserved.<BR>
+; Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
 ; SPDX-License-Identifier: BSD-2-Clause-Patent
 ;
 ; Module Name:
@@ -43,21 +43,21 @@ BITS 16
     mov        fs, ax
     mov        gs, ax
 
-    mov        si,  BufferStartLocation
+    mov        si,  MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.BufferStart
     mov        ebx, [si]
 
-    mov        si,  DataSegmentLocation
+    mov        si,  MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.DataSegment
     mov        edx, [si]
 
     ;
     ; Get start address of 32-bit code in low memory (<1MB)
     ;
-    mov        edi, ModeTransitionMemoryLocation
+    mov        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ModeTransitionMemory
 
-    mov        si, GdtrLocation
+    mov        si, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.GdtrProfile
 o32 lgdt       [cs:si]
 
-    mov        si, IdtrLocation
+    mov        si, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.IdtrProfile
 o32 lidt       [cs:si]
 
     ;
@@ -85,7 +85,7 @@ Flat32Start:                                   ; protected mode entry point
     ;
     ; Enable execute disable bit
     ;
-    mov        esi, EnableExecuteDisableLocation
+    mov        esi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.EnableExecuteDisable
     cmp        byte [ebx + esi], 0
     jz         SkipEnableExecuteDisableBit
 
@@ -101,7 +101,7 @@ SkipEnableExecuteDisableBit:
     mov        eax, cr4
     bts        eax, 5
 
-    mov        esi, Enable5LevelPagingLocation
+    mov        esi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.Enable5LevelPaging
     cmp        byte [ebx + esi], 0
     jz         SkipEnable5LevelPaging
 
@@ -117,7 +117,7 @@ SkipEnable5LevelPaging:
     ;
     ; Load page table
     ;
-    mov        esi, Cr3Location             ; Save CR3 in ecx
+    mov        esi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.Cr3             ; Save CR3 in ecx
     mov        ecx, [ebx + esi]
     mov        cr3, ecx                    ; Load CR3
 
@@ -139,26 +139,26 @@ SkipEnable5LevelPaging:
     ;
     ; Far jump to 64-bit code
     ;
-    mov        edi, ModeHighMemoryLocation
+    mov        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ModeHighMemory
     add        edi, ebx
     jmp far    [edi]
 
 BITS 64
 LongModeStart:
     mov        esi, ebx
-    lea        edi, [esi + InitFlagLocation]
+    lea        edi, [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.InitFlag]
     cmp        qword [edi], 1       ; ApInitConfig
     jnz        GetApicId
 
     ; Increment the number of APs executing here as early as possible
     ; This is decremented in C code when AP is finished executing
     mov        edi, esi
-    add        edi, NumApsExecutingLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.NumApsExecuting
     lock inc   dword [edi]
 
     ; AP init
     mov        edi, esi
-    add        edi, LockLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.Lock
     mov        rax, NotVacantFlag
 
 TestLock:
@@ -166,7 +166,7 @@ TestLock:
     cmp        rax, NotVacantFlag
     jz         TestLock
 
-    lea        ecx, [esi + ApIndexLocation]
+    lea        ecx, [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.ApIndex]
     inc        dword [ecx]
     mov        ebx, [ecx]
 
@@ -175,17 +175,17 @@ Releaselock:
     xchg       qword [edi], rax
     ; program stack
     mov        edi, esi
-    add        edi, StackSizeLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.StackSize
     mov        eax, dword [edi]
     mov        ecx, ebx
     inc        ecx
     mul        ecx                               ; EAX = StackSize * (CpuNumber + 1)
     mov        edi, esi
-    add        edi, StackStartAddressLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.StackStart
     add        rax, qword [edi]
     mov        rsp, rax
 
-    lea        edi, [esi + SevEsIsEnabledLocation]
+    lea        edi, [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.SevEsIsEnabled]
     cmp        byte [edi], 1        ; SevEsIsEnabled
     jne        CProcedureInvoke
 
@@ -199,7 +199,7 @@ Releaselock:
     mov        ecx, ebx
     mul        ecx                               ; EAX = SIZE_4K * 2 * CpuNumber
     mov        edi, esi
-    add        edi, GhcbBaseLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.GhcbBase
     add        rax, qword [edi]
     mov        rdx, rax
     shr        rdx, 32
@@ -208,7 +208,7 @@ Releaselock:
     jmp        CProcedureInvoke
 
 GetApicId:
-    lea        edi, [esi + SevEsIsEnabledLocation]
+    lea        edi, [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.SevEsIsEnabled]
     cmp        byte [edi], 1        ; SevEsIsEnabled
     jne        DoCpuid
 
@@ -302,7 +302,7 @@ GetProcessorNumber:
     ; Note that BSP may become an AP due to SwitchBsp()
     ;
     xor         ebx, ebx
-    lea         eax, [esi + CpuInfoLocation]
+    lea         eax, [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.CpuInfo]
     mov         rdi, [eax]
 
 GetNextProcNumber:
@@ -321,17 +321,17 @@ CProcedureInvoke:
     push       rbp
     mov        rbp, rsp
 
-    mov        rax, qword [esi + InitializeFloatingPointUnitsAddress]
+    mov        rax, qword [esi + MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.InitializeFloatingPointUnits]
     sub        rsp, 20h
     call       rax               ; Call assembly function to initialize FPU per UEFI spec
     add        rsp, 20h
 
     mov        edx, ebx          ; edx is ApIndex
     mov        ecx, esi
-    add        ecx, LockLocation ; rcx is address of exchange info data buffer
+    add        ecx, MP_CPU_EXCHANGE_INFO_OFFSET ; rcx is address of exchange info data buffer
 
     mov        edi, esi
-    add        edi, ApProcedureLocation
+    add        edi, MP_CPU_EXCHANGE_INFO_OFFSET + MP_CPU_EXCHANGE_INFO.CFunction
     mov        rax, qword [edi]
 
     sub        rsp, 20h
