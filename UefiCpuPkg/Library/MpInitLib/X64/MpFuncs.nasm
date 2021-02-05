@@ -158,21 +158,11 @@ LongModeStart:
 
     ; AP init
     mov        edi, esi
-    add        edi, MP_CPU_EXCHANGE_INFO_FIELD (Lock)
-    mov        rax, NotVacantFlag
+    add        edi, MP_CPU_EXCHANGE_INFO_FIELD (ApIndex)
+    mov        ebx, 1
+    lock xadd  dword [edi], ebx                 ; EBX = ApIndex++
+    inc        ebx                              ; EBX is CpuNumber
 
-TestLock:
-    xchg       qword [edi], rax
-    cmp        rax, NotVacantFlag
-    jz         TestLock
-
-    lea        ecx, [esi + MP_CPU_EXCHANGE_INFO_FIELD (ApIndex)]
-    inc        dword [ecx]
-    mov        ebx, [ecx]
-
-Releaselock:
-    mov        rax, VacantFlag
-    xchg       qword [edi], rax
     ; program stack
     mov        edi, esi
     add        edi, MP_CPU_EXCHANGE_INFO_FIELD (StackSize)
