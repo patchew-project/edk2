@@ -2505,7 +2505,7 @@ BmRegisterBootManagerMenu (
     EfiBootManagerFreeLoadOptions (BootOptions, BootOptionCount);
     );
 
-  return EfiBootManagerAddLoadOptionVariable (BootOption, 0);
+  return EfiBootManagerAddLoadOptionVariable (BootOption, (UINTN) -1));
 }
 
 /**
