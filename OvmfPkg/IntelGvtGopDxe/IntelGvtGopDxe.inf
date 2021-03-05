@@ -1,0 +1,59 @@
+## @file
+# Intel GVT-g Graphics Output Protocol driver
+#
+# Copyright (C) 2021 Intel Corporation. All rights reserved.
+#
+# SPDX-License-Identifier: BSD-2-Clause
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = GvtGopDxe
+  FILE_GUID                      = 7c2a0c14-2a63-4d08-9c7f-d55691e1cedb
+  MODULE_TYPE                    = UEFI_DRIVER
+  VERSION_STRING                 = 2.0
+  ENTRY_POINT                    = GvtGopEntryPoint
+
+[Sources]
+  Common.h
+  DebugHelper.h
+  Display.c
+  Display.h
+  GopDriver.c
+  GpuReg.c
+  GpuReg.h
+  Gtt.c
+  Gtt.h
+  VirtualGpu.h
+  VirtualGpu.c
+  VbeShim.c
+  VbeShim.h
+
+[Packages]
+  MdePkg/MdePkg.dec
+  MdeModulePkg/MdeModulePkg.dec
+  OvmfPkg/OvmfPkg.dec
+
+[LibraryClasses]
+  BaseMemoryLib
+  FrameBufferBltLib
+  DebugLib
+  DevicePathLib
+  MemoryAllocationLib
+  PrintLib
+  UefiBootServicesTableLib
+  UefiDriverEntryPoint
+  UefiLib
+  PcdLib
+  PciLib
+  QemuFwCfgLib
+
+[Protocols]
+  gEfiGraphicsOutputProtocolGuid
+  gEfiPciIoProtocolGuid
+  gEfiDevicePathProtocolGuid
+
+[Pcd]
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoHorizontalResolution
+  gEfiMdeModulePkgTokenSpaceGuid.PcdVideoVerticalResolution
