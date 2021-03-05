@@ -252,6 +252,9 @@ INF  OvmfPkg/MptScsiDxe/MptScsiDxe.inf
 !if $(LSI_SCSI_ENABLE) == TRUE
 INF  OvmfPkg/LsiScsiDxe/LsiScsiDxe.inf
 !endif
+!if $(INTEL_GVT_KVMGT_ENABLE) == TRUE
+INF  OvmfPkg/IntelGvtGopDxe/IntelGvtGopDxe.inf
+!endif
 
 !if $(SECURE_BOOT_ENABLE) == TRUE
   INF  SecurityPkg/VariableAuthenticated/SecureBootConfigDxe/SecureBootConfigDxe.inf
