@@ -1947,6 +1947,7 @@ MpInitLibInitialize (
   UINTN                    ApResetVectorSize;
   UINTN                    BackupBufferAddr;
   UINTN                    ApIdtBase;
+  UINT32                   ExpectedMicrocodeRevision;
 
   OldCpuMpData = GetCpuMpDataFromGuidedHob ();
   if (OldCpuMpData == NULL) {
@@ -2131,6 +2132,14 @@ MpInitLibInitialize (
       CpuMpData->InitFlag = ApInitDone;
     }
     for (Index = 0; Index < CpuMpData->CpuCount; Index++) {
+      ExpectedMicrocodeRevision = 0;
+      if (CpuMpData->CpuData[Index].MicrocodeEntryAddr != 0) {
+        ExpectedMicrocodeRevision = ((CPU_MICROCODE_HEADER *)(UINTN)CpuMpData->CpuData[Index].MicrocodeEntryAddr)->UpdateRevision;
+      }
+      DEBUG ((
+        DEBUG_INFO, "CPU[%04d]: Microcode revision = %08x, expected = %08x\n",
+        Index, CpuMpData->CpuData[Index].MicrocodeRevision, ExpectedMicrocodeRevision
+        ));
       SetApState (&CpuMpData->CpuData[Index], CpuStateIdle);
     }
   }
