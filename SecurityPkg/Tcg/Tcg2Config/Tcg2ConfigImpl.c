@@ -710,9 +710,11 @@ SetConfigInfo (
   )
 {
   switch (TpmAlgHash) {
+#ifndef DISABLE_SHA1_DEPRECATED_INTERFACES
   case TPM_ALG_SHA1:
     Tcg2ConfigInfo->Sha1Supported = TRUE;
     break;
+#endif
   case TPM_ALG_SHA256:
     Tcg2ConfigInfo->Sha256Supported = TRUE;
     break;
