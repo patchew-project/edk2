@@ -47,6 +47,7 @@
 
 [PcdsFeatureFlag.common]
   gArmMorelloTokenSpaceGuid.PcdVirtioBlkSupported|TRUE
+  gArmMorelloTokenSpaceGuid.PcdVirtioNetSupported|TRUE
 
 [PcdsFixedAtBuild.common]
   # Virtio Disk
@@ -54,8 +55,14 @@
   gArmMorelloTokenSpaceGuid.PcdVirtioBlkSize|0x200
   gArmMorelloTokenSpaceGuid.PcdVirtioBlkInterrupt|128
 
+  # Virtio Net
+  gArmMorelloTokenSpaceGuid.PcdVirtioNetBaseAddress|0x1C180000
+  gArmMorelloTokenSpaceGuid.PcdVirtioNetSize|0x200
+  gArmMorelloTokenSpaceGuid.PcdVirtioNetInterrupt|134
+
 [Components.common]
   OvmfPkg/VirtioBlkDxe/VirtioBlk.inf
+  OvmfPkg/VirtioNetDxe/VirtioNet.inf
 
   # Platform driver
   Platform/ARM/Morello/Drivers/PlatformDxe/PlatformDxeFvp.inf
