@@ -291,7 +291,6 @@ class CFspDsc2Yaml():
                 raise Exception('DSC variable creation error !')
         else:
             raise Exception('Unsupported file "%s" !' % file_name)
-        gen_cfg_data.UpdateDefaultValue()
         self.gen_cfg_data = gen_cfg_data
 
     def print_dsc_line(self):
