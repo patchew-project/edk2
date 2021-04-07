@@ -5786,7 +5786,7 @@ PciExplainPciExpress (
   }
 
   ExtHdr = (PCI_EXP_EXT_HDR*)ExtendedConfigSpace;
-  while (ExtHdr->CapabilityId != 0 && ExtHdr->CapabilityVersion != 0) {
+  while (ExtHdr->CapabilityId != 0 && ExtHdr->CapabilityVersion != 0 && ExtHdr->CapabilityId != 0xFFFF) {
     //
     // Process this item
     //
