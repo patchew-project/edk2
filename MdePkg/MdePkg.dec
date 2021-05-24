@@ -1000,6 +1000,12 @@
   ## Include/Protocol/PcdInfo.h
   gGetPcdInfoProtocolGuid        = { 0x5be40f57, 0xfa68, 0x4610, { 0xbb, 0xbf, 0xe9, 0xc5, 0xfc, 0xda, 0xd3, 0x65 } }
 
+  ## Payload Standalone Pcd Protocol
+  gEdkiiPayloadStandalonePcdProtocolGuid            = {0x8ef6ff48, 0x2260, 0x5407, {0x0d, 0x18, 0x2e, 0x2c, 0xaa, 0x7d, 0xc9, 0x1f}}
+  gEdkiiEfiPayloadStandalonePcdProtocolGuid         = {0x7e50c422, 0xae76, 0xbdc9, {0x16, 0x66, 0xca, 0x67, 0x95, 0x04, 0x4d, 0xea}}
+  gEdkiiPayloadGetStandalonePcdInfoProtocolGuid     = {0xd7214c03, 0x27e0, 0x5b35, {0xd5, 0xb1, 0xeb, 0x1a, 0x50, 0x14, 0x5e, 0x15}}
+  gEdkiiEfiPayloadGetStandalonePcdInfoProtocolGuid  = {0x1039ecdf, 0x5908, 0xf76c, {0x51, 0xf9, 0xae, 0x09, 0xc5, 0xa9, 0x68, 0x9e}}
+
   #
   # Protocols defined in PI1.0.
   #
@@ -1944,6 +1950,12 @@
   #  testing purposes.
   # @Prompt Validate ORDERED_COLLECTION structure
   gEfiMdePkgTokenSpaceGuid.PcdValidateOrderedCollection|FALSE|BOOLEAN|0x0000002a
+
+  ## Indicates if the standalone PCD database is enabled for Payload.<BR><BR>
+  #   TRUE  - Enable tandalone PCD database is enabled for Payload.<BR>
+  #   FALSE - Disable tandalone PCD database is enabled for Payload.<BR>
+  # @Prompt Enable tandalone PCD database is enabled for Payload.
+  gEfiMdePkgTokenSpaceGuid.PcdStandalonePcdDatabaseEnable|FALSE|BOOLEAN|0x0000002e
 
 [PcdsFixedAtBuild]
   ## Status code value for indicating a watchdog timer has expired.

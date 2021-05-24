@@ -29,7 +29,7 @@
   INF_VERSION                    = 0x00010005
   BASE_NAME                      = DxePcdLib
   MODULE_UNI_FILE                = DxePcdLib.uni
-  FILE_GUID                      = af97eb89-4cc6-45f8-a514-ca025b346480
+  FILE_GUID                      = f9af2f38-09e2-4ff1-b661-5d1c19d9f75c
   MODULE_TYPE                    = DXE_DRIVER
   VERSION_STRING                 = 1.0
   LIBRARY_CLASS                  = PcdLib|DXE_CORE DXE_DRIVER DXE_RUNTIME_DRIVER DXE_SMM_DRIVER SMM_CORE UEFI_APPLICATION UEFI_DRIVER
@@ -67,5 +67,5 @@
   gEfiMdePkgTokenSpaceGuid.PcdStandalonePcdDatabaseEnable ## CONSUMES
 
 [Depex.common.DXE_DRIVER, Depex.common.DXE_RUNTIME_DRIVER, Depex.common.DXE_SAL_DRIVER, Depex.common.DXE_SMM_DRIVER]
-  gEfiPcdProtocolGuid
+  gEdkiiEfiPayloadStandalonePcdProtocolGuid
 
