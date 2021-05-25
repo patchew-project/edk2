@@ -1,0 +1,30 @@
+##  @file
+#  Provides the Secure Verification services for AMD SEV firmware config
+#
+#  Copyright (C) 2021 James Bottomley, IBM Corporation.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 1.27
+  BASE_NAME                      = SevQemuLoadImageLib
+  FILE_GUID                      = 7ceec418-e1e3-42fb-91c5-56abc6d3744d
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = QemuLoadImageLib|DXE_DRIVER
+  CONSTRUCTOR                    = SevQemuLoadImageConstructor
+
+[Sources]
+  SevQemuLoadImageLib.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  OvmfPkg/OvmfPkg.dec
+
+[LibraryClasses]
+  DebugLib
+  GenericQemuLoadImageLib
+  MemEncryptSevLib
+  SevHashFinderLib
