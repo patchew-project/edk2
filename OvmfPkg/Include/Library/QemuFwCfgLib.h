@@ -173,5 +173,40 @@ QemuFwCfgFindFile (
   OUT  UINTN                 *Size
   );
 
+/**
+  The verifier is used to abstract a hash verification operation when
+  A firmware config item is accessed via a filesystem and has some type
+  of integrity information passed in.
+
+  @param[in]    Name       The name of the config file to verify.
+  @param[in]    Buffer     A pointer to the loaded config information.
+  @param[in]    Size       The size of the buffer.
+
+  @retval EFI_SUCCESS          The buffer verified OK.
+
+  @retval EFI_ACCESS_DENIED    The buffer failed the integrity check.
+
+**/
+typedef
+RETURN_STATUS
+(EFIAPI *FW_CFG_VERIFIER) (
+  IN  CONST CHAR16    *Name,
+  IN  VOID            *Buffer,
+  IN  UINTN           Size
+  );
+
+/**
+  Register a verifier for the Firmware Configuration Filesystem to use
+
+  @param[in]  Verifier     The verifier to register
+
+  @retval EFI_SUCCESS      The verifier was successfully registered
+**/
+RETURN_STATUS
+EFIAPI
+RegisterFwCfgVerifier (
+  IN FW_CFG_VERIFIER    Verifier
+  );
+
 #endif
 

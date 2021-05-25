@@ -982,6 +982,27 @@ FetchBlob (
   return EFI_SUCCESS;
 }
 
+STATIC FW_CFG_VERIFIER mVerifier = NULL;
+
+/**
+  Register a verifier for the Firmware Configuration Filesystem to use
+
+  @param[in]  Verifier     The verifier to register
+
+  @retval EFI_SUCCESS      The verifier was successfully registered
+**/
+EFI_STATUS
+EFIAPI
+RegisterFwCfgVerifier (
+  IN FW_CFG_VERIFIER    Verifier
+  )
+{
+  if (mVerifier != NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  mVerifier = Verifier;
+  return EFI_SUCCESS;
+}
 
 //
 // The entry point of the feature.
@@ -1032,6 +1053,16 @@ QemuKernelLoaderFsDxeEntrypoint (
     Status = FetchBlob (CurrentBlob);
     if (EFI_ERROR (Status)) {
       goto FreeBlobs;
+    }
+    if (mVerifier != NULL) {
+      Status = mVerifier (
+        CurrentBlob->Name,
+        CurrentBlob->Data,
+        CurrentBlob->Size
+      );
+      if (EFI_ERROR (Status)) {
+        goto FreeBlobs;
+      }
     }
     mTotalBlobBytes += CurrentBlob->Size;
   }
