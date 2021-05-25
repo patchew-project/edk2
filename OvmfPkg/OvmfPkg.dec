@@ -18,8 +18,12 @@
 [Includes]
   Include
   Csm/Include
+  AmdSev/Include
 
 [LibraryClasses]
+  ##  @libraryclass  Functions for extracting Sev Hashes from the MEMFD
+  SevHashFinderLib|AmdSev/Include/Library/SevHashFinderLib.h
+
   ##  @libraryclass  Access bhyve's firmware control interface.
   BhyveFwCtlLib|Include/Library/BhyveFwCtlLib.h
 
