@@ -51,6 +51,28 @@ STATIC CONST KERNEL_VENMEDIA_FILE_DEVPATH mKernelDevicePath = {
   }
 };
 
+STATIC FW_CFG_VERIFIER mVerifier = NULL;
+
+/**
+  Register a verifier for the Firmware Configuration Filesystem to use
+
+  @param[in]  Verifier     The verifier to register
+
+  @retval EFI_SUCCESS      The verifier was successfully registered
+**/
+EFI_STATUS
+EFIAPI
+RegisterFwCfgVerifier (
+  IN FW_CFG_VERIFIER    Verifier
+  )
+{
+  if (mVerifier != NULL) {
+    return EFI_OUT_OF_RESOURCES;
+  }
+  mVerifier = Verifier;
+  return EFI_SUCCESS;
+}
+
 /**
   Download the kernel, the initial ramdisk, and the kernel command line from
   QEMU's fw_cfg. The kernel will be instructed via its command line to load
@@ -147,6 +169,13 @@ QemuLoadKernelImage (
         __FUNCTION__));
       Status = EFI_PROTOCOL_ERROR;
       goto FreeCommandLine;
+    }
+
+    if (mVerifier != NULL) {
+      Status = mVerifier (NULL, CommandLine, CommandLineSize);
+      if (EFI_ERROR (Status)) {
+        goto FreeCommandLine;
+      }
     }
 
     //
