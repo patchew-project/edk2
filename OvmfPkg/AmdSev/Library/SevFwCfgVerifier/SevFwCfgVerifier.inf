@@ -1,0 +1,30 @@
+##  @file
+#  Provides the Secure Verification services for AMD SEV firmware config
+#
+#  Copyright (C) 2021 James Bottomley, IBM Corporation.
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = SevFwCfgVerifier
+  FILE_GUID                      = 33457c78-aae2-4511-9188-ac1fe88d03de
+  MODULE_TYPE                    = DXE_DRIVER
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = NULL|DXE_DRIVER DXE_RUNTIME_DRIVER DXE_SMM_DRIVER UEFI_APPLICATION UEFI_DRIVER
+  CONSTRUCTOR                    = SevFwCfgVerifierConstructor
+
+[Sources]
+  SevFwCfgVerifier.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  OvmfPkg/OvmfPkg.dec
+
+[LibraryClasses]
+  BaseLib
+  DebugLib
+  MemEncryptSevLib
+  SevHashFinderLib
