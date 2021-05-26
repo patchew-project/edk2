@@ -2,13 +2,16 @@
   This file include all platform action which can be customized
   by IBV/OEM.
 
-Copyright (c) 2015 - 2018, Intel Corporation. All rights reserved.<BR>
+Copyright (c) 2015 - 2021, Intel Corporation. All rights reserved.<BR>
 SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
 
 #include "PlatformBootManager.h"
 #include "PlatformConsole.h"
+#include <Protocol/PlatformBootManagerOverride.h>
+
+PLD_PLATFORM_BOOT_MANAGER_OVERRIDE_PROTOCOL  *mPldPlatformBootManagerOverrideInstance = NULL;
 
 VOID
 InstallReadyToLock (
@@ -156,6 +159,16 @@ PlatformBootManagerBeforeConsole (
   EFI_INPUT_KEY                F2;
   EFI_INPUT_KEY                Down;
   EFI_BOOT_MANAGER_LOAD_OPTION BootOption;
+  EFI_STATUS                   Status;
+
+  Status = gBS->LocateProtocol (&gPldPlatformBootManagerOverrideProtocolGuid, NULL, (VOID **) &mPldPlatformBootManagerOverrideInstance);
+  if (EFI_ERROR (Status)) {
+    mPldPlatformBootManagerOverrideInstance = NULL;
+  }
+  if (mPldPlatformBootManagerOverrideInstance != NULL){
+    mPldPlatformBootManagerOverrideInstance->BeforeConsole();
+    return;
+  }
 
   //
   // Register ENTER as CONTINUE key
@@ -213,6 +226,10 @@ PlatformBootManagerAfterConsole (
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL  Black;
   EFI_GRAPHICS_OUTPUT_BLT_PIXEL  White;
 
+  if (mPldPlatformBootManagerOverrideInstance != NULL){
+    mPldPlatformBootManagerOverrideInstance->AfterConsole();
+    return;
+  }
   Black.Blue = Black.Green = Black.Red = Black.Reserved = 0;
   White.Blue = White.Green = White.Red = White.Reserved = 0xFF;
 
@@ -244,6 +261,9 @@ PlatformBootManagerWaitCallback (
   UINT16          TimeoutRemain
 )
 {
+  if (mPldPlatformBootManagerOverrideInstance != NULL){
+    mPldPlatformBootManagerOverrideInstance->WaitCallback (TimeoutRemain);
+  }
   return;
 }
 
@@ -260,6 +280,9 @@ PlatformBootManagerUnableToBoot (
   VOID
   )
 {
+  if (mPldPlatformBootManagerOverrideInstance != NULL){
+    mPldPlatformBootManagerOverrideInstance->UnableToBoot();
+  }
   return;
 }
 
