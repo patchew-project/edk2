@@ -336,15 +336,13 @@
 
 ################################################################################
 #
-# Pcd Dynamic Section - list of all EDK II PCD Entries defined by this Platform
+# Pcd DynamicEx Section - list of all EDK II PCD Entries defined by this Platform
 #
 ################################################################################
 
-[PcdsDynamicDefault]
+[PcdsDynamicExDefault]
   gEfiMdeModulePkgTokenSpaceGuid.PcdEmuVariableNvStoreReserved|0
   gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageVariableBase64|0
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwWorkingBase|0
-  gEfiMdeModulePkgTokenSpaceGuid.PcdFlashNvStorageFtwSpareBase|0
   gEfiMdePkgTokenSpaceGuid.PcdPlatformBootTimeOut|3
 
   ## This PCD defines the video horizontal resolution.
@@ -363,6 +361,9 @@
   gEfiMdeModulePkgTokenSpaceGuid.PcdConOutColumn|100
   gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseAddress|0
   gEfiMdePkgTokenSpaceGuid.PcdPciExpressBaseSize|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdGhcbBase|0
+  gEfiMdeModulePkgTokenSpaceGuid.PcdTestKeyUsed|FALSE
+  gUefiCpuPkgTokenSpaceGuid.PcdSevEsIsEnabled|0
 
 ################################################################################
 #
