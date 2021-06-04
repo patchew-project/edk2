@@ -576,4 +576,38 @@ AmlIsRootPath (
   IN UINT8              *Buffer
   );
 
+/**
+  Returns a requested ACPI table.
+
+  The following structures are not considered elements in the list of
+  ACPI tables:
+  - Root System Description Pointer (RSD_PTR)
+  - Root System Description Table (RSDT)
+  - Extended System Description Table (XSDT)
+  Version is updated with a bit map containing all the versions of ACPI of which the table is a
+  member. For tables installed via the EFI_ACPI_TABLE_PROTOCOL.InstallAcpiTable() interface,
+  the function returns the value of EFI_ACPI_STD_PROTOCOL.AcpiVersion.
+
+  @param[in]    AcpiTableInstance  ACPI table Instance.
+  @param[in]    Index              The zero-based index of the table to retrieve.
+  @param[out]   Table              Pointer for returning the table buffer.
+  @param[out]   Version            On return, updated with the ACPI versions to which this table belongs. Type
+                                   EFI_ACPI_TABLE_VERSION is defined in "Related Definitions" in the
+                                   EFI_ACPI_SDT_PROTOCOL.
+  @param[out]   TableKey           On return, points to the table key for the specified ACPI system definition table.
+                                   This is identical to the table key used in the EFI_ACPI_TABLE_PROTOCOL.
+                                   The TableKey can be passed to EFI_ACPI_TABLE_PROTOCOL.UninstallAcpiTable()
+                                   to uninstall the table.
+  @retval EFI_SUCCESS              The function completed successfully.
+  @retval EFI_NOT_FOUND            The requested index is too large and a table was not found.
+**/
+EFI_STATUS
+SdtInternalGetAcpiTable (
+  IN  VOID                                *AcpiTableInstance,
+  IN  UINTN                               Index,
+  OUT EFI_ACPI_SDT_HEADER                 **Table,
+  OUT EFI_ACPI_TABLE_VERSION              *Version,
+  OUT UINTN                               *TableKey
+  );
+
 #endif
