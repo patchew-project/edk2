@@ -1,6 +1,6 @@
 /** @file
 
-  Copyright (c) 2014 - 2020, Intel Corporation. All rights reserved.<BR>
+  Copyright (c) 2014 - 2021, Intel Corporation. All rights reserved.<BR>
   SPDX-License-Identifier: BSD-2-Clause-Patent
 
 **/
@@ -234,6 +234,7 @@ BuildHobFromBl (
   EFI_PEI_GRAPHICS_INFO_HOB        *NewGfxInfo;
   EFI_PEI_GRAPHICS_DEVICE_INFO_HOB GfxDeviceInfo;
   EFI_PEI_GRAPHICS_DEVICE_INFO_HOB *NewGfxDeviceInfo;
+  PLD_SMBIOS_TABLE                 *SmBiosTableHob;
 
   //
   // Parse memory info and build memory HOBs
@@ -276,6 +277,15 @@ BuildHobFromBl (
     DEBUG ((DEBUG_INFO, "Detected Acpi Table at 0x%lx, length 0x%x\n", SysTableInfo.AcpiTableBase, SysTableInfo.AcpiTableSize));
     DEBUG ((DEBUG_INFO, "Detected Smbios Table at 0x%lx, length 0x%x\n", SysTableInfo.SmbiosTableBase, SysTableInfo.SmbiosTableSize));
   }
+  //
+  // Creat SmBios table Hob
+  //
+  SmBiosTableHob = BuildGuidHob (&gPldSmbiosTableGuid, sizeof (PLD_SMBIOS_TABLE));
+  ASSERT (SmBiosTableHob != NULL);
+  SmBiosTableHob->PldHeader.Revision = PLD_SMBIOS_TABLE_REVISION;
+  SmBiosTableHob->PldHeader.Length = sizeof (PLD_SMBIOS_TABLE);
+  SmBiosTableHob->SmBiosEntryPoint = SysTableInfo.SmbiosTableBase;
+  DEBUG ((DEBUG_INFO, "Create smbios table gPldSmbiosTableGuid guid hob\n"));
 
   //
   // Create guid hob for acpi board information
