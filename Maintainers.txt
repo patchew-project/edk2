@@ -227,6 +227,11 @@ W: https://github.com/tianocore/tianocore.github.io/wiki/MdeModulePkg
 M: Jian J Wang <jian.j.wang@intel.com>
 M: Hao A Wu <hao.a.wu@intel.com>
 
+MdeModulePkg: Universal Payload definitions
+F: MdeModulePkg/Include/UniversalPayload/
+R: Zhiguang Liu <zhiguang.liu@intel.com>
+R: Ray Ni <ray.ni@intel.com>
+
 MdeModulePkg: ACPI modules
 F: MdeModulePkg/Include/*Acpi*.h
 F: MdeModulePkg/Universal/Acpi/
