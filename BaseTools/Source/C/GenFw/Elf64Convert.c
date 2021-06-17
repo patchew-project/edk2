@@ -129,6 +129,8 @@ STATIC UINT32 mDebugOffset;
 STATIC UINT8       *mRiscVPass1Targ = NULL;
 STATIC Elf_Shdr    *mRiscVPass1Sym = NULL;
 STATIC Elf64_Half  mRiscVPass1SymSecIndex = 0;
+STATIC INT32       mRiscVPass1Offset;
+STATIC INT32       mRiscVPass1GotFixup;
 
 //
 // Initialization Function
@@ -480,11 +482,11 @@ WriteSectionRiscV64 (
     break;
 
   case R_RISCV_32:
-    *(UINT32 *)Targ = (UINT32)((UINT64)(*(UINT32 *)Targ) - SymShdr->sh_addr + mCoffSectionsOffset[Sym->st_shndx]);
+    *(UINT64 *)Targ = Sym->st_value + Rel->r_addend;
     break;
 
   case R_RISCV_64:
-    *(UINT64 *)Targ = *(UINT64 *)Targ - SymShdr->sh_addr + mCoffSectionsOffset[Sym->st_shndx];
+    *(UINT64 *)Targ = Sym->st_value + Rel->r_addend;
     break;
 
   case R_RISCV_HI20:
@@ -534,6 +536,18 @@ WriteSectionRiscV64 (
     mRiscVPass1SymSecIndex = 0;
     break;
 
+  case R_RISCV_GOT_HI20:
+    Value = (Sym->st_value - Rel->r_offset);
+    mRiscVPass1Offset = RV_X(Value, 0, 12);
+    Value = RV_X(Value, 12, 20);
+    *(UINT32 *)Targ = (Value << 12) | (RV_X(*(UINT32*)Targ, 0, 12));
+
+    mRiscVPass1Targ = Targ;
+    mRiscVPass1Sym = SymShdr;
+    mRiscVPass1SymSecIndex = Sym->st_shndx;
+    mRiscVPass1GotFixup = 1;
+    break;
+
   case R_RISCV_PCREL_HI20:
     mRiscVPass1Targ = Targ;
     mRiscVPass1Sym = SymShdr;
@@ -546,11 +560,17 @@ WriteSectionRiscV64 (
     if (mRiscVPass1Targ != NULL && mRiscVPass1Sym != NULL && mRiscVPass1SymSecIndex != 0) {
       int i;
       Value2 = (UINT32)(RV_X(*(UINT32 *)mRiscVPass1Targ, 12, 20));
-      Value = (UINT32)(RV_X(*(UINT32 *)Targ, 20, 12));
-      if(Value & (RISCV_IMM_REACH/2)) {
-        Value |= ~(RISCV_IMM_REACH-1);
+
+      if(mRiscVPass1GotFixup) {
+        Value = (UINT32)(mRiscVPass1Offset);
+      } else {
+        Value = (UINT32)(RV_X(*(UINT32 *)Targ, 20, 12));
+        if(Value & (RISCV_IMM_REACH/2)) {
+          Value |= ~(RISCV_IMM_REACH-1);
+        }
       }
       Value = Value - (UINT32)mRiscVPass1Sym->sh_addr + mCoffSectionsOffset[mRiscVPass1SymSecIndex];
+
       if(-2048 > (INT32)Value) {
         i = (((INT32)Value * -1) / 4096);
         Value2 -= i;
@@ -570,12 +590,35 @@ WriteSectionRiscV64 (
         }
       }
 
-      *(UINT32 *)Targ = (RV_X(Value, 0, 12) << 20) | (RV_X(*(UINT32*)Targ, 0, 20));
+      if(mRiscVPass1GotFixup) {
+        *(UINT32 *)Targ = (RV_X((UINT32)Value, 0, 12) << 20)
+                            | (RV_X(*(UINT32*)Targ, 0, 20));
+        // Convert LD instruction to ADDI
+        //
+        // |31      20|19  15|14  12|11   7|6       0|
+        // |-----------------------------------------|
+        // |imm[11:0] | rs1  | 011  |  rd  | 0000011 | LD
+        //  -----------------------------------------
+
+        // |-----------------------------------------|
+        // |imm[11:0] | rs1  | 000  |  rd  | 0010011 | ADDI
+        //  -----------------------------------------
+
+        // To convert, let's first reset bits 12-14 and 0-6 using ~0x707f
+        // Then modify the opcode to ADDI (0010011)
+        // All other fields will remain same.
+
+        *(UINT32 *)Targ = ((*(UINT32 *)Targ & ~0x707f) | 0x13);
+      } else {
+        *(UINT32 *)Targ = (RV_X(Value, 0, 12) << 20) | (RV_X(*(UINT32*)Targ, 0, 20));
+      }
       *(UINT32 *)mRiscVPass1Targ = (RV_X(Value2, 0, 20)<<12) | (RV_X(*(UINT32 *)mRiscVPass1Targ, 0, 12));
     }
     mRiscVPass1Sym = NULL;
     mRiscVPass1Targ = NULL;
     mRiscVPass1SymSecIndex = 0;
+    mRiscVPass1Offset = 0;
+    mRiscVPass1GotFixup = 0;
     break;
 
   case R_RISCV_ADD64:
@@ -587,6 +630,7 @@ WriteSectionRiscV64 (
   case R_RISCV_GPREL_I:
   case R_RISCV_GPREL_S:
   case R_RISCV_CALL:
+  case R_RISCV_CALL_PLT:
   case R_RISCV_RVC_BRANCH:
   case R_RISCV_RVC_JUMP:
   case R_RISCV_RELAX:
@@ -1530,6 +1574,7 @@ WriteRelocations64 (
             case R_RISCV_GPREL_I:
             case R_RISCV_GPREL_S:
             case R_RISCV_CALL:
+            case R_RISCV_CALL_PLT:
             case R_RISCV_RVC_BRANCH:
             case R_RISCV_RVC_JUMP:
             case R_RISCV_RELAX:
@@ -1539,6 +1584,7 @@ WriteRelocations64 (
             case R_RISCV_SET16:
             case R_RISCV_SET32:
             case R_RISCV_PCREL_HI20:
+            case R_RISCV_GOT_HI20:
             case R_RISCV_PCREL_LO12_I:
               break;
 
