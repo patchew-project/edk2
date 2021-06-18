@@ -1331,8 +1331,6 @@ PxeBcDhcp4CallBack (
     }
     break;
 
-  default:
-    break;
   }
 
   return Status;
