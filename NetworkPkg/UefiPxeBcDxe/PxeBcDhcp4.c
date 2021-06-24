@@ -1256,18 +1256,9 @@ PxeBcDhcp4CallBack (
 
     //
     // Cache the DHCPv4 discover packet to mode data directly.
-    // It need to check SendGuid as well as Dhcp4SendRequest.
+    // It need to check SendGuid.
     //
     CopyMem (&Mode->DhcpDiscover.Dhcpv4, &Packet->Dhcp4, Packet->Length);
-
-  case Dhcp4SendRequest:
-    if (Packet->Length > PXEBC_DHCP4_PACKET_MAX_SIZE) {
-      //
-      // If the to be sent packet exceeds the maximum length, abort the DHCP process.
-      //
-      Status = EFI_ABORTED;
-      break;
-    }
 
     if (Mode->SendGUID) {
       //
@@ -1332,6 +1323,7 @@ PxeBcDhcp4CallBack (
     break;
 
   default:
+    ASSERT (FALSE);
     break;
   }
 
