@@ -1,0 +1,27 @@
+## @file
+#
+#  Null implementation of the blob verifier library.
+#
+#  Copyright (C) 2021, IBM Corp
+#
+#  SPDX-License-Identifier: BSD-2-Clause-Patent
+#
+##
+
+[Defines]
+  INF_VERSION                    = 0x00010005
+  BASE_NAME                      = NullBlobVerifierLib
+  FILE_GUID                      = b1b5533e-e01a-43bb-9e54-414f00ca036e
+  MODULE_TYPE                    = BASE
+  VERSION_STRING                 = 1.0
+  LIBRARY_CLASS                  = BlobVerifierLib
+
+[Sources]
+  NullBlobVerifier.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  OvmfPkg/OvmfPkg.dec
+
+[LibraryClasses]
+  DebugLib
