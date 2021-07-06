@@ -15,9 +15,16 @@ InitializeSecretPei (
   IN CONST EFI_PEI_SERVICES     **PeiServices
   )
 {
+  UINT64 RoundedSize;
+
+  RoundedSize = PcdGet32 (PcdSevLaunchSecretSize);
+  if (RoundedSize % EFI_PAGE_SIZE != 0) {
+    RoundedSize = (RoundedSize / EFI_PAGE_SIZE + 1) * EFI_PAGE_SIZE;
+  }
+
   BuildMemoryAllocationHob (
     PcdGet32 (PcdSevLaunchSecretBase),
-    PcdGet32 (PcdSevLaunchSecretSize),
+    RoundedSize,
     EfiBootServicesData
     );
 
